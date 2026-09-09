@@ -21,3 +21,13 @@ npm install -g @nestjs/cli
 nest --version
 ```
 ![](img\imagecopy.png)
+#### 1.3 — Crear proyecto NestJS
+
+Usamos el nombre `backend_ia` (workspace didáctico). Responde las preguntas del CLI (package manager: npm).
+
+```bash
+cd /home/portatiljq/apps/dlloweb/nestjs/express_sequelize
+nest new backend_ia
+cd backend_ia
+```
+![](img/1.png)
