@@ -162,4 +162,4 @@ npm run start:dev
 # Ctrl+C cuando veas el log de arranque
 curl -s http://localhost:3002 || true
 ```
-
+![](img/7.png)
