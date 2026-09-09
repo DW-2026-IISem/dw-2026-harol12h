@@ -31,3 +31,15 @@ nest new backend_ia
 cd backend_ia
 ```
 ![](img/1.png)
+
+#### 1.4 — Crear `.env` mínimo (puerto)
+
+El puerto `3002` evita choques con el 3000. Más adelante el `.env` crecerá con BD y JWT.
+
+```bash
+cat > .env <<'EOF_BACKEND_IA'
+PORT=3002
+NODE_ENV=development
+EOF_BACKEND_IA
+```
+![](img/2.png)
