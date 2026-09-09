@@ -152,3 +152,14 @@ console.log('✅ package.json scripts actualizados');
 EOF_BACKEND_IA
 ```
 ![](img/6.png)
+
+#### 2.5 — Verificar arranque base
+
+Debe levantar el Hello World de Nest en el puerto del `.env`.
+
+```bash
+npm run start:dev
+# Ctrl+C cuando veas el log de arranque
+curl -s http://localhost:3002 || true
+```
+
