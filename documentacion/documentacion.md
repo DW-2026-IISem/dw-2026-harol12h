@@ -73,3 +73,11 @@ Config, Swagger, JWT/Passport, Sequelize + drivers de 4 motores, validación, bc
 ```
 ![](img/3.png)
 
+#### 2.2 — Dependencias de desarrollo
+
+Tipados y sequelize-cli para herramientas de BD.
+
+```bash
+yarn add -D @types/bcrypt @types/passport-jwt sequelize-cli
+```
+![](img/4.png)
