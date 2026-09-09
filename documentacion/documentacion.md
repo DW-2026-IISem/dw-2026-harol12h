@@ -43,3 +43,33 @@ NODE_ENV=development
 EOF_BACKEND_IA
 ```
 ![](img/2.png)
+
+#### 1.5 — Commit inicial del esqueleto
+
+Congela el punto de partida reproducible.
+
+```bash
+git init
+git add .
+git commit -m "chore: inicialización del proyecto NestJS"
+```
+
+------------------------------------------------------------------------
+
+## FASE 2 — `01_BASE_DEPS_Y_PUERTO`
+
+### Dependencias + manejo de puerto (EADDRINUSE)
+
+> **Objetivo de la fase:** Instalar el stack profesional y evitar que un `start:dev` colgado bloquee el puerto.
+
+#### 2.1 — Dependencias de producción
+
+Config, Swagger, JWT/Passport, Sequelize + drivers de 4 motores, validación, bcrypt y utilidades HTTP.
+
+```bash
+ yarn add @nestjs/config @nestjs/swagger @nestjs/jwt @nestjs/passport @nestjs/mapped-types \
+  passport passport-jwt sequelize sequelize-typescript mysql2 pg tedious oracledb \
+  class-validator class-transformer bcrypt reflect-metadata express compression helmet
+```
+![](img/3.png)
+
