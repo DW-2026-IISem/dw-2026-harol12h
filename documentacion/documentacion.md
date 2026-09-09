@@ -133,3 +133,22 @@ EOF_BACKEND_IA
 ```
 ![](img/5.png)
 
+#### 2.4 — Actualizar scripts npm en package.json
+
+Integra `free:port` en `start:dev` / `start:debug`. Aplica el cambio con Node para no editar JSON a mano.
+
+```bash
+node <<'EOF_BACKEND_IA'
+const fs = require('fs');
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+pkg.scripts = {
+  ...pkg.scripts,
+  'free:port': 'node scripts/free-port.js',
+  'start:dev': 'npm run free:port && nest start --watch',
+  'start:debug': 'npm run free:port && nest start --debug --watch',
+};
+fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+console.log('✅ package.json scripts actualizados');
+EOF_BACKEND_IA
+```
+![](img/6.png)
