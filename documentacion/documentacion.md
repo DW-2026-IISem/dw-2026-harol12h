@@ -1157,3 +1157,26 @@ export const JWT_DEFAULTS = {
 EOF_BACKEND_MANUAL
 ```
 ![](img/28.png)
+
+#### 6.6 — config/jwt/jwt.config.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/config/jwt/jwt.config.ts`
+
+```bash
+mkdir -p src/config/jwt
+cat > src/config/jwt/jwt.config.ts <<'EOF_BACKEND_MANUAL'
+import { registerAs } from '@nestjs/config';
+import { JWT_CONFIG_NAME, JWT_DEFAULTS } from './jwt.constants';
+
+export const jwtConfig = registerAs(JWT_CONFIG_NAME, () => ({
+  secret: process.env.JWT_SECRET || '',
+  expiresIn: process.env.JWT_EXPIRES_IN || JWT_DEFAULTS.EXPIRES_IN,
+  refreshSecret: process.env.JWT_REFRESH_SECRET || '',
+  refreshExpiresIn:
+    process.env.JWT_REFRESH_EXPIRES_IN || JWT_DEFAULTS.REFRESH_EXPIRES_IN,
+}));
+EOF_BACKEND_MANUAL
+```
+![](img/29.png)
