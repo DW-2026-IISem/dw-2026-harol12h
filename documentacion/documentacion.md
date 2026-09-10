@@ -1350,3 +1350,23 @@ export class ApplicationException extends Error {
 EOF_BACKEND_MANUAL
 ```
 ![](img/37.png)
+
+#### 6.15 — common/exceptions/domain.exception.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/exceptions/domain.exception.ts`
+
+```bash
+mkdir -p src/common/exceptions
+cat > src/common/exceptions/domain.exception.ts <<'EOF_BACKEND_MANUAL'
+import { ApplicationException } from './application.exception';
+
+export class DomainException extends ApplicationException {
+  constructor(message: string) {
+    super(message, 400);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/38.png)
