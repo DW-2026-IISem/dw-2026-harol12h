@@ -1820,3 +1820,27 @@ export interface AuthenticatedUser {
 EOF_BACKEND_MANUAL
 ```
 ![](img/52.png)
+
+#### 6.30 — common/interfaces/pagination.interface.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/interfaces/pagination.interface.ts`
+
+```bash
+mkdir -p src/common/interfaces
+cat > src/common/interfaces/pagination.interface.ts <<'EOF_BACKEND_MANUAL'
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface PaginatedResult<T> {
+  items: T[];
+  meta: PaginationMeta;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/53.png)
