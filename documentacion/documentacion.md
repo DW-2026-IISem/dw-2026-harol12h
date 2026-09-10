@@ -2014,3 +2014,33 @@ export interface IPasswordHasher {
 EOF_BACKEND_MANUAL
 ```
 ![](img/60.png)
+
+#### 6.38 — infrastructure/security/hashing/bcrypt-password-hasher.service.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/infrastructure/security/hashing/bcrypt-password-hasher.service.ts`
+
+```bash
+mkdir -p src/infrastructure/security/hashing
+cat > src/infrastructure/security/hashing/bcrypt-password-hasher.service.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { IPasswordHasher } from './password-hasher.interface';
+
+@Injectable()
+export class BcryptPasswordHasherService implements IPasswordHasher {
+  private readonly rounds = 10;
+
+  async hash(plain: string): Promise<string> {
+    return bcrypt.hash(plain, this.rounds);
+  }
+
+  async compare(plain: string, hashed: string): Promise<boolean> {
+    return bcrypt.compare(plain, hashed);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/61.png)
+
