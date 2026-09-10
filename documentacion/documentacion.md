@@ -1277,3 +1277,20 @@ export enum HttpMethod {
 EOF_BACKEND_MANUAL
 ```
 ![](img/33.png)
+
+#### 6.11 — common/enums/sort-order.enum.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/enums/sort-order.enum.ts`
+
+```bash
+mkdir -p src/common/enums
+cat > src/common/enums/sort-order.enum.ts <<'EOF_BACKEND_MANUAL'
+export enum SortOrder {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
+EOF_BACKEND_MANUAL
+```
+![](img/34.png)
