@@ -1844,3 +1844,22 @@ export interface PaginatedResult<T> {
 EOF_BACKEND_MANUAL
 ```
 ![](img/53.png)
+
+#### 6.31 — common/interfaces/api-response.interface.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/interfaces/api-response.interface.ts`
+
+```bash
+mkdir -p src/common/interfaces
+cat > src/common/interfaces/api-response.interface.ts <<'EOF_BACKEND_MANUAL'
+export interface ApiResponseBody<T> {
+  statusCode: number;
+  message: string;
+  data: T;
+  timestamp: string;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/54.png)
