@@ -1,6 +1,24 @@
 {
+  "name": "backend_manual",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "nestjs": "^10.0.0",
+    "sequelize-typescript": "^2.1.5",
+    "mysql2": "^3.9.0",
+    "pg": "^8.11.0",
+    "tedious": "^16.0.0",
+    "oracledb": "^6.0.0"
+  },
   "devDependencies": {
+    "@types/pg": "^8.23.1",
     "@types/oracledb": "^7.0.3",
-    "@types/pg": "^8.23.1"
+    "typescript": "^5.4.0"
   }
 }
+

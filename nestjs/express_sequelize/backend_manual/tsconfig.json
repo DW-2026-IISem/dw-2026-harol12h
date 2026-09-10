@@ -15,8 +15,9 @@
     "outDir": "./dist",
     "incremental": true,
     "skipLibCheck": true,
+    "typeRoots": ["./src/types", "./node_modules/@types"],
     "strict": true,
     "strictPropertyInitialization": false,
-    "types": ["vitest/globals", "node"]
   }
 }
+
