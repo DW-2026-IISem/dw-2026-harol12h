@@ -1257,3 +1257,23 @@ export enum Status {
 EOF_BACKEND_MANUAL
 ```
 ![](img/32.png)
+
+#### 6.10 — common/enums/http-method.enum.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/enums/http-method.enum.ts`
+
+```bash
+mkdir -p src/common/enums
+cat > src/common/enums/http-method.enum.ts <<'EOF_BACKEND_MANUAL'
+export enum HttpMethod {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  PATCH = 'PATCH',
+  DELETE = 'DELETE',
+}
+EOF_BACKEND_MANUAL
+```
+![](img/33.png)
