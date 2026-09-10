@@ -1294,3 +1294,18 @@ export enum SortOrder {
 EOF_BACKEND_MANUAL
 ```
 ![](img/34.png)
+
+#### 6.12 — common/constants/app.constants.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/constants/app.constants.ts`
+
+```bash
+mkdir -p src/common/constants
+cat > src/common/constants/app.constants.ts <<'EOF_BACKEND_MANUAL'
+export const APP_NAME = 'backend_ia';
+export const GLOBAL_PREFIX = 'api';
+EOF_BACKEND_MANUAL
+```
+![](img/35.png)
