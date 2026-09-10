@@ -1094,3 +1094,27 @@ export const appConfig = registerAs(APP_CONFIG_NAME, () => ({
 EOF_BACKEND_MANUAL
 ```
 ![](img/25.png)
+
+#### 6.3 — config/logger/logger.config.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/config/logger/logger.config.ts`
+
+```bash
+mkdir -p src/config/logger
+cat > src/config/logger/logger.config.ts <<'EOF_BACKEND_MANUAL'
+import { LogLevel } from '@nestjs/common';
+
+export function getLoggerConfig(): { logLevels: LogLevel[] } {
+  const isDev = process.env.NODE_ENV === 'development';
+
+  return {
+    logLevels: isDev
+      ? ['log', 'error', 'warn', 'debug', 'verbose', 'fatal']
+      : ['log', 'error', 'warn'],
+  };
+}
+EOF_BACKEND_MANUAL
+```
+![](img/26.png)
