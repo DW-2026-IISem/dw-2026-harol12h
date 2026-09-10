@@ -1370,3 +1370,23 @@ export class DomainException extends ApplicationException {
 EOF_BACKEND_MANUAL
 ```
 ![](img/38.png)
+
+#### 6.16 — common/exceptions/entity-not-found.exception.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/exceptions/entity-not-found.exception.ts`
+
+```bash
+mkdir -p src/common/exceptions
+cat > src/common/exceptions/entity-not-found.exception.ts <<'EOF_BACKEND_MANUAL'
+import { ApplicationException } from './application.exception';
+
+export class EntityNotFoundException extends ApplicationException {
+  constructor(entityName: string, identifier: string | number) {
+    super(`${entityName} con ID ${identifier} no encontrado`, 404);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/39.png)
