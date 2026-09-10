@@ -1744,3 +1744,20 @@ export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 EOF_BACKEND_MANUAL
 ```
 ![](img/48.png)
+
+#### 6.26 — common/decorators/roles.decorator.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/decorators/roles.decorator.ts`
+
+```bash
+mkdir -p src/common/decorators
+cat > src/common/decorators/roles.decorator.ts <<'EOF_BACKEND_MANUAL'
+import { SetMetadata } from '@nestjs/common';
+
+export const ROLES_KEY = 'roles';
+export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles);
+EOF_BACKEND_MANUAL
+```
+![](img/49.png)
