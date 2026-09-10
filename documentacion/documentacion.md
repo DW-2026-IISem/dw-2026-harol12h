@@ -1694,3 +1694,36 @@ export class CustomValidationPipe implements PipeTransform<any> {
 EOF_BACKEND_MANUAL
 ```
 ![](img/46.png)
+
+#### 6.24 — common/pipes/parse-positive-int.pipe.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/pipes/parse-positive-int.pipe.ts`
+
+```bash
+mkdir -p src/common/pipes
+cat > src/common/pipes/parse-positive-int.pipe.ts <<'EOF_BACKEND_MANUAL'
+import {
+  PipeTransform,
+  Injectable,
+  BadRequestException,
+} from '@nestjs/common';
+
+@Injectable()
+export class ParsePositiveIntPipe implements PipeTransform<string, number> {
+  transform(value: string): number {
+    const parsed = parseInt(value, 10);
+
+    if (isNaN(parsed) || parsed <= 0) {
+      throw new BadRequestException(
+        `El valor '${value}' no es un entero positivo`,
+      );
+    }
+
+    return parsed;
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/47.png)
