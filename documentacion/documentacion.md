@@ -1995,3 +1995,22 @@ export function isBlank(value?: string | null): boolean {
 EOF_BACKEND_MANUAL
 ```
 ![](img/59.png)
+
+#### 6.37 — infrastructure/security/hashing/password-hasher.interface.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/infrastructure/security/hashing/password-hasher.interface.ts`
+
+```bash
+mkdir -p src/infrastructure/security/hashing
+cat > src/infrastructure/security/hashing/password-hasher.interface.ts <<'EOF_BACKEND_MANUAL'
+export const PASSWORD_HASHER = 'PASSWORD_HASHER';
+
+export interface IPasswordHasher {
+  hash(plain: string): Promise<string>;
+  compare(plain: string, hashed: string): Promise<boolean>;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/60.png)
