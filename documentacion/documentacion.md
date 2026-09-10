@@ -1240,3 +1240,20 @@ export function setupSwagger(app: INestApplication): void {
 EOF_BACKEND_MANUAL
 ```
 ![](img/31.png)
+
+#### 6.9 — common/enums/status.enum.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/enums/status.enum.ts`
+
+```bash
+mkdir -p src/common/enums
+cat > src/common/enums/status.enum.ts <<'EOF_BACKEND_MANUAL'
+export enum Status {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+}
+EOF_BACKEND_MANUAL
+```
+![](img/32.png)
