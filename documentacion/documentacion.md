@@ -1046,3 +1046,30 @@ npm run start:dev
 # Ctrl+C
 ```
 ![](img/23.png)
+
+------------------------------------------------------------------------
+
+## FASE 6 — `05_BASE_APP_COMMON_SECURITY`
+
+### App config + Logger + Common + Security + bootstrap
+
+> **Objetivo de la fase:** Dejar la infraestructura transversal lista antes de la primera entidad de negocio. Aún sin Business/Auth en AppModule y sin guards globales.
+
+#### 6.1 — config/app/app.constants.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/config/app/app.constants.ts`
+
+```bash
+mkdir -p src/config/app
+cat > src/config/app/app.constants.ts <<'EOF_BACKEND_MANUAL'
+export const APP_CONFIG_NAME = 'app';
+
+export const APP_DEFAULTS = {
+  PORT: 3002,
+  NODE_ENV: 'development',
+};
+EOF_BACKEND_MANUAL
+```
+![](img/24.png)
