@@ -1568,3 +1568,44 @@ export class ResponseInterceptor<T>
 EOF_BACKEND_MANUAL
 ```
 ![](img/43.png)
+
+#### 6.21 — common/interceptors/logging.interceptor.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/interceptors/logging.interceptor.ts`
+
+```bash
+mkdir -p src/common/interceptors
+cat > src/common/interceptors/logging.interceptor.ts <<'EOF_BACKEND_MANUAL'
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+  Logger,
+} from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
+@Injectable()
+export class LoggingInterceptor implements NestInterceptor {
+  private readonly logger = new Logger('HTTP');
+
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const req = context.switchToHttp().getRequest();
+    const { method, url } = req;
+    const now = Date.now();
+
+    return next.handle().pipe(
+      tap(() => {
+        const res = context.switchToHttp().getResponse();
+        const delay = Date.now() - now;
+        this.logger.log(`${method} ${url} ${res.statusCode} - ${delay}ms`);
+      }),
+    );
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/44.png)
