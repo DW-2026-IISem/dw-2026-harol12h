@@ -1863,3 +1863,17 @@ export interface ApiResponseBody<T> {
 EOF_BACKEND_MANUAL
 ```
 ![](img/54.png)
+
+#### 6.32 — common/types/nullable.type.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/types/nullable.type.ts`
+
+```bash
+mkdir -p src/common/types
+cat > src/common/types/nullable.type.ts <<'EOF_BACKEND_MANUAL'
+export type Nullable<T> = T | null;
+EOF_BACKEND_MANUAL
+```
+![](img/55.png)
