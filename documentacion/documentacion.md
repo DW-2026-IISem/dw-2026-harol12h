@@ -699,3 +699,25 @@ export const envConfig = registerAs(ENV_CONFIG_NAME, () => {
 EOF_BACKEND_MANUAL
 ```
 ![](img/13.png)
+
+------------------------------------------------------------------------
+
+## FASE 5 — `04_BASE_DATABASE_SEQUELIZE`
+
+### Base de datos multi-dialecto (Sequelize)
+
+> **Objetivo de la fase:** Conectar Sequelize al motor de `DB_DIALECT` usando el bloque `DB_MYSQL_*` / `DB_POSTGRES_*` / `DB_MSSQL_*` / `DB_ORACLE_*`. Aún sin features (ALL_MODELS vacío).
+
+#### 5.1 — Constante SEQUELIZE_TOKEN
+
+Token DI para inyectar la instancia Sequelize en repositorios.
+
+**Archivo:** `src/common/constants/database.constants.ts`
+
+```bash
+mkdir -p src/common/constants
+cat > src/common/constants/database.constants.ts <<'EOF_BACKEND_MANUAL'
+export const SEQUELIZE_TOKEN = 'SEQUELIZE';
+EOF_BACKEND_MANUAL
+```
+![](img/14.png)
