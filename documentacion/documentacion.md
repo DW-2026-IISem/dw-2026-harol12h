@@ -805,3 +805,18 @@ export class DatabaseConfigModule {}
 EOF_BACKEND_MANUAL
 ```
 ![](img/17.png)
+
+#### 5.5 — database.providers.ts
+
+Placeholder de providers de config/database.
+
+**Archivo:** `src/config/database/database.providers.ts`
+
+```bash
+mkdir -p src/config/database
+cat > src/config/database/database.providers.ts <<'EOF_BACKEND_MANUAL'
+export const DATABASE_PROVIDERS = [];
+EOF_BACKEND_MANUAL
+```
+![](img/18.png)
+
