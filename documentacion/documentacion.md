@@ -1304,8 +1304,25 @@ Archivo del feature en Clean Architecture.
 ```bash
 mkdir -p src/common/constants
 cat > src/common/constants/app.constants.ts <<'EOF_BACKEND_MANUAL'
-export const APP_NAME = 'backend_ia';
+export const APP_NAME = 'tienda_moda';
 export const GLOBAL_PREFIX = 'api';
 EOF_BACKEND_MANUAL
 ```
 ![](img/35.png)
+
+#### 6.13 — common/constants/pagination.constants.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/constants/pagination.constants.ts`
+
+```bash
+mkdir -p src/common/constants
+cat > src/common/constants/pagination.constants.ts <<'EOF_BACKEND_MANUAL'
+export const DEFAULT_PAGE = 1;
+export const DEFAULT_LIMIT = 10;
+export const MAX_LIMIT = 100;
+EOF_BACKEND_MANUAL
+```
+![](img/36.png)
+
