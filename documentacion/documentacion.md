@@ -1180,3 +1180,21 @@ export const jwtConfig = registerAs(JWT_CONFIG_NAME, () => ({
 EOF_BACKEND_MANUAL
 ```
 ![](img/29.png)
+
+#### 6.7 — config/swagger/swagger.constants.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/config/swagger/swagger.constants.ts`
+
+```bash
+mkdir -p src/config/swagger
+cat > src/config/swagger/swagger.constants.ts <<'EOF_BACKEND_MANUAL'
+export const SWAGGER_TITLE = 'Backend NestJS + Sequelize API';
+export const SWAGGER_DESCRIPTION =
+  'API profesional con Clean Architecture / DDD, JWT y RBAC';
+export const SWAGGER_VERSION = '1.0';
+export const SWAGGER_PATH = 'api/docs';
+EOF_BACKEND_MANUAL
+```
+![](img/30.png)
