@@ -1877,3 +1877,18 @@ export type Nullable<T> = T | null;
 EOF_BACKEND_MANUAL
 ```
 ![](img/55.png)
+
+#### 6.33 — common/types/optional.type.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/types/optional.type.ts`
+
+```bash
+mkdir -p src/common/types
+cat > src/common/types/optional.type.ts <<'EOF_BACKEND_MANUAL'
+export type Optional<T> = T | undefined;
+EOF_BACKEND_MANUAL
+```
+![](img/56.png)
+
