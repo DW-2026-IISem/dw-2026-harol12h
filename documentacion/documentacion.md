@@ -1783,3 +1783,21 @@ export const CurrentUser = createParamDecorator(
 EOF_BACKEND_MANUAL
 ```
 ![](img/50.png)
+
+#### 6.28 — common/decorators/resource.decorator.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/decorators/resource.decorator.ts`
+
+```bash
+mkdir -p src/common/decorators
+cat > src/common/decorators/resource.decorator.ts <<'EOF_BACKEND_MANUAL'
+import { SetMetadata } from '@nestjs/common';
+
+export const RESOURCE_KEY = 'resource';
+export const ResourceMeta = (path: string, method: string) =>
+  SetMetadata(RESOURCE_KEY, { path, method });
+EOF_BACKEND_MANUAL
+```
+![](img/51.png)
