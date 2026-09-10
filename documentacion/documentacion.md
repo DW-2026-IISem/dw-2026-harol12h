@@ -721,3 +721,24 @@ export const SEQUELIZE_TOKEN = 'SEQUELIZE';
 EOF_BACKEND_MANUAL
 ```
 ![](img/14.png)
+
+#### 5.2 — Tipos auxiliares de database config
+
+Tipos auxiliares del bloque config/database (legado/compat).
+
+**Archivo:** `src/config/database/database.types.ts`
+
+```bash
+mkdir -p src/config/database
+cat > src/config/database/database.types.ts <<'EOF_BACKEND_MANUAL'
+import { Options as SequelizeOptions } from 'sequelize';
+
+export type DialectOptions =
+  | { dialect: 'mysql'; options?: SequelizeOptions }
+  | { dialect: 'postgres'; options?: SequelizeOptions }
+  | { dialect: 'mssql'; options?: SequelizeOptions }
+  | { dialect: 'oracle'; options?: SequelizeOptions };
+EOF_BACKEND_MANUAL
+```
+![](img/15.png)
+
