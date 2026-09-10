@@ -988,3 +988,61 @@ export class DatabaseSeederService implements OnModuleInit {
 EOF_BACKEND_MANUAL
 ```
 ![](img/21.png)
+
+#### 5.9 — Módulo global Sequelize
+
+Módulo `@Global()` que provee `SEQUELIZE_TOKEN` + ejecuta seeders.
+
+**Archivo:** `src/infrastructure/database/sequelize/sequelize.module.ts`
+
+```bash
+mkdir -p src/infrastructure/database/sequelize
+cat > src/infrastructure/database/sequelize/sequelize.module.ts <<'EOF_BACKEND_MANUAL'
+import { Module, Global } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Sequelize } from 'sequelize-typescript';
+import { DatabaseDialect } from '../../../config/environment/env.interface';
+import { SEQUELIZE_TOKEN } from '../../../common/constants/database.constants';
+import { createSequelizeInstance } from './sequelize.factory';
+import { DatabaseSeederService } from '../seeders/database-seeder.service';
+
+@Global()
+@Module({
+  providers: [
+    {
+      provide: SEQUELIZE_TOKEN,
+      useFactory: async (configService: ConfigService): Promise<Sequelize> => {
+        const dialect = configService.get<DatabaseDialect>(
+          'environment.database.dialect',
+          DatabaseDialect.MySQL,
+        );
+        return createSequelizeInstance(dialect);
+      },
+      inject: [ConfigService],
+    },
+    DatabaseSeederService,
+  ],
+  exports: [SEQUELIZE_TOKEN],
+})
+export class SequelizeDatabaseModule {}
+EOF_BACKEND_MANUAL
+```
+![](img/22.png)
+
+#### 5.10 — Verificar conexión a BD
+
+Crea la BD vacía `tienda_moda` en el motor que indica `DB_DIALECT`. Aún no hay tablas de negocio. Si falla el authenticate, corrige el **bloque de ese motor** en `.env` (no el de otro).
+
+```bash
+# mysql:
+# mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS tienda_moda;"
+# postgres:
+# createdb tienda_moda
+# mssql (sqlcmd):
+# sqlcmd -S localhost -U sa -Q "CREATE DATABASE tienda_moda;"
+# oracle: crea el schema/PDB que apunte DB_ORACLE_CONNECT_STRING
+npm run start:dev
+# Busca: ✅ Conexión exitosa a MYSQL (o POSTGRES / MSSQL / ORACLE según DB_DIALECT)
+# Ctrl+C
+```
+![](img/23.png)

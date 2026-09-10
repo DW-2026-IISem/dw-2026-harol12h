@@ -1,0 +1,28 @@
+import { DatabaseConfig, DatabaseDialect } from './env.interface.js';
+export declare const DEFAULT_DB_PORTS: Record<DatabaseDialect, number>;
+export type DialectEnvSource = {
+    DB_DIALECT: DatabaseDialect;
+    DB_MYSQL_HOST?: string;
+    DB_MYSQL_PORT?: string | number;
+    DB_MYSQL_USERNAME?: string;
+    DB_MYSQL_PASSWORD?: string;
+    DB_MYSQL_NAME?: string;
+    DB_POSTGRES_HOST?: string;
+    DB_POSTGRES_PORT?: string | number;
+    DB_POSTGRES_USERNAME?: string;
+    DB_POSTGRES_PASSWORD?: string;
+    DB_POSTGRES_NAME?: string;
+    DB_MSSQL_HOST?: string;
+    DB_MSSQL_PORT?: string | number;
+    DB_MSSQL_USERNAME?: string;
+    DB_MSSQL_PASSWORD?: string;
+    DB_MSSQL_NAME?: string;
+    DB_ORACLE_HOST?: string;
+    DB_ORACLE_PORT?: string | number;
+    DB_ORACLE_USERNAME?: string;
+    DB_ORACLE_PASSWORD?: string;
+    DB_ORACLE_NAME?: string;
+    DB_ORACLE_CONNECT_STRING?: string;
+};
+export declare function resolveDialectCredentials(env: DialectEnvSource): DatabaseConfig;
+export declare function assertActiveDialectCredentials(config: DatabaseConfig): void;

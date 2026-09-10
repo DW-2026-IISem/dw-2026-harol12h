@@ -38,5 +38,4 @@ export interface EnvironmentConfig {
   database: DatabaseConfig;
   jwt: JwtConfig;
 }
-EOF_BACKEND_IA
 

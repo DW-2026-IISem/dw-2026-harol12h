@@ -1,0 +1,32 @@
+import { DatabaseDialect, Environment } from './env.interface.js';
+export declare class EnvironmentVariables {
+    NODE_ENV: Environment;
+    PORT: number;
+    DB_DIALECT: DatabaseDialect;
+    DB_MYSQL_HOST?: string;
+    DB_MYSQL_PORT?: number;
+    DB_MYSQL_USERNAME?: string;
+    DB_MYSQL_PASSWORD?: string;
+    DB_MYSQL_NAME?: string;
+    DB_POSTGRES_HOST?: string;
+    DB_POSTGRES_PORT?: number;
+    DB_POSTGRES_USERNAME?: string;
+    DB_POSTGRES_PASSWORD?: string;
+    DB_POSTGRES_NAME?: string;
+    DB_MSSQL_HOST?: string;
+    DB_MSSQL_PORT?: number;
+    DB_MSSQL_USERNAME?: string;
+    DB_MSSQL_PASSWORD?: string;
+    DB_MSSQL_NAME?: string;
+    DB_ORACLE_HOST?: string;
+    DB_ORACLE_PORT?: number;
+    DB_ORACLE_USERNAME?: string;
+    DB_ORACLE_PASSWORD?: string;
+    DB_ORACLE_NAME?: string;
+    DB_ORACLE_CONNECT_STRING?: string;
+    JWT_SECRET: string;
+    JWT_EXPIRES_IN: string;
+    JWT_REFRESH_SECRET: string;
+    JWT_REFRESH_EXPIRES_IN: string;
+}
+export declare function validate(config: Record<string, unknown>): EnvironmentVariables;

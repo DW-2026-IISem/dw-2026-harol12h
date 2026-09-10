@@ -11,8 +11,8 @@ import {
 import {
   assertActiveDialectCredentials,
   resolveDialectCredentials,
-} from './db-env';
-import { DatabaseDialect, Environment } from './env.interface';
+} from './db-env.js';
+import { DatabaseDialect, Environment } from './env.interface.js';
 
 export class EnvironmentVariables {
   @IsEnum(Environment)
@@ -160,6 +160,3 @@ export function validate(config: Record<string, unknown>): EnvironmentVariables 
 
   return validatedConfig;
 }
-EOF_BACKEND_IA
-
-EOF_BACKEND_IA
