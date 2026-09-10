@@ -783,3 +783,25 @@ export const databaseConfig = registerAs(DATABASE_CONFIG_NAME, () => {
 EOF_BACKEND_MANUAL
 ```
 ![](img/16.png)
+
+#### 5.4 — database.module.ts / providers
+
+Módulo de configuración de BD (forFeature). Los providers quedan vacíos a propósito.
+
+**Archivo:** `src/config/database/database.module.ts`
+
+```bash
+mkdir -p src/config/database
+cat > src/config/database/database.module.ts <<'EOF_BACKEND_MANUAL'
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { databaseConfig } from './database.config';
+
+@Module({
+  imports: [ConfigModule.forFeature(databaseConfig)],
+  exports: [ConfigModule],
+})
+export class DatabaseConfigModule {}
+EOF_BACKEND_MANUAL
+```
+![](img/17.png)
