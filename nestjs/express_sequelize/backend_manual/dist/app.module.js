@@ -5,15 +5,33 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { envConfig } from './config/environment/env.config.js';
+import { appConfig } from './config/app/app.config.js';
+import { jwtConfig } from './config/jwt/jwt.config.js';
+import { LoggerModule } from './config/logger/logger.module.js';
+import { SequelizeDatabaseModule } from './infrastructure/database/sequelize/sequelize.module.js';
+import { SecurityModule } from './infrastructure/security/security.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
     Module({
-        imports: [],
+        imports: [
+            ConfigModule.forRoot({
+                isGlobal: true,
+                load: [envConfig, appConfig, jwtConfig],
+                envFilePath: '.env',
+            }),
+            SequelizeDatabaseModule,
+            SecurityModule,
+            LoggerModule,
+        ],
         controllers: [AppController],
-        providers: [AppService],
+        providers: [
+            AppService,
+        ],
     })
 ], AppModule);
 export { AppModule };
