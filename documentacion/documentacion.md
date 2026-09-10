@@ -1727,3 +1727,20 @@ export class ParsePositiveIntPipe implements PipeTransform<string, number> {
 EOF_BACKEND_MANUAL
 ```
 ![](img/47.png)
+
+#### 6.25 — common/decorators/public.decorator.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/decorators/public.decorator.ts`
+
+```bash
+mkdir -p src/common/decorators
+cat > src/common/decorators/public.decorator.ts <<'EOF_BACKEND_MANUAL'
+import { SetMetadata } from '@nestjs/common';
+
+export const IS_PUBLIC_KEY = 'isPublic';
+export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+EOF_BACKEND_MANUAL
+```
+![](img/48.png)
