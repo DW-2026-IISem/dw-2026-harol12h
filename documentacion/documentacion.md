@@ -1892,3 +1892,86 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/56.png)
 
+#### 6.34 — common/utils/pagination.util.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/utils/pagination.util.ts`
+
+```bash
+mkdir -p src/common/utils
+cat > src/common/utils/pagination.util.ts <<'EOF_BACKEND_MANUAL'
+import {
+  DEFAULT_LIMIT,
+  DEFAULT_PAGE,
+  MAX_LIMIT,
+} from '../constants/pagination.constants';
+import { PaginatedResult } from '../interfaces/pagination.interface';
+
+export function normalizePagination(page?: number, limit?: number) {
+  const safePage = !page || page < 1 ? DEFAULT_PAGE : page;
+  const safeLimit = !limit || limit < 1 ? DEFAULT_LIMIT : Math.min(limit, MAX_LIMIT);
+  const offset = (safePage - 1) * safeLimit;
+  return { page: safePage, limit: safeLimit, offset };
+}
+
+export function buildPaginatedResult<T>(
+  items: T[],
+  total: number,
+  page: number,
+  limit: number,
+): PaginatedResult<T> {
+  return {
+    items,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit) || 0,
+    },
+  };
+}
+EOF_BACKEND_MANUAL
+```
+![](img/57.png)
+
+#### 6.35 — common/utils/date.util.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/utils/date.util.ts`
+
+```bash
+mkdir -p src/common/utils
+cat > src/common/utils/date.util.ts <<'EOF_BACKEND_MANUAL'
+export function addDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+export function parseDurationToMs(duration: string): number {
+  const match = /^(\d+)([smhd])$/.exec(duration);
+  if (!match) {
+    return 24 * 60 * 60 * 1000;
+  }
+
+  const value = parseInt(match[1], 10);
+  const unit = match[2];
+
+  switch (unit) {
+    case 's':
+      return value * 1000;
+    case 'm':
+      return value * 60 * 1000;
+    case 'h':
+      return value * 60 * 60 * 1000;
+    case 'd':
+      return value * 24 * 60 * 60 * 1000;
+    default:
+      return 24 * 60 * 60 * 1000;
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/58.png)
