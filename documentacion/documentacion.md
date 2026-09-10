@@ -1118,3 +1118,24 @@ export function getLoggerConfig(): { logLevels: LogLevel[] } {
 EOF_BACKEND_MANUAL
 ```
 ![](img/26.png)
+#### 6.4 — config/logger/logger.module.ts
+
+Módulo Nest del feature: cablea providers, tokens DI y controller.
+
+**Archivo:** `src/config/logger/logger.module.ts`
+
+```bash
+mkdir -p src/config/logger
+cat > src/config/logger/logger.module.ts <<'EOF_BACKEND_MANUAL'
+import { Module, Global, Logger } from '@nestjs/common';
+
+@Global()
+@Module({
+  providers: [Logger],
+  exports: [Logger],
+})
+export class LoggerModule {}
+EOF_BACKEND_MANUAL
+```
+![](img/27.png)
+
