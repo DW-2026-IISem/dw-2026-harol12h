@@ -1801,3 +1801,22 @@ export const ResourceMeta = (path: string, method: string) =>
 EOF_BACKEND_MANUAL
 ```
 ![](img/51.png)
+
+#### 6.29 — common/interfaces/authenticated-user.interface.ts
+
+Archivo del feature en Clean Architecture.
+
+**Archivo:** `src/common/interfaces/authenticated-user.interface.ts`
+
+```bash
+mkdir -p src/common/interfaces
+cat > src/common/interfaces/authenticated-user.interface.ts <<'EOF_BACKEND_MANUAL'
+export interface AuthenticatedUser {
+  id: number;
+  email: string;
+  username: string;
+  roles: string[];
+}
+EOF_BACKEND_MANUAL
+```
+![](img/52.png)
