@@ -3206,3 +3206,25 @@ export class UpdateClientUseCase {
 EOF_BACKEND_MANUAL
 ```
 ![](img/87.png)
+
+#### 7.21 — features/business/clients/presentation/http/serializers/client.serializer.ts
+
+Serializer de presentación (forma estable de la respuesta HTTP).
+
+**Archivo:** `src/features/business/clients/presentation/http/serializers/client.serializer.ts`
+
+```bash
+mkdir -p src/features/business/clients/presentation/http/serializers
+cat > src/features/business/clients/presentation/http/serializers/client.serializer.ts <<'EOF_BACKEND_MANUAL'
+import { Client } from '../../../domain/entities/client.entity';
+import { ClientResponseDto } from '../../../application/dto/client-response.dto';
+import { ClientMapper } from '../../../application/mappers/client.mapper';
+
+export class ClientSerializer {
+  static serialize(entity: Client): ClientResponseDto {
+    return ClientMapper.toResponse(entity);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/88.png)
