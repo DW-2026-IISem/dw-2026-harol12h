@@ -3112,3 +3112,97 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/85.png)
 
+#### 7.19 — features/business/clients/application/use-cases/list-clients.use-case.ts
+
+Caso de uso (aplicación). Orquesta dominio + repositorio. El controller solo lo invoca.
+
+**Archivo:** `src/features/business/clients/application/use-cases/list-clients.use-case.ts`
+
+```bash
+mkdir -p src/features/business/clients/application/use-cases
+cat > src/features/business/clients/application/use-cases/list-clients.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  CLIENT_REPOSITORY,
+  type IClientRepository,
+} from '../../domain/interfaces/client-repository.interface';
+import { ClientFilterDto } from '../dto/client-filter.dto';
+import { ClientMapper } from '../mappers/client.mapper';
+
+@Injectable()
+export class ListClientsUseCase {
+  constructor(
+    @Inject(CLIENT_REPOSITORY)
+    private readonly clientRepository: IClientRepository,
+  ) {}
+
+  async execute(filter: ClientFilterDto) {
+    const result = await this.clientRepository.findAll(filter);
+    return {
+      items: result.items.map((client) => ClientMapper.toResponse(client)),
+      meta: result.meta,
+    };
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/86.png)
+
+#### 7.20 — features/business/clients/application/use-cases/update-client.use-case.ts
+
+Caso de uso (aplicación). Orquesta dominio + repositorio. El controller solo lo invoca.
+
+**Archivo:** `src/features/business/clients/application/use-cases/update-client.use-case.ts`
+
+```bash
+mkdir -p src/features/business/clients/application/use-cases
+cat > src/features/business/clients/application/use-cases/update-client.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  type IPasswordHasher,
+  PASSWORD_HASHER,
+} from '../../../../../infrastructure/security/hashing/password-hasher.interface';
+import { ClientEmailAlreadyExistsException } from '../../domain/exceptions/client-email-already-exists.exception';
+import { ClientNotFoundException } from '../../domain/exceptions/client-not-found.exception';
+import {
+  CLIENT_REPOSITORY,
+  type IClientRepository,
+} from '../../domain/interfaces/client-repository.interface';
+import { UpdateClientDto } from '../dto/update-client.dto';
+import { ClientMapper } from '../mappers/client.mapper';
+
+@Injectable()
+export class UpdateClientUseCase {
+  constructor(
+    @Inject(CLIENT_REPOSITORY)
+    private readonly clientRepository: IClientRepository,
+    @Inject(PASSWORD_HASHER)
+    private readonly passwordHasher: IPasswordHasher,
+  ) {}
+
+  async execute(id: number, dto: UpdateClientDto) {
+    const client = await this.clientRepository.findById(id);
+    if (!client) {
+      throw new ClientNotFoundException(id);
+    }
+
+    if (dto.email && dto.email !== client.email) {
+      const existing = await this.clientRepository.findByEmail(dto.email);
+      if (existing) {
+        throw new ClientEmailAlreadyExistsException(dto.email);
+      }
+    }
+
+    const updateData = { ...dto };
+    if (dto.password) {
+      updateData.password = await this.passwordHasher.hash(dto.password);
+    }
+
+    client.update(updateData);
+    const updated = await this.clientRepository.update(client);
+    return ClientMapper.toResponse(updated);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/87.png)
