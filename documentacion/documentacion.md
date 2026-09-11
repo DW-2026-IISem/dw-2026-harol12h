@@ -2484,3 +2484,35 @@ export class ClientNotFoundException extends EntityNotFoundException {
 EOF_BACKEND_MANUAL
 ```
 ![](img/70.png)
+
+#### 7.4 — features/business/clients/domain/interfaces/client-repository.interface.ts
+
+Puerto (contrato) del repositorio. La aplicación depende de esta interface, no de Sequelize.
+
+**Archivo:** `src/features/business/clients/domain/interfaces/client-repository.interface.ts`
+
+```bash
+mkdir -p src/features/business/clients/domain/interfaces
+cat > src/features/business/clients/domain/interfaces/client-repository.interface.ts <<'EOF_BACKEND_MANUAL'
+import { PaginatedResult } from '../../../../../common/interfaces/pagination.interface';
+import { Client } from '../entities/client.entity';
+
+export const CLIENT_REPOSITORY = 'CLIENT_REPOSITORY';
+
+export interface ClientFindAllParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface IClientRepository {
+  create(client: Client): Promise<Client>;
+  update(client: Client): Promise<Client>;
+  delete(id: number): Promise<void>;
+  findById(id: number): Promise<Client | null>;
+  findByEmail(email: string): Promise<Client | null>;
+  findAll(params: ClientFindAllParams): Promise<PaginatedResult<Client>>;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/71.png)
