@@ -2551,3 +2551,67 @@ export function isValidPhone(phone: string): boolean {
 EOF_BACKEND_MANUAL
 ```
 ![](img/73.png)
+
+#### 7.7 — features/business/clients/infrastructure/persistence/models/client.model.ts
+
+Modelo Sequelize (`@Table`). Solo infraestructura: mapeo a tabla física.
+
+**Archivo:** `src/features/business/clients/infrastructure/persistence/models/client.model.ts`
+
+```bash
+mkdir -p src/features/business/clients/infrastructure/persistence/models
+cat > src/features/business/clients/infrastructure/persistence/models/client.model.ts <<'EOF_BACKEND_MANUAL'
+import {
+  AutoIncrement,
+  Column,
+  CreatedAt,
+  DataType,
+  HasMany,
+  Model,
+  PrimaryKey,
+  Table,
+  UpdatedAt,
+} from 'sequelize-typescript';
+import { Status } from '../../../../../../common/enums/status.enum';
+
+@Table({ tableName: 'clients' })
+export class ClientModel extends Model {
+  @PrimaryKey
+  @AutoIncrement
+  @Column(DataType.INTEGER)
+  declare id: number;
+
+  @Column({ type: DataType.STRING(150), allowNull: false })
+  declare name: string;
+
+  @Column({ type: DataType.STRING(255), allowNull: true })
+  declare address: string | null;
+
+  @Column({ type: DataType.STRING(30), allowNull: true })
+  declare phone: string | null;
+
+  @Column({ type: DataType.STRING(150), allowNull: true, unique: true })
+  declare email: string | null;
+
+  @Column({ type: DataType.STRING(255), allowNull: true })
+  declare password: string | null;
+
+  @Column({
+    type: DataType.ENUM(...Object.values(Status)),
+    allowNull: false,
+    defaultValue: Status.ACTIVE,
+  })
+  declare status: Status;
+
+  @CreatedAt
+  declare createdAt: Date;
+
+  @UpdatedAt
+  declare updatedAt: Date;
+
+  @HasMany(() => require('../../../../sales/infrastructure/persistence/models/sale.model').SaleModel)
+  declare sales: unknown[];
+}
+EOF_BACKEND_MANUAL
+```
+![](img/74.png)
