@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { envConfig } from './config/environment/env.config.js';
-import { appConfig } from './config/app/app.config.js';
-import { jwtConfig } from './config/jwt/jwt.config.js';
-import { LoggerModule } from './config/logger/logger.module.js';
-import { SequelizeDatabaseModule } from './infrastructure/database/sequelize/sequelize.module.js';
-import { SecurityModule } from './infrastructure/security/security.module.js';
-import { AppController } from './app.controller.js';
-import { AppService } from './app.service.js';
+import { envConfig } from './config/environment/env.config';
+import { appConfig } from './config/app/app.config';
+import { jwtConfig } from './config/jwt/jwt.config';
+import { LoggerModule } from './config/logger/logger.module';
+import { SequelizeDatabaseModule } from './infrastructure/database/sequelize/sequelize.module';
+import { SecurityModule } from './infrastructure/security/security.module';
+import { BusinessModule } from './features/business/business.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AppService } from './app.service.js';
     SequelizeDatabaseModule,
     SecurityModule,
     LoggerModule,
+    BusinessModule,
   ],
   controllers: [AppController],
   providers: [

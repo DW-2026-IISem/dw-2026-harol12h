@@ -3468,3 +3468,84 @@ export class BusinessModule {}
 EOF_BACKEND_MANUAL
 ```
 ![](img/93.png)
+
+#### 7.27 — Actualizar database-seeder.service.ts
+
+Ejecuta seeders en orden de dependencias al arrancar (dev).
+
+**Archivo:** `src/infrastructure/database/seeders/database-seeder.service.ts`
+
+```bash
+mkdir -p src/infrastructure/database/seeders
+cat > src/infrastructure/database/seeders/database-seeder.service.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { seedClients } from '../../../features/business/clients/infrastructure/persistence/seeders/clients.seeder';
+
+/**
+ * Ejecuta seeders en orden de dependencias.
+ * Solo en entornos no productivos.
+ */
+@Injectable()
+export class DatabaseSeederService implements OnModuleInit {
+  private readonly logger = new Logger(DatabaseSeederService.name);
+
+  async onModuleInit(): Promise<void> {
+    if (process.env.NODE_ENV === 'production') {
+      return;
+    }
+
+    try {
+      await seedClients();
+      this.logger.log('✅ Seeders ejecutados');
+    } catch (error: any) {
+      this.logger.error(`❌ Error en seeders: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/94.png)
+
+#### 7.28 — Actualizar app.module.ts
+
+Importa BusinessModule y/o AuthModule según el avance. Los guards globales llegan en la fase RBAC.
+
+**Archivo:** `src/app.module.ts`
+
+```bash
+mkdir -p src
+cat > src/app.module.ts <<'EOF_BACKEND_MANUAL'
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { envConfig } from './config/environment/env.config';
+import { appConfig } from './config/app/app.config';
+import { jwtConfig } from './config/jwt/jwt.config';
+import { LoggerModule } from './config/logger/logger.module';
+import { SequelizeDatabaseModule } from './infrastructure/database/sequelize/sequelize.module';
+import { SecurityModule } from './infrastructure/security/security.module';
+import { BusinessModule } from './features/business/business.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [envConfig, appConfig, jwtConfig],
+      envFilePath: '.env',
+    }),
+    SequelizeDatabaseModule,
+    SecurityModule,
+    LoggerModule,
+    BusinessModule,
+  ],
+  controllers: [AppController],
+  providers: [
+    AppService,
+  ],
+})
+export class AppModule {}
+EOF_BACKEND_MANUAL
+```
+![](img/95.png)
