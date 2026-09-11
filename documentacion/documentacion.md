@@ -3074,3 +3074,41 @@ export class DeleteClientUseCase {
 EOF_BACKEND_MANUAL
 ```
 ![](img/84.png)
+
+#### 7.18 — features/business/clients/application/use-cases/get-client.use-case.ts
+
+Caso de uso (aplicación). Orquesta dominio + repositorio. El controller solo lo invoca.
+
+**Archivo:** `src/features/business/clients/application/use-cases/get-client.use-case.ts`
+
+```bash
+mkdir -p src/features/business/clients/application/use-cases
+cat > src/features/business/clients/application/use-cases/get-client.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import { ClientNotFoundException } from '../../domain/exceptions/client-not-found.exception';
+import {
+  CLIENT_REPOSITORY,
+  type IClientRepository,
+} from '../../domain/interfaces/client-repository.interface';
+import { ClientMapper } from '../mappers/client.mapper';
+
+@Injectable()
+export class GetClientUseCase {
+  constructor(
+    @Inject(CLIENT_REPOSITORY)
+    private readonly clientRepository: IClientRepository,
+  ) {}
+
+  async execute(id: number) {
+    const client = await this.clientRepository.findById(id);
+    if (!client) {
+      throw new ClientNotFoundException(id);
+    }
+
+    return ClientMapper.toResponse(client);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/85.png)
+
