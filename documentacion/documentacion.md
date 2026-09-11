@@ -3447,3 +3447,24 @@ export async function createSequelizeInstance(
 EOF_BACKEND_MANUAL
 ```
 ![](img/92.png)
+
+#### 7.26 — Actualizar business.module.ts
+
+Agrega el feature module de negocio recién terminado.
+
+**Archivo:** `src/features/business/business.module.ts`
+
+```bash
+mkdir -p src/features/business
+cat > src/features/business/business.module.ts <<'EOF_BACKEND_MANUAL'
+import { Module } from '@nestjs/common';
+import { ClientsModule } from './clients/clients.module';
+
+@Module({
+  imports: [ClientsModule],
+  exports: [ClientsModule],
+})
+export class BusinessModule {}
+EOF_BACKEND_MANUAL
+```
+![](img/93.png)
