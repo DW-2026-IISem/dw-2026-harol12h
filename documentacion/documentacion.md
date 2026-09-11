@@ -2533,3 +2533,21 @@ export function isValidEmail(email: string): boolean {
 EOF_BACKEND_MANUAL
 ```
 ![](img/72.png)
+
+
+#### 7.6 — features/business/clients/domain/validators/client-phone.validator.ts
+
+Validador de dominio reutilizable (reglas independientes del framework HTTP).
+
+**Archivo:** `src/features/business/clients/domain/validators/client-phone.validator.ts`
+
+```bash
+mkdir -p src/features/business/clients/domain/validators
+cat > src/features/business/clients/domain/validators/client-phone.validator.ts <<'EOF_BACKEND_MANUAL'
+export function isValidPhone(phone: string): boolean {
+  const phoneRegex = /^[+]?[\d\s()-]{7,20}$/;
+  return phoneRegex.test(phone);
+}
+EOF_BACKEND_MANUAL
+```
+![](img/73.png)
