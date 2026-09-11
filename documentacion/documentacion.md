@@ -2725,3 +2725,46 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/76.png)
 
+#### 7.10 — features/business/clients/infrastructure/persistence/seeders/clients.seeder.ts
+
+Seeder de datos iniciales para desarrollo y verificación física en BD.
+
+**Archivo:** `src/features/business/clients/infrastructure/persistence/seeders/clients.seeder.ts`
+
+```bash
+mkdir -p src/features/business/clients/infrastructure/persistence/seeders
+cat > src/features/business/clients/infrastructure/persistence/seeders/clients.seeder.ts <<'EOF_BACKEND_MANUAL'
+import { ClientModel } from '../models/client.model';
+import { BcryptPasswordHasherService } from '../../../../../../infrastructure/security/hashing/bcrypt-password-hasher.service';
+import { Status } from '../../../../../../common/enums/status.enum';
+
+export async function seedClients(): Promise<void> {
+  const count = await ClientModel.count();
+  if (count > 0) {
+    return;
+  }
+
+  const hasher = new BcryptPasswordHasherService();
+
+  await ClientModel.bulkCreate([
+    {
+      name: 'Juan Pérez',
+      address: 'Calle Principal 123',
+      phone: '+57 300 1234567',
+      email: 'juan.perez@example.com',
+      password: await hasher.hash('password123'),
+      status: Status.ACTIVE,
+    },
+    {
+      name: 'María García',
+      address: 'Av. Central 456',
+      phone: '+57 310 9876543',
+      email: 'maria.garcia@example.com',
+      password: await hasher.hash('password123'),
+      status: Status.ACTIVE,
+    },
+  ]);
+}
+EOF_BACKEND_MANUAL
+```
+![](img/77.png)
