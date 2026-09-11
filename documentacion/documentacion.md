@@ -2806,3 +2806,45 @@ export class ClientFilterDto {
 EOF_BACKEND_MANUAL
 ```
 ![](img/78.png)
+
+#### 7.12 — features/business/clients/application/dto/client-response.dto.ts
+
+DTO de entrada/salida HTTP con `class-validator` / Swagger.
+
+**Archivo:** `src/features/business/clients/application/dto/client-response.dto.ts`
+
+```bash
+mkdir -p src/features/business/clients/application/dto
+cat > src/features/business/clients/application/dto/client-response.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Status } from '../../../../../common/enums/status.enum';
+
+export class ClientResponseDto {
+  @ApiProperty({ example: 1 })
+  id: number;
+
+  @ApiProperty({ example: 'Juan Pérez' })
+  name: string;
+
+  @ApiPropertyOptional({ example: 'Calle Principal 123' })
+  address?: string;
+
+  @ApiPropertyOptional({ example: '+57 300 1234567' })
+  phone?: string;
+
+  @ApiPropertyOptional({ example: 'juan.perez@example.com' })
+  email?: string;
+
+  @ApiProperty({ enum: Status, example: Status.ACTIVE })
+  status: Status;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/79.png)
+
