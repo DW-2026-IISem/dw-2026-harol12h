@@ -3321,3 +3321,18 @@ export class ClientsController {
 EOF_BACKEND_MANUAL
 ```
 ![](img/89.png)
+
+#### 7.23 — features/business/clients/index.ts
+
+Barrel export del feature para imports limpios.
+
+**Archivo:** `src/features/business/clients/index.ts`
+
+```bash
+mkdir -p src/features/business/clients
+cat > src/features/business/clients/index.ts <<'EOF_BACKEND_MANUAL'
+export { ClientsModule } from './clients.module';
+EOF_BACKEND_MANUAL
+```
+
+![](img/90.png)
