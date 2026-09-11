@@ -2902,3 +2902,20 @@ export class CreateClientDto {
 EOF_BACKEND_MANUAL
 ```
 ![](img/80.png)
+
+#### 7.14 — features/business/clients/application/dto/update-client.dto.ts
+
+DTO de entrada/salida HTTP con `class-validator` / Swagger.
+
+**Archivo:** `src/features/business/clients/application/dto/update-client.dto.ts`
+
+```bash
+mkdir -p src/features/business/clients/application/dto
+cat > src/features/business/clients/application/dto/update-client.dto.ts <<'EOF_BACKEND_MANUAL'
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateClientDto } from './create-client.dto';
+
+export class UpdateClientDto extends PartialType(CreateClientDto) {}
+EOF_BACKEND_MANUAL
+```
+![](img/81.png)
