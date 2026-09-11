@@ -2919,3 +2919,122 @@ export class UpdateClientDto extends PartialType(CreateClientDto) {}
 EOF_BACKEND_MANUAL
 ```
 ![](img/81.png)
+
+#### 7.15 — features/business/clients/application/mappers/client.mapper.ts
+
+Mapper entre entidad de dominio y DTO de respuesta.
+
+**Archivo:** `src/features/business/clients/application/mappers/client.mapper.ts`
+
+```bash
+mkdir -p src/features/business/clients/application/mappers
+cat > src/features/business/clients/application/mappers/client.mapper.ts <<'EOF_BACKEND_MANUAL'
+import { Status } from '../../../../../common/enums/status.enum';
+import { Client } from '../../domain/entities/client.entity';
+import { ClientResponseDto } from '../dto/client-response.dto';
+import { ClientModel } from '../../infrastructure/persistence/models/client.model';
+
+export class ClientMapper {
+  static toDomain(model: ClientModel): Client {
+    return Client.reconstitute({
+      id: model.id,
+      name: model.name,
+      address: model.address ?? undefined,
+      phone: model.phone ?? undefined,
+      email: model.email ?? undefined,
+      password: model.password ?? undefined,
+      status: model.status,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+    });
+  }
+
+  static toResponse(entity: Client): ClientResponseDto {
+    return {
+      id: entity.id!,
+      name: entity.name,
+      address: entity.address,
+      phone: entity.phone,
+      email: entity.email,
+      status: entity.status,
+      createdAt: entity.createdAt!,
+      updatedAt: entity.updatedAt!,
+    };
+  }
+
+  static toPersistence(entity: Client): Partial<ClientModel> {
+    return {
+      id: entity.id,
+      name: entity.name,
+      address: entity.address ?? null,
+      phone: entity.phone ?? null,
+      email: entity.email ?? null,
+      password: entity.password ?? null,
+      status: entity.status ?? Status.ACTIVE,
+    };
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/82.png)
+
+#### 7.16 — features/business/clients/application/use-cases/create-client.use-case.ts
+
+Caso de uso (aplicación). Orquesta dominio + repositorio. El controller solo lo invoca.
+
+**Archivo:** `src/features/business/clients/application/use-cases/create-client.use-case.ts`
+
+```bash
+mkdir -p src/features/business/clients/application/use-cases
+cat > src/features/business/clients/application/use-cases/create-client.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  type IPasswordHasher,
+  PASSWORD_HASHER,
+} from '../../../../../infrastructure/security/hashing/password-hasher.interface';
+import { ClientEmailAlreadyExistsException } from '../../domain/exceptions/client-email-already-exists.exception';
+import { Client } from '../../domain/entities/client.entity';
+import {
+  CLIENT_REPOSITORY,
+  type IClientRepository,
+} from '../../domain/interfaces/client-repository.interface';
+import { CreateClientDto } from '../dto/create-client.dto';
+import { ClientMapper } from '../mappers/client.mapper';
+
+@Injectable()
+export class CreateClientUseCase {
+  constructor(
+    @Inject(CLIENT_REPOSITORY)
+    private readonly clientRepository: IClientRepository,
+    @Inject(PASSWORD_HASHER)
+    private readonly passwordHasher: IPasswordHasher,
+  ) {}
+
+  async execute(dto: CreateClientDto) {
+    if (dto.email) {
+      const existing = await this.clientRepository.findByEmail(dto.email);
+      if (existing) {
+        throw new ClientEmailAlreadyExistsException(dto.email);
+      }
+    }
+
+    let password = dto.password;
+    if (password) {
+      password = await this.passwordHasher.hash(password);
+    }
+
+    const client = Client.create({
+      name: dto.name,
+      address: dto.address,
+      phone: dto.phone,
+      email: dto.email,
+      password,
+    });
+
+    const created = await this.clientRepository.create(client);
+    return ClientMapper.toResponse(created);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/83.png)
