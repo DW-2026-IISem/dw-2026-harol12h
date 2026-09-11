@@ -2444,3 +2444,23 @@ export class Client {
 EOF_BACKEND_MANUAL
 ```
 ![](img/68.png)
+
+#### 7.2 — features/business/clients/domain/exceptions/client-email-already-exists.exception.ts
+
+Excepción de dominio. El caso de uso la lanza; el filter HTTP la traduce a status code.
+
+**Archivo:** `src/features/business/clients/domain/exceptions/client-email-already-exists.exception.ts`
+
+```bash
+mkdir -p src/features/business/clients/domain/exceptions
+cat > src/features/business/clients/domain/exceptions/client-email-already-exists.exception.ts <<'EOF_BACKEND_MANUAL'
+import { DomainException } from '../../../../../common/exceptions/domain.exception';
+
+export class ClientEmailAlreadyExistsException extends DomainException {
+  constructor(email: string) {
+    super(`El email '${email}' ya está registrado`);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/69.png)
