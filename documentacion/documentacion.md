@@ -2848,3 +2848,57 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/79.png)
 
+#### 7.13 — features/business/clients/application/dto/create-client.dto.ts
+
+DTO de entrada/salida HTTP con `class-validator` / Swagger.
+
+**Archivo:** `src/features/business/clients/application/dto/create-client.dto.ts`
+
+```bash
+mkdir -p src/features/business/clients/application/dto
+cat > src/features/business/clients/application/dto/create-client.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
+
+export class CreateClientDto {
+  @ApiProperty({ example: 'Juan Pérez' })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(150)
+  name: string;
+
+  @ApiPropertyOptional({ example: 'Calle Principal 123' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  address?: string;
+
+  @ApiPropertyOptional({ example: '+57 300 1234567' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  phone?: string;
+
+  @ApiPropertyOptional({ example: 'juan.perez@example.com' })
+  @IsOptional()
+  @IsEmail()
+  @MaxLength(150)
+  email?: string;
+
+  @ApiPropertyOptional({ example: 'password123' })
+  @IsOptional()
+  @IsString()
+  @MinLength(6)
+  @MaxLength(255)
+  password?: string;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/80.png)
