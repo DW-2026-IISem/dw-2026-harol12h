@@ -2516,3 +2516,20 @@ export interface IClientRepository {
 EOF_BACKEND_MANUAL
 ```
 ![](img/71.png)
+
+#### 7.5 — features/business/clients/domain/validators/client-email.validator.ts
+
+Validador de dominio reutilizable (reglas independientes del framework HTTP).
+
+**Archivo:** `src/features/business/clients/domain/validators/client-email.validator.ts`
+
+```bash
+mkdir -p src/features/business/clients/domain/validators
+cat > src/features/business/clients/domain/validators/client-email.validator.ts <<'EOF_BACKEND_MANUAL'
+export function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+EOF_BACKEND_MANUAL
+```
+![](img/72.png)
