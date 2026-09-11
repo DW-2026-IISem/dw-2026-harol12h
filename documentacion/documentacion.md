@@ -2768,3 +2768,41 @@ export async function seedClients(): Promise<void> {
 EOF_BACKEND_MANUAL
 ```
 ![](img/77.png)
+
+
+#### 7.11 — features/business/clients/application/dto/client-filter.dto.ts
+
+DTO de entrada/salida HTTP con `class-validator` / Swagger.
+
+**Archivo:** `src/features/business/clients/application/dto/client-filter.dto.ts`
+
+```bash
+mkdir -p src/features/business/clients/application/dto
+cat > src/features/business/clients/application/dto/client-filter.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, IsPositive, IsString, Min } from 'class-validator';
+
+export class ClientFilterDto {
+  @ApiPropertyOptional({ example: 1, default: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @ApiPropertyOptional({ example: 10, default: 10 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  limit?: number;
+
+  @ApiPropertyOptional({ example: 'juan' })
+  @IsOptional()
+  @IsString()
+  search?: string;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/78.png)
