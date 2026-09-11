@@ -2464,3 +2464,23 @@ export class ClientEmailAlreadyExistsException extends DomainException {
 EOF_BACKEND_MANUAL
 ```
 ![](img/69.png)
+
+#### 7.3 — features/business/clients/domain/exceptions/client-not-found.exception.ts
+
+Excepción de dominio. El caso de uso la lanza; el filter HTTP la traduce a status code.
+
+**Archivo:** `src/features/business/clients/domain/exceptions/client-not-found.exception.ts`
+
+```bash
+mkdir -p src/features/business/clients/domain/exceptions
+cat > src/features/business/clients/domain/exceptions/client-not-found.exception.ts <<'EOF_BACKEND_MANUAL'
+import { EntityNotFoundException } from '../../../../../common/exceptions/entity-not-found.exception';
+
+export class ClientNotFoundException extends EntityNotFoundException {
+  constructor(id: number) {
+    super('Cliente', id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/70.png)
