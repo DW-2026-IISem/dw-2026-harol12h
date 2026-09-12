@@ -4059,3 +4059,38 @@ export class CollectionMapper {
 EOF_BACKEND_MANUAL
 ```
 ![](img/108.png)
+
+#### 8.13 — features/business/collections/application/use-cases/create-collection.use-case.ts
+
+Caso de uso para crear colecciones.
+
+**Archivo** `src/features/business/collections/application/use-cases/create-collection.use-case.ts`
+
+```bash 
+mkdir -p src/features/business/collections/application/use-cases
+cat > src/features/business/collections/application/use-cases/create-collection.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import { Collection } from '../../domain/entities/collection.entity';
+import {
+  type ICollectionRepository,
+  COLLECTION_REPOSITORY,
+} from '../../domain/interfaces/collection-repository.interface';
+import { CreateCollectionDto } from '../dto/create-collection.dto';
+import { CollectionMapper } from '../mappers/collection.mapper';
+
+@Injectable()
+export class CreateCollectionUseCase {
+  constructor(
+    @Inject(COLLECTION_REPOSITORY)
+    private readonly collectionRepository: ICollectionRepository,
+  ) {}
+
+  async execute(dto: CreateCollectionDto) {
+    const collection = Collection.create(dto);
+    const created = await this.collectionRepository.create(collection);
+    return CollectionMapper.toResponse(created);
+  }
+}
+EOF_BACKEND_MANUAL
+``` 
+![](img/109.png)
