@@ -4094,3 +4094,39 @@ export class CreateCollectionUseCase {
 EOF_BACKEND_MANUAL
 ``` 
 ![](img/109.png)
+
+#### 8.14 — features/business/collections/application/use-cases/delete-collection.use-case.ts
+
+Caso de uso para eliminar colecciones.
+
+**Archivo** `src/features/business/collections/application/use-cases/delete-collection.use-case.ts`
+
+```bash 
+mkdir -p src/features/business/collections/application/use-cases
+cat > src/features/business/collections/application/use-cases/delete-collection.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import { CollectionNotFoundException } from '../../domain/exceptions/collection-not-found.exception';
+import {
+  type ICollectionRepository,
+  COLLECTION_REPOSITORY,
+} from '../../domain/interfaces/collection-repository.interface';
+
+@Injectable()
+export class DeleteCollectionUseCase {
+  constructor(
+    @Inject(COLLECTION_REPOSITORY)
+    private readonly collectionRepository: ICollectionRepository,
+  ) {}
+
+  async execute(id: number): Promise<void> {
+    const collection = await this.collectionRepository.findById(id);
+    if (!collection) {
+      throw new CollectionNotFoundException(id);
+    }
+
+    await this.collectionRepository.delete(id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+
