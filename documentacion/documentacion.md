@@ -3837,3 +3837,26 @@ export class CollectionRepository implements ICollectionRepository {
 }
 EOF_BACKEND_MANUAL
 ```
+
+#### 8.6 features/business/collections/infrastructure/persistence/migrations/create-collections-table.migration.ts
+
+Migración documental/auxiliar de la tabla. En dev el sync de Sequelize crea el esquema.
+
+**Archivo** `src/features/business/collections/infrastructure/persistence/migrations/create-collections-table.migration.ts`
+
+```bash 
+mkdir -p src/features/business/collections/infrastructure/persistence/migrations
+cat > src/features/business/collections/infrastructure/persistence/migrations/create-collections-table.migration.ts <<'EOF_BACKEND_MANUAL'
+export const createCollectionsTableMigration = {
+  name: 'create-collections-table',
+  async up(): Promise<void> {
+    // Sequelize sync handles table creation in development.
+    // Production: CREATE TABLE collections (id, name, description, isActive, createdAt, updatedAt)
+  },
+  async down(): Promise<void> {
+    // Production: DROP TABLE collections
+  },
+};
+EOF_BACKEND_MANUAL
+```
+![](img/102.png)
