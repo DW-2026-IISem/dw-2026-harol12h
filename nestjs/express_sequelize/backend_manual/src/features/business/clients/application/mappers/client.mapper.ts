@@ -1,7 +1,7 @@
-import { Status } from '../../../../../common/enums/status.enum';
-import { Client } from '../../domain/entities/client.entity';
-import { ClientResponseDto } from '../dto/client-response.dto';
-import { ClientModel } from '../../infrastructure/persistence/models/client.model';
+import { Status } from '../../../../../common/enums/status.enum.js';
+import { Client } from '../../domain/entities/client.entity.js';
+import { ClientResponseDto } from '../dto/client-response.dto.js';
+import { ClientModel } from '../../infrastructure/persistence/models/client.model.js';
 
 export class ClientMapper {
   static toDomain(model: ClientModel): Client {

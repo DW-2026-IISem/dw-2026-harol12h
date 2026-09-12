@@ -3549,3 +3549,12 @@ export class AppModule {}
 EOF_BACKEND_MANUAL
 ```
 ![](img/95.png)
+
+#### 7.29 — Verificar tabla física `clients` y API
+
+Arranca la app. Debe crear/sync tabla `clients`, correr seeder y exponer `/api/clients`. Prueba list/create en Swagger o curl.
+
+```bash
+npm run start:dev
+```
+![](img/96.png)

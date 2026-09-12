@@ -1,26 +1,27 @@
 import { Sequelize } from 'sequelize-typescript';
 import { DatabaseDialect } from '../../../config/environment/env.interface.js';
 import { getSequelizeOptions } from './sequelize.options.js';
-import mysql2 from 'mysql2';
-import pg from 'pg';
-import tedious from 'tedious';
-import oracledb from 'oracledb';
-export const ALL_MODELS = [];
+import { ClientModel } from '../../../features/business/clients/infrastructure/persistence/models/client.model.js';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+export const ALL_MODELS = [
+    ClientModel,
+];
 export async function createSequelizeInstance(dialect) {
     const options = getSequelizeOptions(dialect);
     let dialectModule;
     switch (dialect) {
         case DatabaseDialect.MySQL:
-            dialectModule = mysql2;
+            dialectModule = require('mysql2');
             break;
         case DatabaseDialect.Postgres:
-            dialectModule = pg;
+            dialectModule = require('pg');
             break;
         case DatabaseDialect.MSSQL:
-            dialectModule = tedious;
+            dialectModule = require('tedious');
             break;
         case DatabaseDialect.Oracle:
-            dialectModule = oracledb;
+            dialectModule = require('oracledb');
             break;
         default:
             throw new Error(`Dialecto no soportado: ${dialect}`);

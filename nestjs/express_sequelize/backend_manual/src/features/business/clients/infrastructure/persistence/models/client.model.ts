@@ -3,13 +3,12 @@ import {
   Column,
   CreatedAt,
   DataType,
-  HasMany,
   Model,
   PrimaryKey,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
-import { Status } from '../../../../../../common/enums/status.enum';
+import { Status } from '../../../../../../common/enums/status.enum.js';
 
 @Table({ tableName: 'clients' })
 export class ClientModel extends Model {
@@ -45,7 +44,4 @@ export class ClientModel extends Model {
 
   @UpdatedAt
   declare updatedAt: Date;
-
-  @HasMany(() => require('../../../../sales/infrastructure/persistence/models/sale.model').SaleModel)
-  declare sales: unknown[];
 }

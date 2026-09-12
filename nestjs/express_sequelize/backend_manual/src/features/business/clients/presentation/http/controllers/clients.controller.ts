@@ -17,16 +17,16 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { ParsePositiveIntPipe } from '../../../../../../common/pipes/parse-positive-int.pipe';
-import { CreateClientDto } from '../../../application/dto/create-client.dto';
-import { UpdateClientDto } from '../../../application/dto/update-client.dto';
-import { ClientFilterDto } from '../../../application/dto/client-filter.dto';
-import { ClientResponseDto } from '../../../application/dto/client-response.dto';
-import { CreateClientUseCase } from '../../../application/use-cases/create-client.use-case';
-import { UpdateClientUseCase } from '../../../application/use-cases/update-client.use-case';
-import { DeleteClientUseCase } from '../../../application/use-cases/delete-client.use-case';
-import { GetClientUseCase } from '../../../application/use-cases/get-client.use-case';
-import { ListClientsUseCase } from '../../../application/use-cases/list-clients.use-case';
+import { ParsePositiveIntPipe } from '../../../../../../common/pipes/parse-positive-int.pipe.js';
+import { CreateClientDto } from '../../../application/dto/create-client.dto.js';
+import { UpdateClientDto } from '../../../application/dto/update-client.dto.js';
+import { ClientFilterDto } from '../../../application/dto/client-filter.dto.js';
+import { ClientResponseDto } from '../../../application/dto/client-response.dto.js';
+import { CreateClientUseCase } from '../../../application/use-cases/create-client.use-case.js';
+import { UpdateClientUseCase } from '../../../application/use-cases/update-client.use-case.js';
+import { DeleteClientUseCase } from '../../../application/use-cases/delete-client.use-case.js';
+import { GetClientUseCase } from '../../../application/use-cases/get-client.use-case.js';
+import { ListClientsUseCase } from '../../../application/use-cases/list-clients.use-case.js';
 
 @ApiTags('Clients')
 @Controller('clients')

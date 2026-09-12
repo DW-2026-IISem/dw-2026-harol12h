@@ -1,8 +1,10 @@
 import { Sequelize } from 'sequelize-typescript';
-import { DatabaseDialect } from '../../../config/environment/env.interface';
-import { getSequelizeOptions } from './sequelize.options';
+import { DatabaseDialect } from '../../../config/environment/env.interface.js';
+import { getSequelizeOptions } from './sequelize.options.js';
+import { ClientModel } from '../../../features/business/clients/infrastructure/persistence/models/client.model.js';
 
-import { ClientModel } from '../../../features/business/clients/infrastructure/persistence/models/client.model';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 
 export const ALL_MODELS = [
   ClientModel,

@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { seedClients } from '../../../features/business/clients/infrastructure/persistence/seeders/clients.seeder';
+import { seedClients } from '../../../features/business/clients/infrastructure/persistence/seeders/clients.seeder.js';
 
 /**
  * Ejecuta seeders en orden de dependencias.

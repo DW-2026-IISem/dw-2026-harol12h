@@ -2,15 +2,15 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   type IPasswordHasher,
   PASSWORD_HASHER,
-} from '../../../../../infrastructure/security/hashing/password-hasher.interface';
-import { ClientEmailAlreadyExistsException } from '../../domain/exceptions/client-email-already-exists.exception';
-import { ClientNotFoundException } from '../../domain/exceptions/client-not-found.exception';
+} from '../../../../../infrastructure/security/hashing/password-hasher.interface.js';
+import { ClientEmailAlreadyExistsException } from '../../domain/exceptions/client-email-already-exists.exception.js';
+import { ClientNotFoundException } from '../../domain/exceptions/client-not-found.exception.js';
 import {
   CLIENT_REPOSITORY,
   type IClientRepository,
-} from '../../domain/interfaces/client-repository.interface';
-import { UpdateClientDto } from '../dto/update-client.dto';
-import { ClientMapper } from '../mappers/client.mapper';
+} from '../../domain/interfaces/client-repository.interface.js';
+import { UpdateClientDto } from '../dto/update-client.dto.js';
+import { ClientMapper } from '../mappers/client.mapper.js';
 
 @Injectable()
 export class UpdateClientUseCase {
@@ -40,7 +40,7 @@ export class UpdateClientUseCase {
     }
 
     client.update(updateData);
-    const updated = await this.clientRepository.update(client);
+    const updated = await this.clientRepository.update(id, client);
     return ClientMapper.toResponse(updated);
   }
 }

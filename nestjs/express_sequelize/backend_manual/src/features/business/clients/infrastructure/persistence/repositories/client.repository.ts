@@ -3,14 +3,16 @@ import { Op } from 'sequelize';
 import {
   buildPaginatedResult,
   normalizePagination,
-} from '../../../../../../common/utils/pagination.util';
-import { Client } from '../../../domain/entities/client.entity';
-import {
-  ClientFindAllParams,
-  IClientRepository,
-} from '../../../domain/interfaces/client-repository.interface';
-import { ClientMapper } from '../../../application/mappers/client.mapper';
-import { ClientModel } from '../models/client.model';
+} from '../../../../../../common/utils/pagination.util.js';
+import { Client } from '../../../domain/entities/client.entity.js';
+import { IClientRepository, PaginatedResult } 
+  from '../../../domain/interfaces/client-repository.interface.js';
+
+import { ClientFilterDto } 
+  from '../../../application/dto/client-filter.dto.js';
+
+import { ClientMapper } from '../../../application/mappers/client.mapper.js';
+import { ClientModel } from '../models/client.model.js';
 
 @Injectable()
 export class ClientRepository implements IClientRepository {
@@ -19,12 +21,12 @@ export class ClientRepository implements IClientRepository {
     return ClientMapper.toDomain(model);
   }
 
-  async update(client: Client): Promise<Client> {
-    await ClientModel.update(ClientMapper.toPersistence(client), {
-      where: { id: client.id },
+  async update(id: number, data: any): Promise<any> {
+    await ClientModel.update(data, {
+      where: { id },
     });
-    const updated = await ClientModel.findByPk(client.id!);
-    return ClientMapper.toDomain(updated!);
+    const updated = await ClientModel.findByPk(id);
+    return updated ? ClientMapper.toDomain(updated) : null;
   }
 
   async delete(id: number): Promise<void> {
@@ -41,7 +43,7 @@ export class ClientRepository implements IClientRepository {
     return model ? ClientMapper.toDomain(model) : null;
   }
 
-  async findAll(params: ClientFindAllParams) {
+  async findAll(params: ClientFilterDto): Promise<PaginatedResult<Client>> {
     const { page, limit, offset } = normalizePagination(
       params.page,
       params.limit,

@@ -6,6 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 var DatabaseSeederService_1;
 import { Injectable, Logger } from '@nestjs/common';
+import { seedClients } from '../../../features/business/clients/infrastructure/persistence/seeders/clients.seeder.js';
 let DatabaseSeederService = DatabaseSeederService_1 = class DatabaseSeederService {
     logger = new Logger(DatabaseSeederService_1.name);
     async onModuleInit() {
@@ -13,6 +14,7 @@ let DatabaseSeederService = DatabaseSeederService_1 = class DatabaseSeederServic
             return;
         }
         try {
+            await seedClients();
             this.logger.log('✅ Seeders ejecutados');
         }
         catch (error) {

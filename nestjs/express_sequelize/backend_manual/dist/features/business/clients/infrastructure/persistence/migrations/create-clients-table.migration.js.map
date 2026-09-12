@@ -1,0 +1,1 @@
+{"version":3,"file":"create-clients-table.migration.js","sourceRoot":"","sources":["../../../../../../../src/features/business/clients/infrastructure/persistence/migrations/create-clients-table.migration.ts"],"names":[],"mappings":"AAAA,MAAM,CAAC,MAAM,2BAA2B,GAAG;IACzC,IAAI,EAAE,sBAAsB;IAC5B,KAAK,CAAC,EAAE;IAGR,CAAC;IACD,KAAK,CAAC,IAAI;IAEV,CAAC;CACF,CAAC"}

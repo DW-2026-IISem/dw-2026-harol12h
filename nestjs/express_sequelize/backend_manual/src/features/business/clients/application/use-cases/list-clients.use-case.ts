@@ -2,9 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   CLIENT_REPOSITORY,
   type IClientRepository,
-} from '../../domain/interfaces/client-repository.interface';
-import { ClientFilterDto } from '../dto/client-filter.dto';
-import { ClientMapper } from '../mappers/client.mapper';
+} from '../../domain/interfaces/client-repository.interface.js';
+import { ClientFilterDto } from '../dto/client-filter.dto.js';
+import { ClientMapper } from '../mappers/client.mapper.js';
 
 @Injectable()
 export class ListClientsUseCase {

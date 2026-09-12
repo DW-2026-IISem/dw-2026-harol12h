@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ClientNotFoundException } from '../../domain/exceptions/client-not-found.exception';
+import { ClientNotFoundException } from '../../domain/exceptions/client-not-found.exception.js';
 import {
   CLIENT_REPOSITORY,
   type IClientRepository,
-} from '../../domain/interfaces/client-repository.interface';
+} from '../../domain/interfaces/client-repository.interface.js';
 
 @Injectable()
 export class DeleteClientUseCase {

@@ -1,6 +1,6 @@
-import { ClientModel } from '../models/client.model';
-import { BcryptPasswordHasherService } from '../../../../../../infrastructure/security/hashing/bcrypt-password-hasher.service';
-import { Status } from '../../../../../../common/enums/status.enum';
+import { ClientModel } from '../models/client.model.js';
+import { BcryptPasswordHasherService } from '../../../../../../infrastructure/security/hashing/bcrypt-password-hasher.service.js';
+import { Status } from '../../../../../../common/enums/status.enum.js';
 
 export async function seedClients(): Promise<void> {
   const count = await ClientModel.count();
