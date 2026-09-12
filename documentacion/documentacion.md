@@ -3959,3 +3959,37 @@ export class CollectionFilterDto {
 EOF_BACKEND_MANUAL
 ```
 ![](img/105.png)
+
+#### 8.10 — features/business/collections/application/dto/collection-response.dto.ts
+
+DTO de salida para respuestas HTTP.
+
+**Archivo** `src/features/business/collections/application/dto/collection-response.dto.ts`
+
+```bash 
+mkdir -p src/features/business/collections/application/dto
+cat > src/features/business/collections/application/dto/collection-response.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export class CollectionResponseDto {
+  @ApiProperty({ example: 1 })
+  id: number;
+
+  @ApiProperty({ example: 'Primavera-Verano' })
+  name: string;
+
+  @ApiPropertyOptional({ example: 'Colección de temporada primavera-verano' })
+  description?: string;
+
+  @ApiProperty({ example: true })
+  isActive: boolean;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/106.png)
