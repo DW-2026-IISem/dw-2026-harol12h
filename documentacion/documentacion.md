@@ -3571,7 +3571,7 @@ npm run start:dev
 
 Entidad de dominio de Colección. Es TypeScript puro y no extiende el modelo de Sequelize.
 
-**Archivo:** `src/features/business/collections/domain/entities/collection.entity.ts
+**Archivo:** `src/features/business/collections/domain/entities/collection.entity.ts`
 
 ```bash
 mkdir -p src/features/business/collections/domain/entities
@@ -3647,7 +3647,7 @@ EOF_BACKEND_MANUAL
 
 #### 8.2 - features/business/collections/domain/exceptions/collection-not-found.exception.ts
 
-**Archivo:** src/features/business/collections/domain/exceptions/collection-not-found.exception.ts
+**Archivo:** `src/features/business/collections/domain/exceptions/collection-not-found.exception.ts`
 
 ```bash
 mkdir -p src/features/business/collections/domain/exceptions
@@ -3661,5 +3661,37 @@ export class CollectionNotFoundException extends EntityNotFoundException {
 }
 EOF_BACKEND_MANUAL
 ```
-
 ![](img/98.png)
+
+#### 8.3 features/business/collections/domain/interfaces/collection-repository.interface.ts
+
+Puerto (contrato) del repositorio. La aplicación depende de esta interface, no de Sequelize.
+
+**Archivo:** `src/features/business/collections/domain/interfaces/collection-repository.interface.ts`
+
+```bash
+mkdir -p src/features/business/collections/domain/interfaces
+cat > src/features/business/collections/domain/interfaces/collection-repository.interface.ts <<'EOF_BACKEND_MANUAL'
+import { PaginatedResult } from '../../../../../common/interfaces/pagination.interface';
+import { Collection } from '../entities/collection.entity';
+
+export const COLLECTION_REPOSITORY = 'COLLECTION_REPOSITORY';
+
+export interface CollectionFindAllParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface ICollectionRepository {
+  create(collection: Collection): Promise<Collection>;
+  update(collection: Collection): Promise<Collection>;
+  delete(id: number): Promise<void>;
+  findById(id: number): Promise<Collection | null>;
+  findAll(
+    params: CollectionFindAllParams,
+  ): Promise<PaginatedResult<Collection>>;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/99.png)
