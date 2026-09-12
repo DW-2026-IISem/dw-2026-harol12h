@@ -3921,5 +3921,41 @@ export class CreateCollectionDto {
 }
 EOF_BACKEND_MANUAL
 ```
-![](img/104.png
-)
+![](img/104.png)
+
+#### 8.9 — features/business/collections/application/dto/collection-filter.dto.ts
+
+DTO para filtros de búsqueda y paginación.
+
+**Archivo** `src/features/business/collections/application/dto/collection-filter.dto.ts`
+
+```bash 
+mkdir -p src/features/business/collections/application/dto
+cat > src/features/business/collections/application/dto/collection-filter.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, IsPositive, IsString, Min } from 'class-validator';
+
+export class CollectionFilterDto {
+  @ApiPropertyOptional({ example: 1, default: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @ApiPropertyOptional({ example: 10, default: 10 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  limit?: number;
+
+  @ApiPropertyOptional({ example: 'primavera' })
+  @IsOptional()
+  @IsString()
+  search?: string;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/105.png)
