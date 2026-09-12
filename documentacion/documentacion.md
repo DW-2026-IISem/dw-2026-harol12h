@@ -3993,3 +3993,20 @@ export class CollectionResponseDto {
 EOF_BACKEND_MANUAL
 ```
 ![](img/106.png)
+
+#### 8.11 — features/business/collections/application/dto/update-collection.dto.ts
+
+DTO para actualizar colecciones.
+
+**Archivo** `src/features/business/collections/application/dto/update-collection.dto.ts`
+
+```bash 
+mkdir -p src/features/business/collections/application/dto
+cat > src/features/business/collections/application/dto/update-collection.dto.ts <<'EOF_BACKEND_MANUAL'
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateCollectionDto } from './create-collection.dto';
+
+export class UpdateCollectionDto extends PartialType(CreateCollectionDto) {}
+EOF_BACKEND_MANUAL
+```
+![](img/107.png)
