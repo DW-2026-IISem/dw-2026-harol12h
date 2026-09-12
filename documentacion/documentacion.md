@@ -3895,3 +3895,31 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/103.png)
 
+#### 8.8 — features/business/collections/application/dto/create-collection.dto.ts
+
+DTO de entrada para crear colecciones vía HTTP.
+
+**Archivo** `src/features/business/collections/application/dto/create-collection.dto.ts`
+
+```bash
+mkdir -p src/features/business/collections/application/dto
+cat > src/features/business/collections/application/dto/create-collection.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+
+export class CreateCollectionDto {
+  @ApiProperty({ example: 'Primavera-Verano' })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name: string;
+
+  @ApiPropertyOptional({ example: 'Colección de temporada primavera-verano' })
+  @IsOptional()
+  @IsString()
+  description?: string;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/104.png
+)
