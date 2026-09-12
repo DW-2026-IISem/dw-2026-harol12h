@@ -3695,3 +3695,61 @@ export interface ICollectionRepository {
 EOF_BACKEND_MANUAL
 ```
 ![](img/99.png)
+
+#### 8.4 — features/business/collections/infrastructure/persistence/models/collection.model.ts
+
+Modelo Sequelize (`@Table`). Solo infraestructura: mapeo a tabla física.
+
+**Archivo:** `src/features/business/collections/infrastructure/persistence/models/collection.model.ts`
+
+```bash
+mkdir -p src/features/business/collections/infrastructure/persistence/models
+cat > src/features/business/collections/infrastructure/persistence/models/collection.model.ts <<'EOF_BACKEND_MANUAL'
+import {
+  AutoIncrement,
+  Column,
+  CreatedAt,
+  DataType,
+  HasMany,
+  Model,
+  PrimaryKey,
+  Table,
+  UpdatedAt,
+} from 'sequelize-typescript';
+
+@Table({ tableName: 'collections' })
+export class CollectionModel extends Model {
+  @PrimaryKey
+  @AutoIncrement
+  @Column(DataType.INTEGER)
+  declare id: number;
+
+  @Column({ type: DataType.STRING(100), allowNull: false })
+  declare name: string;
+
+  @Column({ type: DataType.TEXT, allowNull: true })
+  declare description: string | null;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+  })
+  declare isActive: boolean;
+
+  @CreatedAt
+  declare createdAt: Date;
+
+  @UpdatedAt
+  declare updatedAt: Date;
+
+  @HasMany(
+    () =>
+      require('../../../../products/infrastructure/persistence/models/product.model')
+        .ProductModel,
+  )
+  declare products: unknown[];
+}
+EOF_BACKEND_MANUAL
+```
+![](img/100.png)
