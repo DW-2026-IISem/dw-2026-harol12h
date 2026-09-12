@@ -4129,4 +4129,41 @@ export class DeleteCollectionUseCase {
 }
 EOF_BACKEND_MANUAL
 ```
+![](img/110.png)
 
+#### 8.15 — features/business/collections/application/use-cases/get-collection.use-case.ts
+
+Caso de uso para obtener una colección por ID.
+
+**Archivo** `src/features/business/collections/application/use-cases/get-collection.use-case.ts`
+
+```bash
+mkdir -p src/features/business/collections/application/use-cases
+cat > src/features/business/collections/application/use-cases/get-collection.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import { CollectionNotFoundException } from '../../domain/exceptions/collection-not-found.exception';
+import {
+  type ICollectionRepository,
+  COLLECTION_REPOSITORY,
+} from '../../domain/interfaces/collection-repository.interface';
+import { CollectionMapper } from '../mappers/collection.mapper';
+
+@Injectable()
+export class GetCollectionUseCase {
+  constructor(
+    @Inject(COLLECTION_REPOSITORY)
+    private readonly collectionRepository: ICollectionRepository,
+  ) {}
+
+  async execute(id: number) {
+    const collection = await this.collectionRepository.findById(id);
+    if (!collection) {
+      throw new CollectionNotFoundException(id);
+    }
+
+    return CollectionMapper.toResponse(collection);
+  }
+}
+EOF_BACKEND_MANUAL
+``` 
+![](img/111.png)
