@@ -3558,3 +3558,90 @@ Arranca la app. Debe crear/sync tabla `clients`, correr seeder y exponer `/api/c
 npm run start:dev
 ```
 ![](img/96.png)
+
+------------------------------------------------------------------------
+
+## FASE 8 — `07_BUSINESS_
+
+### Business — collections
+
+> **Objetivo de la fase:** Catálogo de colecciones de TramaModa. Misma plantilla CA que Clients.
+
+#### 8.1 - features/business/collections/domain/entities/collection.entity.ts
+
+Entidad de dominio de Colección. Es TypeScript puro y no extiende el modelo de Sequelize.
+
+**Archivo:** `src/features/business/collections/domain/entities/collection.entity.ts
+
+```bash
+mkdir -p src/features/business/collections/domain/entities
+cat > src/features/business/collections/domain/entities/collection.entity.ts <<'EOF_BACKEND_MANUAL'
+export interface CollectionProps {
+  id?: number;
+  name: string;
+  description?: string;
+  isActive?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export class Collection {
+  id?: number;
+  name: string;
+  description?: string;
+  isActive: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+
+  private constructor(props: CollectionProps) {
+    this.id = props.id;
+    this.name = props.name;
+    this.description = props.description;
+    this.isActive = props.isActive ?? true;
+    this.createdAt = props.createdAt;
+    this.updatedAt = props.updatedAt;
+  }
+
+  static create(
+    props: Omit<CollectionProps, 'id' | 'isActive' | 'createdAt' | 'updatedAt'>,
+  ): Collection {
+    if (!props.name?.trim()) {
+      throw new Error('El nombre de la colección es requerido');
+    }
+
+    return new Collection(props);
+  }
+
+  static reconstitute(props: CollectionProps): Collection {
+    return new Collection(props);
+  }
+
+  update(
+    props: Partial<
+      Omit<CollectionProps, 'id' | 'isActive' | 'createdAt' | 'updatedAt'>
+    >,
+  ): void {
+    if (props.name !== undefined) {
+      if (!props.name.trim()) {
+        throw new Error('El nombre de la colección es requerido');
+      }
+      this.name = props.name;
+    }
+
+    if (props.description !== undefined) {
+      this.description = props.description;
+    }
+  }
+
+  deactivate(): void {
+    this.isActive = false;
+  }
+
+  activate(): void {
+    this.isActive = true;
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/97.png)
+
