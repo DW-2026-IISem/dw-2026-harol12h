@@ -3645,3 +3645,21 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/97.png)
 
+#### 8.2 - features/business/collections/domain/exceptions/collection-not-found.exception.ts
+
+**Archivo:** src/features/business/collections/domain/exceptions/collection-not-found.exception.ts
+
+```bash
+mkdir -p src/features/business/collections/domain/exceptions
+cat > src/features/business/collections/domain/exceptions/collection-not-found.exception.ts <<'EOF_BACKEND_MANUAL'
+import { EntityNotFoundException } from '../../../../../common/exceptions/entity-not-found.exception';
+
+export class CollectionNotFoundException extends EntityNotFoundException {
+  constructor(id: number) {
+    super('Colección', id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+
+![](img/98.png)
