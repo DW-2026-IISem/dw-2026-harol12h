@@ -4241,3 +4241,24 @@ export class UpdateCollectionUseCase {
 EOF_BACKEND_MANUAL
 ```
 ![](img/113.png)
+
+#### 8.18 — features/business/collections/presentation/http/serializers/collection.serializer.ts
+Serializer de presentación para respuestas HTTP.
+
+**Archivo** `src/features/business/collections/presentation/http/serializers/collection.serializer.ts`
+
+```bash 
+mkdir -p src/features/business/collections/presentation/http/serializers
+cat > src/features/business/collections/presentation/http/serializers/collection.serializer.ts <<'EOF_BACKEND_MANUAL'
+import { Collection } from '../../../domain/entities/collection.entity';
+import { CollectionResponseDto } from '../../../application/dto/collection-response.dto';
+import { CollectionMapper } from '../../../application/mappers/collection.mapper';
+
+export class CollectionSerializer {
+  static serialize(entity: Collection): CollectionResponseDto {
+    return CollectionMapper.toResponse(entity);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+
