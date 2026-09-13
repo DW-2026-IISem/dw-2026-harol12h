@@ -4674,4 +4674,21 @@ export class InvalidProductStockException extends DomainException {
 ![](img/120.png)
 
 
+#### 9.4 src/features/business/products/domain/exceptions/product-not-found.exception.ts
+
+Se lanza cuando no se encuentra un producto por ID.
+
+**Archivo** `src/features/business/products/domain/exceptions/product-not-found.exception.ts`
+
+```bash
+import { EntityNotFoundException } from '../../../../../common/exceptions/entity-not-found.exception.js';
+
+export class ProductNotFoundException extends EntityNotFoundException {
+  constructor(id: number) {
+    super('Producto', id);
+  }
+}
+```
+![](img/121.png)
+
 
