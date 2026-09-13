@@ -4404,6 +4404,10 @@ EOF_BACKEND_MANUAL
 Registrar CollectionModel.
 
 ```bash 
+import { Sequelize } from 'sequelize-typescript';
+import { DatabaseDialect } from '../../../config/environment/env.interface';
+import { getSequelizeOptions } from './sequelize.options';
+
 import { ClientModel } from '../../../features/business/clients/infrastructure/persistence/models/client.model';
 import { CollectionModel } from '../../../features/business/collections/infrastructure/persistence/models/collection.model';
 
@@ -4411,5 +4415,56 @@ export const ALL_MODELS = [
   ClientModel,
   CollectionModel,
 ];
+
+export async function createSequelizeInstance(
+  dialect: DatabaseDialect,
+): Promise<Sequelize> {
+  const options = getSequelizeOptions(dialect);
+
+  let dialectModule: any;
+  switch (dialect) {
+    case DatabaseDialect.MySQL:
+      dialectModule = require('mysql2');
+      break;
+    case DatabaseDialect.Postgres:
+      dialectModule = require('pg');
+      break;
+    case DatabaseDialect.MSSQL:
+      dialectModule = require('tedious');
+      break;
+    case DatabaseDialect.Oracle:
+      dialectModule = require('oracledb');
+      break;
+    default:
+      throw new Error(`Dialecto no soportado: ${dialect}`);
+  }
+
+  const sequelize = new Sequelize({
+    ...options,
+    dialectModule,
+    models: ALL_MODELS,
+  } as any);
+
+  if (process.env.NODE_ENV !== 'production') {
+    await sequelize.sync({ alter: false });
+    console.log('✅ Tablas sincronizadas');
+  }
+
+  return sequelize;
+}
 ```
-![](img/118.png)
+
+#### 8.23 — Actualizar business.module.ts
+Agregar CollectionsModule.
+
+```bash
+import { Module } from '@nestjs/common';
+import { ClientsModule } from './clients/clients.module';
+import { CollectionsModule } from './collections/collections.module';
+
+@Module({
+  imports: [ClientsModule, CollectionsModule],
+  exports: [ClientsModule, CollectionsModule],
+})
+export class BusinessModule {}
+```

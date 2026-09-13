@@ -1,13 +1,13 @@
 import { Sequelize } from 'sequelize-typescript';
 import { DatabaseDialect } from '../../../config/environment/env.interface.js';
 import { getSequelizeOptions } from './sequelize.options.js';
-import { ClientModel } from '../../../features/business/clients/infrastructure/persistence/models/client.model.js';
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
+import { ClientModel } from '../../../features/business/clients/infrastructure/persistence/models/client.model.js';
+import { CollectionModel } from '../../../features/business/collections/infrastructure/persistence/models/collection.model.js';
 
 export const ALL_MODELS = [
   ClientModel,
+  CollectionModel,
 ];
 
 export async function createSequelizeInstance(
@@ -16,7 +16,6 @@ export async function createSequelizeInstance(
   const options = getSequelizeOptions(dialect);
 
   let dialectModule: any;
-
   switch (dialect) {
     case DatabaseDialect.MySQL:
       dialectModule = require('mysql2');
@@ -39,17 +38,6 @@ export async function createSequelizeInstance(
     dialectModule,
     models: ALL_MODELS,
   } as any);
-
-  try {
-    await sequelize.authenticate();
-    console.log(`✅ Conexión exitosa a ${dialect.toUpperCase()}`);
-  } catch (error: any) {
-    console.error(
-      `❌ Error conectando a ${dialect.toUpperCase()}:`,
-      error.message,
-    );
-    throw error;
-  }
 
   if (process.env.NODE_ENV !== 'production') {
     await sequelize.sync({ alter: false });
