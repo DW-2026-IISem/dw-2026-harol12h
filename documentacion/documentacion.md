@@ -4167,3 +4167,38 @@ export class GetCollectionUseCase {
 EOF_BACKEND_MANUAL
 ``` 
 ![](img/111.png)
+
+#### 8.16 — features/business/collections/application/use-cases/list-collections.use-case.ts
+Caso de uso para listar colecciones con filtros.
+
+**Archivo** `src/features/business/collections/application/use-cases/list-collections.use-case.ts`
+
+```bash
+mkdir -p src/features/business/collections/application/use-cases
+cat > src/features/business/collections/application/use-cases/list-collections.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  type ICollectionRepository,
+  COLLECTION_REPOSITORY,
+} from '../../domain/interfaces/collection-repository.interface';
+import { CollectionFilterDto } from '../dto/collection-filter.dto';
+import { CollectionMapper } from '../mappers/collection.mapper';
+
+@Injectable()
+export class ListCollectionsUseCase {
+  constructor(
+    @Inject(COLLECTION_REPOSITORY)
+    private readonly collectionRepository: ICollectionRepository,
+  ) {}
+
+  async execute(filter: CollectionFilterDto) {
+    const result = await this.collectionRepository.findAll(filter);
+    return {
+      items: result.items.map((c) => CollectionMapper.toResponse(c)),
+      meta: result.meta,
+    };
+  }
+}
+EOF_BACKEND_MANUAL
+``` 
+![](img/112.png)
