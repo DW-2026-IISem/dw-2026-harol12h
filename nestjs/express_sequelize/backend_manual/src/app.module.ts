@@ -20,11 +20,10 @@ import { AppService } from './app.service.js';
     SequelizeDatabaseModule,
     SecurityModule,
     LoggerModule,
-    BusinessModule,
+    BusinessModule, 
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-  ],
+  providers: [AppService],
 })
 export class AppModule {}
+
