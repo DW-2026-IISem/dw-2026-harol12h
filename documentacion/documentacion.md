@@ -4734,3 +4734,17 @@ export function isValidPrice(price: number): boolean {
 }
 ``` 
 ![](img/123.png)
+
+#### 9.7 src/features/business/products/domain/validators/product-stock.validator.ts
+
+Valida que el stock no sea negativo.
+
+**ruta** `src/features/business/products/domain/validators/product-stock.validator.ts`
+
+```bash 
+export function isValidStock(stock: number): boolean {
+  return stock >= 0;
+}
+```
+![](img/124.png)
+
