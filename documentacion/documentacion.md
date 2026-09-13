@@ -4721,3 +4721,16 @@ export interface IProductRepository {
 }
 ```
 ![](img/122.png)
+
+#### 9.6 src/features/business/products/domain/validators/product-price.validator.ts
+
+Valida que el precio sea mayor a 0.
+
+**ruta** `src/features/business/products/domain/validators/product-price.validator.ts`
+
+```bash
+export function isValidPrice(price: number): boolean {
+  return price > 0;
+}
+``` 
+![](img/123.png)
