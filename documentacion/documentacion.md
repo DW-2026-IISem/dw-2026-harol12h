@@ -4399,3 +4399,17 @@ export class CollectionsModule {}
 EOF_BACKEND_MANUAL
 ```
 ![](img/117.png)
+
+#### 8.22 — Actualizar sequelize.factory.ts
+Registrar CollectionModel.
+
+```bash 
+import { ClientModel } from '../../../features/business/clients/infrastructure/persistence/models/client.model';
+import { CollectionModel } from '../../../features/business/collections/infrastructure/persistence/models/collection.model';
+
+export const ALL_MODELS = [
+  ClientModel,
+  CollectionModel,
+];
+```
+![](img/118.png)
