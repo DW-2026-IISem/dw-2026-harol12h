@@ -4691,4 +4691,33 @@ export class ProductNotFoundException extends EntityNotFoundException {
 ```
 ![](img/121.png)
 
+#### 9.5 src/features/business/products/domain/interfaces/product-repository.interface.ts
 
+Define el contrato del repositorio (create, update, delete, findById, findAll).
+
+La aplicación depende de esta interface, no directamente de Sequelize.
+
+**Archivo** `src/features/business/products/domain/interfaces/product-repository.interface.ts`
+
+```bash
+import { PaginatedResult } from '../../../../../common/interfaces/pagination.interface.js';
+import { Product } from '../entities/product.entity.js';
+
+export const PRODUCT_REPOSITORY = 'PRODUCT_REPOSITORY';
+
+export interface ProductFindAllParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  productTypeId?: number;
+}
+
+export interface IProductRepository {
+  create(product: Product): Promise<Product>;
+  update(product: Product): Promise<Product>;
+  delete(id: number): Promise<void>;
+  findById(id: number): Promise<Product | null>;
+  findAll(params: ProductFindAllParams): Promise<PaginatedResult<Product>>;
+}
+```
+![](img/122.png)
