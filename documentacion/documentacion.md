@@ -4893,4 +4893,22 @@ export class ProductRepository implements IProductRepository {
 ```
 --- imagen aca
 
-#### 
+#### 9.10 src/features/business/products/infrastructure/persistence/migrations/create-products-table.migration.ts
+
+Documento auxiliar para la tabla products. En desarrollo, Sequelize sync crea la tabla automáticamente.
+
+**ruta** `src/features/business/products/infrastructure/persistence/migrations/create-products-table.migration.ts`
+
+```bash 
+export const createProductsTableMigration = {
+  name: 'create-products-table',
+  async up(): Promise<void> {
+    // Sequelize sync handles table creation in development.
+    // Production: CREATE TABLE products (...)
+  },
+  async down(): Promise<void> {
+    // Production: DROP TABLE products
+  },
+};
+```
+![](img/126.png)
