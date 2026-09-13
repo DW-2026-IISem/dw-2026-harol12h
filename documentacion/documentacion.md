@@ -4638,3 +4638,40 @@ export class Product {
   }
 }
 ``` 
+
+#### 9.2 src/features/business/products/domain/exceptions/invalid-product-price.exception.ts
+
+Se lanza cuando el precio es menor o igual a 0.
+
+**Archivo** `src/features/business/products/domain/exceptions/invalid-product-price.exception.ts`
+
+```bash 
+import { DomainException } from '../../../../../common/exceptions/domain.exception';
+
+export class InvalidProductStockException extends DomainException.js {
+  constructor(stock: number) {
+    super(`El stock '${stock}' no puede ser negativo`);
+  }
+}
+```
+![](img/119.png)
+
+#### 9.3 src/features/business/products/domain/exceptions/invalid-product-stock.exception.ts
+
+Se lanza cuando el stock es negativo.
+
+**Archivo:** `src/features/business/products/domain/exceptions/invalid-product-stock.exception.ts`
+
+```bash 
+import { DomainException } from '../../../../../common/exceptions/domain.exception.js';
+
+export class InvalidProductStockException extends DomainException {
+  constructor(stock: number) {
+    super(`El stock '${stock}' no puede ser negativo`);
+  }
+}
+```
+![](img/120.png)
+
+
+
