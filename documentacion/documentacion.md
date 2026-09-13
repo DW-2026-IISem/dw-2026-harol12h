@@ -4354,3 +4354,14 @@ export class CollectionsController {
 EOF_BACKEND_MANUAL
 ```
 ![](img/115.png)
+
+#### 8.20 — features/business/collections/index.ts
+Barrel export del feature.
+
+```bash
+mkdir -p src/features/business/collections
+cat > src/features/business/collections/index.ts <<'EOF_BACKEND_MANUAL'
+export { CollectionsModule } from './collections.module';
+EOF_BACKEND_MANUAL
+```
+![](img/116.png)
