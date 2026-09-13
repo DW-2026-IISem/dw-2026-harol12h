@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CollectionNotFoundException } from '../../domain/exceptions/collection-not-found.exception';
+import { CollectionNotFoundException } from '../../domain/exceptions/collection-not-found.exception.js';
 import {
   type ICollectionRepository,
   COLLECTION_REPOSITORY,
-} from '../../domain/interfaces/collection-repository.interface';
-import { CollectionMapper } from '../mappers/collection.mapper';
+} from '../../domain/interfaces/collection-repository.interface.js';
+import { CollectionMapper } from '../mappers/collection.mapper.js';
 
 @Injectable()
 export class GetCollectionUseCase {

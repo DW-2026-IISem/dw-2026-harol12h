@@ -4521,3 +4521,10 @@ import { AppService } from './app.service.js';
 })
 export class AppModule {}
 ``` 
+
+#### 8.26 — Verificar tabla collections
+Ejecuta:
+```bash
+npm run start:dev
+``` 
+![](img/118.png)

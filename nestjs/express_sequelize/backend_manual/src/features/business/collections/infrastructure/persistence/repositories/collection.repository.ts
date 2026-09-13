@@ -3,14 +3,14 @@ import { Op } from 'sequelize';
 import {
   buildPaginatedResult,
   normalizePagination,
-} from '../../../../../../common/utils/pagination.util';
-import { Collection } from '../../../domain/entities/collection.entity';
+} from '../../../../../../common/utils/pagination.util.js';
+import { Collection } from '../../../domain/entities/collection.entity.js';
 import {
   ICollectionRepository,
   CollectionFindAllParams,
-} from '../../../domain/interfaces/collection-repository.interface';
-import { CollectionMapper } from '../../../application/mappers/collection.mapper';
-import { CollectionModel } from '../models/collection.model';
+} from '../../../domain/interfaces/collection-repository.interface.js';
+import { CollectionMapper } from '../../../application/mappers/collection.mapper.js';
+import { CollectionModel } from '../models/collection.model.js';
 
 @Injectable()
 export class CollectionRepository implements ICollectionRepository {

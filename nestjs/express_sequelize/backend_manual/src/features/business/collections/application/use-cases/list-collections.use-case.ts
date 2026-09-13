@@ -2,9 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   type ICollectionRepository,
   COLLECTION_REPOSITORY,
-} from '../../domain/interfaces/collection-repository.interface';
-import { CollectionFilterDto } from '../dto/collection-filter.dto';
-import { CollectionMapper } from '../mappers/collection.mapper';
+} from '../../domain/interfaces/collection-repository.interface.js';
+import { CollectionFilterDto } from '../dto/collection-filter.dto.js';
+import { CollectionMapper } from '../mappers/collection.mapper.js';
 
 @Injectable()
 export class ListCollectionsUseCase {

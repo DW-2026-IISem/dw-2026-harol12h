@@ -31,9 +31,7 @@ AppModule = __decorate([
             BusinessModule,
         ],
         controllers: [AppController],
-        providers: [
-            AppService,
-        ],
+        providers: [AppService],
     })
 ], AppModule);
 export { AppModule };

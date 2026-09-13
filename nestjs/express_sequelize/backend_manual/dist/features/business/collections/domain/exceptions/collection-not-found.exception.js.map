@@ -1,0 +1,1 @@
+{"version":3,"file":"collection-not-found.exception.js","sourceRoot":"","sources":["../../../../../../src/features/business/collections/domain/exceptions/collection-not-found.exception.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,uBAAuB,EAAE,MAAM,gEAAgE,CAAC;AAEzG,MAAM,OAAO,2BAA4B,SAAQ,uBAAuB;IACtE,YAAY,EAAU;QACpB,KAAK,CAAC,WAAW,EAAE,EAAE,CAAC,CAAC;IACzB,CAAC;CACF"}

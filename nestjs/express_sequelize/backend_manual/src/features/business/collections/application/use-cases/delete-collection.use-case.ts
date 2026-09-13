@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CollectionNotFoundException } from '../../domain/exceptions/collection-not-found.exception';
+import { CollectionNotFoundException } from '../../domain/exceptions/collection-not-found.exception.js';
 import {
   type ICollectionRepository,
   COLLECTION_REPOSITORY,
-} from '../../domain/interfaces/collection-repository.interface';
+} from '../../domain/interfaces/collection-repository.interface.js';
 
 @Injectable()
 export class DeleteCollectionUseCase {

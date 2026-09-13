@@ -1,4 +1,4 @@
-import { CollectionModel } from '../models/collection.model';
+import { CollectionModel } from '../models/collection.model.js';
 
 export async function seedCollections(): Promise<void> {
   const count = await CollectionModel.count();

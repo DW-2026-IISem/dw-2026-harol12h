@@ -3,7 +3,6 @@ import {
   Column,
   CreatedAt,
   DataType,
-  HasMany,
   Model,
   PrimaryKey,
   Table,
@@ -36,10 +35,4 @@ export class CollectionModel extends Model {
   @UpdatedAt
   declare updatedAt: Date;
 
-  @HasMany(
-    () =>
-      require('../../../../products/infrastructure/persistence/models/product.model')
-        .ProductModel,
-  )
-  declare products: unknown[];
 }

@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Collection } from '../../domain/entities/collection.entity';
+import { Collection } from '../../domain/entities/collection.entity.js';
 import {
   type ICollectionRepository,
   COLLECTION_REPOSITORY,
-} from '../../domain/interfaces/collection-repository.interface';
-import { CreateCollectionDto } from '../dto/create-collection.dto';
-import { CollectionMapper } from '../mappers/collection.mapper';
+} from '../../domain/interfaces/collection-repository.interface.js';
+import { CreateCollectionDto } from '../dto/create-collection.dto.js';
+import { CollectionMapper } from '../mappers/collection.mapper.js';
 
 @Injectable()
 export class CreateCollectionUseCase {

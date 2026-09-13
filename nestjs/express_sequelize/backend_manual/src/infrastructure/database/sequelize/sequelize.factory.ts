@@ -16,28 +16,38 @@ export async function createSequelizeInstance(
   const options = getSequelizeOptions(dialect);
 
   let dialectModule: any;
+
   switch (dialect) {
     case DatabaseDialect.MySQL:
-      dialectModule = require('mysql2');
+      dialectModule = (await import('mysql2')).default;
       break;
     case DatabaseDialect.Postgres:
-      dialectModule = require('pg');
+      dialectModule = (await import('pg')).default;
       break;
     case DatabaseDialect.MSSQL:
-      dialectModule = require('tedious');
+      dialectModule = (await import('tedious')).default;
       break;
     case DatabaseDialect.Oracle:
-      dialectModule = require('oracledb');
+      dialectModule = (await import('oracledb')).default;
       break;
     default:
       throw new Error(`Dialecto no soportado: ${dialect}`);
   }
 
+  // ✅ Aquí creamos la instancia real de Sequelize
   const sequelize = new Sequelize({
     ...options,
     dialectModule,
     models: ALL_MODELS,
   } as any);
+
+  try {
+    await sequelize.authenticate();
+    console.log(`✅ Conexión exitosa a ${dialect.toUpperCase()}`);
+  } catch (error: any) {
+    console.error(`❌ Error conectando a ${dialect.toUpperCase()}:`, error.message);
+    throw error;
+  }
 
   if (process.env.NODE_ENV !== 'production') {
     await sequelize.sync({ alter: false });

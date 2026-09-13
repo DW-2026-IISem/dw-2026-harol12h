@@ -17,16 +17,16 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { ParsePositiveIntPipe } from '../../../../../../common/pipes/parse-positive-int.pipe';
-import { CreateCollectionDto } from '../../../application/dto/create-collection.dto';
-import { UpdateCollectionDto } from '../../../application/dto/update-collection.dto';
-import { CollectionFilterDto } from '../../../application/dto/collection-filter.dto';
-import { CollectionResponseDto } from '../../../application/dto/collection-response.dto';
-import { CreateCollectionUseCase } from '../../../application/use-cases/create-collection.use-case';
-import { UpdateCollectionUseCase } from '../../../application/use-cases/update-collection.use-case';
-import { DeleteCollectionUseCase } from '../../../application/use-cases/delete-collection.use-case';
-import { GetCollectionUseCase } from '../../../application/use-cases/get-collection.use-case';
-import { ListCollectionsUseCase } from '../../../application/use-cases/list-collections.use-case';
+import { ParsePositiveIntPipe } from '../../../../../../common/pipes/parse-positive-int.pipe.js';
+import { CreateCollectionDto } from '../../../application/dto/create-collection.dto.js';
+import { UpdateCollectionDto } from '../../../application/dto/update-collection.dto.js';
+import { CollectionFilterDto } from '../../../application/dto/collection-filter.dto.js';
+import { CollectionResponseDto } from '../../../application/dto/collection-response.dto.js';
+import { CreateCollectionUseCase } from '../../../application/use-cases/create-collection.use-case.js';
+import { UpdateCollectionUseCase } from '../../../application/use-cases/update-collection.use-case.js';
+import { DeleteCollectionUseCase } from '../../../application/use-cases/delete-collection.use-case.js';
+import { GetCollectionUseCase } from '../../../application/use-cases/get-collection.use-case.js';
+import { ListCollectionsUseCase } from '../../../application/use-cases/list-collections.use-case.js';
 
 @ApiTags('Collections')
 @Controller('collections')

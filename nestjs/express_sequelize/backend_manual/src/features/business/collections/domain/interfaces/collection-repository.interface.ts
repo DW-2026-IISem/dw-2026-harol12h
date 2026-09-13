@@ -1,5 +1,5 @@
-import { PaginatedResult } from '../../../../../common/interfaces/pagination.interface';
-import { Collection } from '../entities/collection.entity';
+import { PaginatedResult } from '../../../../../common/interfaces/pagination.interface.js';
+import { Collection } from '../entities/collection.entity.js';
 
 export const COLLECTION_REPOSITORY = 'COLLECTION_REPOSITORY';
 
