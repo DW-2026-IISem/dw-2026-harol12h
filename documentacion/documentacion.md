@@ -5219,3 +5219,37 @@ export class CreateProductUseCase {
 EOF_BACKEND_IA
 ```
 ![](img/132.png)
+
+#### 9.18 src/features/business/products/application/use-cases/delete-product.use-case.ts
+
+Elimina un producto validando que exista.
+
+**ruta** `src/features/business/products/application/use-cases/delete-product.use-case.ts`
+
+```bash
+cat > src/features/business/products/application/use-cases/delete-product.use-case.ts <<'EOF_BACKEND_IA'
+import { Inject, Injectable } from '@nestjs/common';
+import { ProductNotFoundException } from '../../domain/exceptions/product-not-found.exception.js';
+import {
+  IProductRepository,
+  PRODUCT_REPOSITORY,
+} from '../../domain/interfaces/product-repository.interface.js';
+
+@Injectable()
+export class DeleteProductUseCase {
+  constructor(
+    @Inject(PRODUCT_REPOSITORY)
+    private readonly productRepository: IProductRepository,
+  ) {}
+
+  async execute(id: number): Promise<void> {
+    const product = await this.productRepository.findById(id);
+    if (!product) {
+      throw new ProductNotFoundException(id);
+    }
+    await this.productRepository.delete(id);
+  }
+}
+EOF_BACKEND_IA
+```
+![](img/133.png)
