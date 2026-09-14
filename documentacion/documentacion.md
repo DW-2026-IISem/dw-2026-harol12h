@@ -5253,3 +5253,38 @@ export class DeleteProductUseCase {
 EOF_BACKEND_IA
 ```
 ![](img/133.png)
+
+#### 9.19 src/features/business/products/application/use-cases/get-product.use-case.ts
+
+Obtiene un producto por ID.
+
+**ruta** `src/features/business/products/application/use-cases/get-product.use-case.ts`
+
+```bash
+cat > src/features/business/products/application/use-cases/get-product.use-case.ts <<'EOF_BACKEND_IA'
+import { Inject, Injectable } from '@nestjs/common';
+import { ProductNotFoundException } from '../../domain/exceptions/product-not-found.exception.js';
+import {
+  IProductRepository,
+  PRODUCT_REPOSITORY,
+} from '../../domain/interfaces/product-repository.interface.js';
+import { ProductMapper } from '../mappers/product.mapper.js';
+
+@Injectable()
+export class GetProductUseCase {
+  constructor(
+    @Inject(PRODUCT_REPOSITORY)
+    private readonly productRepository: IProductRepository,
+  ) {}
+
+  async execute(id: number) {
+    const product = await this.productRepository.findById(id);
+    if (!product) {
+      throw new ProductNotFoundException(id);
+    }
+    return ProductMapper.toResponse(product);
+  }
+}
+EOF_BACKEND_IA
+```
+![](img/134.png)
