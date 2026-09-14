@@ -5618,3 +5618,39 @@ EOF_BACKEND_IA
 ```
 ![](img/142.png)
 
+#### 9.29 src/features/business/products/infrastructure/persistence/repositories/product.repository.spec.ts
+
+Prueba unitaria para el repositorio de productos
+
+**ruta** `src/features/business/products/infrastructure/persistence/repositories/product.repository.spec.ts`
+
+```bash
+mkdir -p src/features/business/products/infrastructure/persistence/repositories
+cat > src/features/business/products/infrastructure/persistence/repositories/product.repository.spec.ts <<'EOF_BACKEND_IA'
+import { ProductRepository } from './product.repository.js';
+import { Product } from '../../../domain/entities/product.entity.js';
+
+describe('ProductRepository', () => {
+  let repository: ProductRepository;
+
+  beforeEach(() => {
+    repository = new ProductRepository();
+  });
+
+  it('should create a product', async () => {
+    const product = Product.create({
+      name: 'Phone',
+      brand: 'TechBrand',
+      price: 500,
+      minStock: 2,
+      quantity: 20,
+      productTypeId: 1,
+    });
+
+    const created = await repository.create(product);
+    expect(created.name).toBe('Phone');
+  });
+});
+EOF_BACKEND_IA
+```
+![](img/143.png)
