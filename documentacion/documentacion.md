@@ -5468,4 +5468,69 @@ EOF_BACKEND_IA
 ```
 ![](img/138.png)
 
+#### 9.24 src/features/business/business.module.ts
+
+Importa el ProductsModule junto con ClientsModule y CollectionsModule.
+
+**ruta** `src/features/business/business.module.ts`
+
+```bash
+# Abre el archivo y añade:
+import { ProductsModule } from './products/products.module.js';
+
+@Module({
+  imports: [
+    ClientsModule,
+    CollectionsModule,
+    ProductsModule, 
+  ],
+})
+export class BusinessModule {}
+```
+#### 9.25 src/infrastructure/database/sequelize/seeders/index.ts
+
+Ejecuta el seeder de productos junto con los demás.
+
+```bash
+mkdir -p src/features/business
+cat > src/features/business/business.module.ts <<'EOF_BACKEND_IA'
+import { Module } from '@nestjs/common';
+import { ClientsModule } from './clients/clients.module.js';
+import { CollectionsModule } from './collections/collections.module.js';
+import { ProductsModule } from './products/products.module.js';
+
+@Module({
+  imports: [
+    ClientsModule,
+    CollectionsModule,
+    ProductsModule,
+  ],
+})
+export class BusinessModule {}
+EOF_BACKEND_IA
+
+```
+![](img/139.png)
+
+#### 9.26 src/infrastructure/database/sequelize/seeders/index.ts
+ 
+Ejecuta el seeder de productos junto con los demás.
+
+**ruta** `src/infrastructure/database/sequelize/seeders/index.ts`
+
+```bash
+mkdir -p src/infrastructure/database/sequelize/seeders
+cat > src/infrastructure/database/sequelize/seeders/index.ts <<'EOF_BACKEND_IA'
+import { seedClients } from '../../../../features/business/clients/infrastructure/persistence/seeders/clients.seeder.js';
+import { seedCollections } from '../../../../features/business/collections/infrastructure/persistence/seeders/collections.seeder.js';
+import { seedProducts } from '../../../../features/business/products/infrastructure/persistence/seeders/products.seeder.js';
+
+export async function runSeeders() {
+  await seedClients();
+  await seedCollections();
+  await seedProducts(); // ✅ nuevo
+}
+EOF_BACKEND_IA
+```
+![](img/140.png)
 

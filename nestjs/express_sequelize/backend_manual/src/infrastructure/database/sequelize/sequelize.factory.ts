@@ -1,58 +1,18 @@
-import { Sequelize } from 'sequelize-typescript';
-import { DatabaseDialect } from '../../../config/environment/env.interface.js';
-import { getSequelizeOptions } from './sequelize.options.js';
-
 import { ClientModel } from '../../../features/business/clients/infrastructure/persistence/models/client.model.js';
 import { CollectionModel } from '../../../features/business/collections/infrastructure/persistence/models/collection.model.js';
+import { ProductModel } from '../../../features/business/products/infrastructure/persistence/models/product.model.js';
+import { ProductTypeModel } from '../../../features/business/product-types/infrastructure/persistence/models/product-type.model.js';
 
 export const ALL_MODELS = [
   ClientModel,
   CollectionModel,
+  ProductTypeModel,
+  ProductModel, // ✅ nuevo
 ];
 
-export async function createSequelizeInstance(
-  dialect: DatabaseDialect,
-): Promise<Sequelize> {
-  const options = getSequelizeOptions(dialect);
+// Asociaciones
+CollectionModel.hasMany(ProductModel, { foreignKey: 'collectionId' });
+ProductModel.belongsTo(CollectionModel, { foreignKey: 'collectionId' });
 
-  let dialectModule: any;
-
-  switch (dialect) {
-    case DatabaseDialect.MySQL:
-      dialectModule = (await import('mysql2')).default;
-      break;
-    case DatabaseDialect.Postgres:
-      dialectModule = (await import('pg')).default;
-      break;
-    case DatabaseDialect.MSSQL:
-      dialectModule = (await import('tedious')).default;
-      break;
-    case DatabaseDialect.Oracle:
-      dialectModule = (await import('oracledb')).default;
-      break;
-    default:
-      throw new Error(`Dialecto no soportado: ${dialect}`);
-  }
-
-  // ✅ Aquí creamos la instancia real de Sequelize
-  const sequelize = new Sequelize({
-    ...options,
-    dialectModule,
-    models: ALL_MODELS,
-  } as any);
-
-  try {
-    await sequelize.authenticate();
-    console.log(`✅ Conexión exitosa a ${dialect.toUpperCase()}`);
-  } catch (error: any) {
-    console.error(`❌ Error conectando a ${dialect.toUpperCase()}:`, error.message);
-    throw error;
-  }
-
-  if (process.env.NODE_ENV !== 'production') {
-    await sequelize.sync({ alter: false });
-    console.log('✅ Tablas sincronizadas');
-  }
-
-  return sequelize;
-}
+ProductTypeModel.hasMany(ProductModel, { foreignKey: 'productTypeId' });
+ProductModel.belongsTo(ProductTypeModel, { foreignKey: 'productTypeId' });
