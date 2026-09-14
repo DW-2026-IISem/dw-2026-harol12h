@@ -5049,3 +5049,49 @@ EOF_BACKEND_IA
 ```
 ![](img/128.png)
 
+#### 9.14 src/features/business/products/application/dto/product-response.dto.ts
+
+Define la estructura de salida al devolver un producto vía API.
+
+**ruta** `src/features/business/products/application/dto/product-response.dto.ts`
+
+```bash 
+cat > src/features/business/products/application/dto/product-response.dto.ts <<'EOF_BACKEND_IA'
+import { ApiProperty } from '@nestjs/swagger';
+import { Status } from '../../../../../common/enums/status.enum';
+
+export class ProductResponseDto {
+  @ApiProperty({ example: 1 })
+  id: number;
+
+  @ApiProperty({ example: 'Smartphone X' })
+  name: string;
+
+  @ApiProperty({ example: 'TechBrand' })
+  brand: string;
+
+  @ApiProperty({ example: 59999 })
+  price: number;
+
+  @ApiProperty({ example: 5 })
+  minStock: number;
+
+  @ApiProperty({ example: 50 })
+  quantity: number;
+
+  @ApiProperty({ example: 1 })
+  productTypeId: number;
+
+  @ApiProperty({ enum: Status, example: Status.ACTIVE })
+  status: Status;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+EOF_BACKEND_IA
+```
+![](img/129.png)
+
