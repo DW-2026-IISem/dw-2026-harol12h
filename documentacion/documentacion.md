@@ -4949,5 +4949,59 @@ export async function seedProducts(): Promise<void> {
   ]);
 }
 ``` 
+#### 9.12 src/features/business/products/application/dto/create-product.dto.ts
 
+Define la estructura y validaciones para crear un producto vía HTTP.
 
+**ruta** `src/features/business/products/application/dto/create-product.dto.ts`
+
+```bash
+mkdir -p src/features/business/products/application/dto
+cat > src/features/business/products/application/dto/create-product.dto.ts <<'EOF_BACKEND_IA'
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsPositive,
+  IsString,
+  MaxLength,
+  Min,
+} from 'class-validator';
+
+export class CreateProductDto {
+  @ApiProperty({ example: 'Smartphone X' })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(150)
+  name: string;
+
+  @ApiProperty({ example: 'TechBrand' })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  brand: string;
+
+  @ApiProperty({ example: 59999 })
+  @IsNumber()
+  @IsPositive()
+  price: number;
+
+  @ApiProperty({ example: 5 })
+  @IsInt()
+  @Min(0)
+  minStock: number;
+
+  @ApiProperty({ example: 50 })
+  @IsInt()
+  @Min(0)
+  quantity: number;
+
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  @IsPositive()
+  productTypeId: number;
+}
+EOF_BACKEND_IA
+```
+![](img/127.png)
