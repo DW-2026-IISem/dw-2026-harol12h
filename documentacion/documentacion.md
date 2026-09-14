@@ -5534,3 +5534,29 @@ EOF_BACKEND_IA
 ```
 ![](img/140.png)
 
+#### 9.27 src/main.ts
+
+```bash
+cat > src/main.ts <<'EOF_BACKEND_IA'
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module.js';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  const config = new DocumentBuilder()
+    .setTitle('API')
+    .setDescription('Documentación de la API')
+    .setVersion('1.0')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+
+  await app.listen(3000);
+}
+bootstrap();
+EOF_BACKEND_IA
+```
+![](img/141.png)
