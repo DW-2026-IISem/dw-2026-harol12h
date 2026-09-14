@@ -5005,3 +5005,47 @@ export class CreateProductDto {
 EOF_BACKEND_IA
 ```
 ![](img/127.png)
+
+#### 9.13 src/features/business/products/application/dto/product-filter.dto.ts
+
+Define filtros de búsqueda y paginación para listar productos.
+
+**ruta** `src/features/business/products/application/dto/product-filter.dto.ts`
+
+```bash 
+cat > src/features/business/products/application/dto/product-filter.dto.ts <<'EOF_BACKEND_IA'
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, IsPositive, IsString, Min } from 'class-validator';
+
+export class ProductFilterDto {
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @ApiPropertyOptional({ example: 10 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  limit?: number;
+
+  @ApiPropertyOptional({ example: 'smartphone' })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  productTypeId?: number;
+}
+EOF_BACKEND_IA
+```
+![](img/128.png)
+
