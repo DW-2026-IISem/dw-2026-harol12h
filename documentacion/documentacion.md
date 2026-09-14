@@ -5654,3 +5654,50 @@ describe('ProductRepository', () => {
 EOF_BACKEND_IA
 ```
 ![](img/143.png)
+
+#### 9.30 src/features/business/products/infrastructure/swagger/products.swagger.ts
+
+Define ejemplos y documentación Swagger para los endpoints de productos.
+
+**ruta** `src/features/business/products/infrastructure/swagger/products.swagger.ts`
+
+```bash
+mkdir -p src/features/business/products/infrastructure/swagger
+cat > src/features/business/products/infrastructure/swagger/products.swagger.ts <<'EOF_BACKEND_IA'
+import { ApiProperty } from '@nestjs/swagger';
+import { Status } from '../../../../../common/enums/status.enum.js';
+
+export class ProductSwagger {
+  @ApiProperty({ example: 1 })
+  id: number;
+
+  @ApiProperty({ example: 'Smartphone X' })
+  name: string;
+
+  @ApiProperty({ example: 'TechBrand' })
+  brand: string;
+
+  @ApiProperty({ example: 59999 })
+  price: number;
+
+  @ApiProperty({ example: 5 })
+  minStock: number;
+
+  @ApiProperty({ example: 50 })
+  quantity: number;
+
+  @ApiProperty({ example: 1 })
+  productTypeId: number;
+
+  @ApiProperty({ enum: Status, example: Status.ACTIVE })
+  status: Status;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+EOF_BACKEND_IA
+```
+![](img/145.png)
