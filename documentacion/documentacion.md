@@ -5095,3 +5095,18 @@ EOF_BACKEND_IA
 ```
 ![](img/129.png)
 
+#### 9.15 src/features/business/products/application/dto/update-product.dto.ts
+
+Extiende el DTO de creación, pero todos los campos son opcionales.
+
+**ruta** `src/features/business/products/application/dto/update-product.dto.ts`
+
+```bash
+cat > src/features/business/products/application/dto/update-product.dto.ts <<'EOF_BACKEND_IA'
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateProductDto } from './create-product.dto';
+
+export class UpdateProductDto extends PartialType(CreateProductDto) {}
+EOF_BACKEND_IA
+``` 
+![](img/130.png)
