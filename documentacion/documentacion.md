@@ -6460,3 +6460,37 @@ export class ProductMapper {
 EOF_BACKEND_IA
 ```
 ![](img/169.png)
+
+#### 10.23 src/features/business/products/application/use-cases/list-products.use-case.ts
+
+Lista productos aplicando filtros.
+
+**ruta** `src/features/business/products/application/use-cases/list-products.use-case.ts`
+
+```bash
+mkdir -p src/features/business/products/application/use-cases
+cat > src/features/business/products/application/use-cases/list-products.use-case.ts <<'EOF_BACKEND_IA'
+import { Inject, Injectable } from '@nestjs/common';
+import type { IProductRepository } from '../../domain/interfaces/product-repository.interface.js';
+import { PRODUCT_REPOSITORY } from '../../domain/interfaces/product-repository.interface.js';
+import { ProductFilterDto } from '../dto/product-filter.dto.js';
+import { ProductMapper } from '../mappers/product.mapper.js';
+
+@Injectable()
+export class ListProductsUseCase {
+  constructor(
+    @Inject(PRODUCT_REPOSITORY)
+    private readonly productRepository: IProductRepository,
+  ) {}
+
+  async execute(filter: ProductFilterDto) {
+    const result = await this.productRepository.findAll(filter);
+    return {
+      items: result.items.map((product) => ProductMapper.toResponse(product)),
+      meta: result.meta,
+    };
+  }
+}
+EOF_BACKEND_IA
+```
+![](img/170.png)
