@@ -1,8 +1,23 @@
-import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
-import { ClientModel } from '../../../../clients/infrastructure/persistence/models/client.model.js';
+import {
+  AutoIncrement,
+  Column,
+  CreatedAt,
+  DataType,
+  ForeignKey,
+  Model,
+  PrimaryKey,
+  Table,
+  UpdatedAt,
+} from 'sequelize-typescript';
+import { ClientModel } from '../../../../clients/infrastructure/persistence/models/client.model';
 
-@Table({ tableName: 'orders', timestamps: true })
+@Table({ tableName: 'orders' })
 export class OrderModel extends Model {
+  @PrimaryKey
+  @AutoIncrement
+  @Column(DataType.INTEGER)
+  declare id: number;
+
   @ForeignKey(() => ClientModel)
   @Column({ type: DataType.INTEGER, allowNull: false })
   declare clientId: number;
@@ -12,4 +27,10 @@ export class OrderModel extends Model {
 
   @Column({ type: DataType.STRING, allowNull: false })
   declare status: string;
+
+  @CreatedAt
+  declare createdAt: Date;
+
+  @UpdatedAt
+  declare updatedAt: Date;
 }
