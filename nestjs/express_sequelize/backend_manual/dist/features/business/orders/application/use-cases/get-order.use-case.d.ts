@@ -2,12 +2,5 @@ import type { IOrderRepository } from '../../domain/interfaces/order-repository.
 export declare class GetOrderUseCase {
     private readonly orderRepository;
     constructor(orderRepository: IOrderRepository);
-    execute(id: number): Promise<{
-        id: any;
-        clientId: number;
-        orderDate: Date;
-        status: string;
-        createdAt: any;
-        updatedAt: any;
-    }>;
+    execute(id: number): Promise<import("../dto/order-response.dto.js").OrderResponseDto>;
 }

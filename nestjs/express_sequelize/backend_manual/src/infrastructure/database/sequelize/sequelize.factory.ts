@@ -1,8 +1,8 @@
 import { Sequelize } from 'sequelize-typescript';
-import { ClientModel } from '../../../features/business/clients/infrastructure/persistence/models/client.model';
-import { CollectionModel } from '../../../features/business/collections/infrastructure/persistence/models/collection.model';
-import { ProductModel } from '../../../features/business/products/infrastructure/persistence/models/product.model';
-import { OrderModel } from '../../../features/business/orders/infrastructure/persistence/models/order.model';
+import { ClientModel } from '../../../features/business/clients/infrastructure/persistence/models/client.model.js';
+import { CollectionModel } from '../../../features/business/collections/infrastructure/persistence/models/collection.model.js';
+import { ProductModel } from '../../../features/business/products/infrastructure/persistence/models/product.model.js';
+import { OrderModel } from '../../../features/business/orders/infrastructure/persistence/models/order.model.js';
 
 export const ALL_MODELS = [
   ClientModel,

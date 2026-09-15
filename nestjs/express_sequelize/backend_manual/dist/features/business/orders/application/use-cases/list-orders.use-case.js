@@ -18,9 +18,12 @@ let ListOrdersUseCase = class ListOrdersUseCase {
     constructor(orderRepository) {
         this.orderRepository = orderRepository;
     }
-    async execute() {
-        const orders = await this.orderRepository.findAll();
-        return orders.map((order) => OrderMapper.toResponse(order));
+    async execute(filter) {
+        const result = await this.orderRepository.findAll(filter);
+        return {
+            items: result.items.map((o) => OrderMapper.toResponse(o)),
+            meta: result.meta,
+        };
     }
 };
 ListOrdersUseCase = __decorate([

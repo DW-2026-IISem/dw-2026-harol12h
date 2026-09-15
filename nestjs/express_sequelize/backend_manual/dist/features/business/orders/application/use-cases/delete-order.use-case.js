@@ -11,8 +11,8 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 import { Inject, Injectable } from '@nestjs/common';
-import { ORDER_REPOSITORY } from '../../domain/interfaces/order-repository.interface.js';
 import { OrderNotFoundException } from '../../domain/exceptions/order-not-found.exception.js';
+import { ORDER_REPOSITORY } from '../../domain/interfaces/order-repository.interface.js';
 let DeleteOrderUseCase = class DeleteOrderUseCase {
     orderRepository;
     constructor(orderRepository) {
@@ -20,9 +20,8 @@ let DeleteOrderUseCase = class DeleteOrderUseCase {
     }
     async execute(id) {
         const order = await this.orderRepository.findById(id);
-        if (!order) {
+        if (!order)
             throw new OrderNotFoundException(id);
-        }
         await this.orderRepository.delete(id);
     }
 };

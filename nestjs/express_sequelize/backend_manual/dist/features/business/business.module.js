@@ -8,15 +8,13 @@ import { Module } from '@nestjs/common';
 import { ClientsModule } from './clients/clients.module.js';
 import { CollectionsModule } from './collections/collections.module.js';
 import { ProductsModule } from './products/products.module.js';
+import { OrdersModule } from './orders/orders.module.js';
 let BusinessModule = class BusinessModule {
 };
 BusinessModule = __decorate([
     Module({
-        imports: [
-            ClientsModule,
-            CollectionsModule,
-            ProductsModule,
-        ],
+        imports: [ClientsModule, CollectionsModule, ProductsModule, OrdersModule],
+        exports: [ClientsModule, CollectionsModule, ProductsModule, OrdersModule],
     })
 ], BusinessModule);
 export { BusinessModule };

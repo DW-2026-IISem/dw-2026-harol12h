@@ -11,6 +11,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 import { Inject, Injectable } from '@nestjs/common';
+import { OrderNotFoundException } from '../../domain/exceptions/order-not-found.exception.js';
 import { ORDER_REPOSITORY } from '../../domain/interfaces/order-repository.interface.js';
 import { OrderMapper } from '../mappers/order.mapper.js';
 let GetOrderUseCase = class GetOrderUseCase {
@@ -21,7 +22,7 @@ let GetOrderUseCase = class GetOrderUseCase {
     async execute(id) {
         const order = await this.orderRepository.findById(id);
         if (!order)
-            throw new Error(`Order ${id} not found`);
+            throw new OrderNotFoundException(id);
         return OrderMapper.toResponse(order);
     }
 };

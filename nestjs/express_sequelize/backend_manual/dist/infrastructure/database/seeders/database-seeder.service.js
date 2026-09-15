@@ -7,12 +7,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 import { Injectable } from '@nestjs/common';
 import { seedClients } from '../../../features/business/clients/infrastructure/persistence/seeders/clients.seeder.js';
 import { seedCollections } from '../../../features/business/collections/infrastructure/persistence/seeders/collections.seeder.js';
+import { seedProducts } from '../../../features/business/products/infrastructure/persistence/seeders/products.seeder.js';
+import { seedOrders } from '../../../features/business/orders/infrastructure/persistence/seeders/orders.seeder.js';
 let DatabaseSeederService = class DatabaseSeederService {
-    async onModuleInit() {
-        if (process.env.NODE_ENV === 'production')
-            return;
+    async runAllSeeders() {
         await seedClients();
         await seedCollections();
+        await seedProducts();
+        await seedOrders();
     }
 };
 DatabaseSeederService = __decorate([

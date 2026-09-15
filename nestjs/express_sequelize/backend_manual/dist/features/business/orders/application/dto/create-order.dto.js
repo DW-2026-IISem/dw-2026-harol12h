@@ -8,6 +8,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { ApiProperty } from '@nestjs/swagger';
+import { IsDateString, IsInt, IsNotEmpty, IsString } from 'class-validator';
 export class CreateOrderDto {
     clientId;
     orderDate;
@@ -15,14 +16,18 @@ export class CreateOrderDto {
 }
 __decorate([
     ApiProperty({ example: 1 }),
+    IsInt(),
     __metadata("design:type", Number)
 ], CreateOrderDto.prototype, "clientId", void 0);
 __decorate([
-    ApiProperty({ example: '2026-09-14' }),
+    ApiProperty({ example: '2026-09-15' }),
+    IsDateString(),
     __metadata("design:type", Date)
 ], CreateOrderDto.prototype, "orderDate", void 0);
 __decorate([
     ApiProperty({ example: 'PENDING' }),
+    IsString(),
+    IsNotEmpty(),
     __metadata("design:type", String)
 ], CreateOrderDto.prototype, "status", void 0);
 //# sourceMappingURL=create-order.dto.js.map

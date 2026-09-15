@@ -12,38 +12,13 @@ export declare class OrdersController {
     private readonly updateOrder;
     private readonly deleteOrder;
     constructor(createOrder: CreateOrderUseCase, getOrder: GetOrderUseCase, listOrders: ListOrdersUseCase, updateOrder: UpdateOrderUseCase, deleteOrder: DeleteOrderUseCase);
-    create(dto: CreateOrderDto): Promise<{
-        id: any;
-        clientId: number;
-        orderDate: Date;
-        status: string;
-        createdAt: any;
-        updatedAt: any;
-    }>;
+    create(dto: CreateOrderDto): Promise<import("../../application/dto/order-response.dto.js").OrderResponseDto>;
     findAll(): Promise<{
-        id: any;
-        clientId: number;
-        orderDate: Date;
-        status: string;
-        createdAt: any;
-        updatedAt: any;
-    }[]>;
-    findOne(id: number): Promise<{
-        id: any;
-        clientId: number;
-        orderDate: Date;
-        status: string;
-        createdAt: any;
-        updatedAt: any;
+        items: import("../../application/dto/order-response.dto.js").OrderResponseDto[];
+        meta: import("../../../../../common/interfaces/pagination.interface.js").PaginationMeta;
     }>;
-    update(id: number, dto: UpdateOrderDto): Promise<{
-        id: any;
-        clientId: number;
-        orderDate: Date;
-        status: string;
-        createdAt: any;
-        updatedAt: any;
-    }>;
+    findOne(id: number): Promise<import("../../application/dto/order-response.dto.js").OrderResponseDto>;
+    update(id: number, dto: UpdateOrderDto): Promise<import("../../application/dto/order-response.dto.js").OrderResponseDto>;
     remove(id: number): Promise<{
         message: string;
     }>;

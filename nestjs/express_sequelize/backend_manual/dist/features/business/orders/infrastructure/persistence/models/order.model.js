@@ -7,10 +7,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
+import { AutoIncrement, Column, CreatedAt, DataType, ForeignKey, Model, PrimaryKey, Table, UpdatedAt, } from 'sequelize-typescript';
 import { ClientModel } from '../../../../clients/infrastructure/persistence/models/client.model.js';
 let OrderModel = class OrderModel extends Model {
 };
+__decorate([
+    PrimaryKey,
+    AutoIncrement,
+    Column(DataType.INTEGER),
+    __metadata("design:type", Number)
+], OrderModel.prototype, "id", void 0);
 __decorate([
     ForeignKey(() => ClientModel),
     Column({ type: DataType.INTEGER, allowNull: false }),
@@ -24,8 +30,16 @@ __decorate([
     Column({ type: DataType.STRING, allowNull: false }),
     __metadata("design:type", String)
 ], OrderModel.prototype, "status", void 0);
+__decorate([
+    CreatedAt,
+    __metadata("design:type", Date)
+], OrderModel.prototype, "createdAt", void 0);
+__decorate([
+    UpdatedAt,
+    __metadata("design:type", Date)
+], OrderModel.prototype, "updatedAt", void 0);
 OrderModel = __decorate([
-    Table({ tableName: 'orders', timestamps: true })
+    Table({ tableName: 'orders' })
 ], OrderModel);
 export { OrderModel };
 //# sourceMappingURL=order.model.js.map

@@ -1,4 +1,4 @@
-import { Order } from './order.entity';
+import { Order } from './order.entity.js';
 
 describe('Order Entity', () => {
   it('should create a valid order', () => {

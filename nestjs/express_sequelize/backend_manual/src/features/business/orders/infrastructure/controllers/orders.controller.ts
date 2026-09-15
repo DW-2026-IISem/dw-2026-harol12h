@@ -24,7 +24,7 @@ export class OrdersController {
 
   @Get()
   async findAll() {
-    return this.listOrders.execute();
+    return this.listOrders.execute({});
   }
 
   @Get(':id')

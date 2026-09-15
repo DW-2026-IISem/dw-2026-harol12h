@@ -3,12 +3,5 @@ import { CreateOrderDto } from '../dto/create-order.dto.js';
 export declare class CreateOrderUseCase {
     private readonly orderRepository;
     constructor(orderRepository: IOrderRepository);
-    execute(dto: CreateOrderDto): Promise<{
-        id: any;
-        clientId: number;
-        orderDate: Date;
-        status: string;
-        createdAt: any;
-        updatedAt: any;
-    }>;
+    execute(dto: CreateOrderDto): Promise<import("../dto/order-response.dto.js").OrderResponseDto>;
 }

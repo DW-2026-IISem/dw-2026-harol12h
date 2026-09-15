@@ -1,4 +1,4 @@
-import { OrderModel } from '../models/order.model';
+import { OrderModel } from '../models/order.model.js';
 
 export async function seedOrders(): Promise<void> {
   const count = await OrderModel.count();

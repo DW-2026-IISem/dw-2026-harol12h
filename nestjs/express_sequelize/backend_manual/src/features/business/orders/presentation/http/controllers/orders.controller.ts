@@ -17,16 +17,16 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { ParsePositiveIntPipe } from '../../../../../../common/pipes/parse-positive-int.pipe';
-import { CreateOrderDto } from '../../../application/dto/create-order.dto';
-import { UpdateOrderDto } from '../../../application/dto/update-order.dto';
-import { OrderFilterDto } from '../../../application/dto/order-filter.dto';
-import { OrderResponseDto } from '../../../application/dto/order-response.dto';
-import { CreateOrderUseCase } from '../../../application/use-cases/create-order.use-case';
-import { UpdateOrderUseCase } from '../../../application/use-cases/update-order.use-case';
-import { DeleteOrderUseCase } from '../../../application/use-cases/delete-order.use-case';
-import { GetOrderUseCase } from '../../../application/use-cases/get-order.use-case';
-import { ListOrdersUseCase } from '../../../application/use-cases/list-orders.use-case';
+import { ParsePositiveIntPipe } from '../../../../../../common/pipes/parse-positive-int.pipe.js';
+import { CreateOrderDto } from '../../../application/dto/create-order.dto.js';
+import { UpdateOrderDto } from '../../../application/dto/update-order.dto.js';
+import { OrderFilterDto } from '../../../application/dto/order-filter.dto.js';
+import { OrderResponseDto } from '../../../application/dto/order-response.dto.js';
+import { CreateOrderUseCase } from '../../../application/use-cases/create-order.use-case.js';
+import { UpdateOrderUseCase } from '../../../application/use-cases/update-order.use-case.js';
+import { DeleteOrderUseCase } from '../../../application/use-cases/delete-order.use-case.js';
+import { GetOrderUseCase } from '../../../application/use-cases/get-order.use-case.js';
+import { ListOrdersUseCase } from '../../../application/use-cases/list-orders.use-case.js';
 
 @ApiTags('Orders')
 @Controller('orders')

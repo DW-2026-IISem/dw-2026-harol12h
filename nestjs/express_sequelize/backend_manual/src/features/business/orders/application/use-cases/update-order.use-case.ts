@@ -1,11 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { OrderNotFoundException } from '../../domain/exceptions/order-not-found.exception';
-import {
-  IOrderRepository,
-  ORDER_REPOSITORY,
-} from '../../domain/interfaces/order-repository.interface';
-import { UpdateOrderDto } from '../dto/update-order.dto';
-import { OrderMapper } from '../mappers/order.mapper';
+import { OrderNotFoundException } from '../../domain/exceptions/order-not-found.exception.js';
+import type { IOrderRepository } from '../../domain/interfaces/order-repository.interface.js';
+import { ORDER_REPOSITORY } from '../../domain/interfaces/order-repository.interface.js';
+import { UpdateOrderDto } from '../dto/update-order.dto.js';
+import { OrderMapper } from '../mappers/order.mapper.js';
 
 @Injectable()
 export class UpdateOrderUseCase {

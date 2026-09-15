@@ -5,13 +5,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { Module } from '@nestjs/common';
-import { OrdersController } from './infrastructure/controllers/orders.controller.js';
+import { ORDER_REPOSITORY } from './domain/interfaces/order-repository.interface.js';
 import { OrderRepository } from './infrastructure/persistence/repositories/order.repository.js';
 import { CreateOrderUseCase } from './application/use-cases/create-order.use-case.js';
-import { GetOrderUseCase } from './application/use-cases/get-order.use-case.js';
-import { ListOrdersUseCase } from './application/use-cases/list-orders.use-case.js';
 import { UpdateOrderUseCase } from './application/use-cases/update-order.use-case.js';
 import { DeleteOrderUseCase } from './application/use-cases/delete-order.use-case.js';
+import { GetOrderUseCase } from './application/use-cases/get-order.use-case.js';
+import { ListOrdersUseCase } from './application/use-cases/list-orders.use-case.js';
+import { OrdersController } from './presentation/http/controllers/orders.controller.js';
 let OrdersModule = class OrdersModule {
 };
 OrdersModule = __decorate([
@@ -19,12 +20,14 @@ OrdersModule = __decorate([
         controllers: [OrdersController],
         providers: [
             OrderRepository,
+            { provide: ORDER_REPOSITORY, useExisting: OrderRepository },
             CreateOrderUseCase,
-            GetOrderUseCase,
-            ListOrdersUseCase,
             UpdateOrderUseCase,
             DeleteOrderUseCase,
+            GetOrderUseCase,
+            ListOrdersUseCase,
         ],
+        exports: [ORDER_REPOSITORY],
     })
 ], OrdersModule);
 export { OrdersModule };

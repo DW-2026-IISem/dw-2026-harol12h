@@ -1,12 +1,20 @@
+export interface OrderProps {
+    id?: number;
+    clientId: number;
+    orderDate: Date;
+    status: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
 export declare class Order {
-    readonly id: number | null;
-    readonly clientId: number;
-    readonly orderDate: Date;
-    readonly status: string;
-    constructor(id: number | null, clientId: number, orderDate: Date, status: string);
-    static create(props: {
-        clientId: number;
-        orderDate: Date;
-        status: string;
-    }): Order;
+    id?: number;
+    clientId: number;
+    orderDate: Date;
+    status: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    private constructor();
+    static create(props: Omit<OrderProps, 'id' | 'createdAt' | 'updatedAt'>): Order;
+    static reconstitute(props: OrderProps): Order;
+    updateStatus(status: string): void;
 }

@@ -1,5 +1,5 @@
-import { OrderRepository } from './order.repository';
-import { Order } from '../../../domain/entities/order.entity';
+import { OrderRepository } from './order.repository.js';
+import { Order } from '../../../domain/entities/order.entity.js';
 
 describe('OrderRepository', () => {
   let repository: OrderRepository;

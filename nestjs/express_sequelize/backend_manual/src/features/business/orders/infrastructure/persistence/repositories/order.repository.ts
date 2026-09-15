@@ -3,14 +3,14 @@ import { Op } from 'sequelize';
 import {
   buildPaginatedResult,
   normalizePagination,
-} from '../../../../../../common/utils/pagination.util';
-import { Order } from '../../../domain/entities/order.entity';
+} from '../../../../../../common/utils/pagination.util.js';
+import { Order } from '../../../domain/entities/order.entity.js';
 import {
   IOrderRepository,
   OrderFindAllParams,
-} from '../../../domain/interfaces/order-repository.interface';
-import { OrderMapper } from '../../../application/mappers/order.mapper';
-import { OrderModel } from '../models/order.model';
+} from '../../../domain/interfaces/order-repository.interface.js';
+import { OrderMapper } from '../../../application/mappers/order.mapper.js';
+import { OrderModel } from '../models/order.model.js';
 
 @Injectable()
 export class OrderRepository implements IOrderRepository {

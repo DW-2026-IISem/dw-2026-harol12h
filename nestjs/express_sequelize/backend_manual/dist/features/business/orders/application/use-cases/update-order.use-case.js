@@ -11,6 +11,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 import { Inject, Injectable } from '@nestjs/common';
+import { OrderNotFoundException } from '../../domain/exceptions/order-not-found.exception.js';
 import { ORDER_REPOSITORY } from '../../domain/interfaces/order-repository.interface.js';
 import { OrderMapper } from '../mappers/order.mapper.js';
 let UpdateOrderUseCase = class UpdateOrderUseCase {
@@ -19,10 +20,12 @@ let UpdateOrderUseCase = class UpdateOrderUseCase {
         this.orderRepository = orderRepository;
     }
     async execute(id, dto) {
-        const existing = await this.orderRepository.findById(id);
-        if (!existing)
-            throw new Error(`Order ${id} not found`);
-        const updated = await this.orderRepository.update({ ...existing.toJSON(), ...dto });
+        const order = await this.orderRepository.findById(id);
+        if (!order)
+            throw new OrderNotFoundException(id);
+        if (dto.status)
+            order.updateStatus(dto.status);
+        const updated = await this.orderRepository.update(order);
         return OrderMapper.toResponse(updated);
     }
 };

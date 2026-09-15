@@ -35,7 +35,7 @@ let OrdersController = class OrdersController {
         return this.createOrder.execute(dto);
     }
     async findAll() {
-        return this.listOrders.execute();
+        return this.listOrders.execute({});
     }
     async findOne(id) {
         return this.getOrder.execute(id);

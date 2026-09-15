@@ -1,6 +1,6 @@
-import { Order } from '../../domain/entities/order.entity';
-import { OrderResponseDto } from '../dto/order-response.dto';
-import { OrderModel } from '../../infrastructure/persistence/models/order.model';
+import { Order } from '../../domain/entities/order.entity.js';
+import { OrderResponseDto } from '../dto/order-response.dto.js';
+import { OrderModel } from '../../infrastructure/persistence/models/order.model.js';
 
 export class OrderMapper {
   static toDomain(model: OrderModel): Order {

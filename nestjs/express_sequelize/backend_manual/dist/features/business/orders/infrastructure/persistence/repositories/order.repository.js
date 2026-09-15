@@ -5,27 +5,42 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { Injectable } from '@nestjs/common';
+import { buildPaginatedResult, normalizePagination, } from '../../../../../../common/utils/pagination.util.js';
+import { OrderMapper } from '../../../application/mappers/order.mapper.js';
 import { OrderModel } from '../models/order.model.js';
 let OrderRepository = class OrderRepository {
     async create(order) {
-        return await OrderModel.create(order);
-    }
-    async findById(id) {
-        return await OrderModel.findByPk(id);
-    }
-    async findAll() {
-        return await OrderModel.findAll();
+        const model = await OrderModel.create(OrderMapper.toPersistence(order));
+        return OrderMapper.toDomain(model);
     }
     async update(order) {
-        const existing = await OrderModel.findByPk(order.id);
-        if (!existing)
-            throw new Error('Order not found');
-        return await existing.update(order);
+        await OrderModel.update(OrderMapper.toPersistence(order), {
+            where: { id: order.id },
+        });
+        const updated = await OrderModel.findByPk(order.id);
+        return OrderMapper.toDomain(updated);
     }
     async delete(id) {
-        const existing = await OrderModel.findByPk(id);
-        if (existing)
-            await existing.destroy();
+        await OrderModel.destroy({ where: { id } });
+    }
+    async findById(id) {
+        const model = await OrderModel.findByPk(id);
+        return model ? OrderMapper.toDomain(model) : null;
+    }
+    async findAll(params) {
+        const { page, limit, offset } = normalizePagination(params.page, params.limit);
+        const where = {};
+        if (params.clientId)
+            where.clientId = params.clientId;
+        if (params.status)
+            where.status = params.status;
+        const { rows, count } = await OrderModel.findAndCountAll({
+            where,
+            limit,
+            offset,
+            order: [['createdAt', 'DESC']],
+        });
+        return buildPaginatedResult(rows.map((row) => OrderMapper.toDomain(row)), count, page, limit);
     }
 };
 OrderRepository = __decorate([

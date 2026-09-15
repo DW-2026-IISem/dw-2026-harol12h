@@ -9,7 +9,7 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
-import { ClientModel } from '../../../../clients/infrastructure/persistence/models/client.model';
+import { ClientModel } from '../../../../clients/infrastructure/persistence/models/client.model.js';
 
 @Table({ tableName: 'orders' })
 export class OrderModel extends Model {

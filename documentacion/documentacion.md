@@ -7786,3 +7786,10 @@ describe('OrdersController', () => {
 EOF_BACKEND_MANUAL
 ```
 ![](img/206.png)
+
+#### 10.29 Verificar tablas Order
+
+```bash
+npm run start:dev
+```
+![](img/207.png)

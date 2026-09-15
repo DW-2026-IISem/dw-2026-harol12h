@@ -1,5 +1,5 @@
-import { OrdersController } from './orders.controller';
-import { CreateOrderUseCase } from '../../../application/use-cases/create-order.use-case';
+import { OrdersController } from './orders.controller.js';
+import { CreateOrderUseCase } from '../../../application/use-cases/create-order.use-case.js';
 
 describe('OrdersController', () => {
   it('should call create use case', async () => {

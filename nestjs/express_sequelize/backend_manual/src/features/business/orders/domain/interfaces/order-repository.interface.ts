@@ -1,5 +1,5 @@
-import { PaginatedResult } from '../../../../../common/interfaces/pagination.interface';
-import { Order } from '../entities/order.entity';
+import { PaginatedResult } from '../../../../../common/interfaces/pagination.interface.js';
+import { Order } from '../entities/order.entity.js';
 
 export const ORDER_REPOSITORY = 'ORDER_REPOSITORY';
 

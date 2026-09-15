@@ -1,9 +1,9 @@
-import { OrderModel } from '../models/order.model.js';
 import { Order } from '../../../domain/entities/order.entity.js';
-export declare class OrderRepository {
-    create(order: Order): Promise<OrderModel>;
-    findById(id: number): Promise<OrderModel | null>;
-    findAll(): Promise<OrderModel[]>;
-    update(order: Order): Promise<OrderModel>;
+import { IOrderRepository, OrderFindAllParams } from '../../../domain/interfaces/order-repository.interface.js';
+export declare class OrderRepository implements IOrderRepository {
+    create(order: Order): Promise<Order>;
+    update(order: Order): Promise<Order>;
     delete(id: number): Promise<void>;
+    findById(id: number): Promise<Order | null>;
+    findAll(params: OrderFindAllParams): Promise<import("../../../../../../common/interfaces/pagination.interface.js").PaginatedResult<Order>>;
 }

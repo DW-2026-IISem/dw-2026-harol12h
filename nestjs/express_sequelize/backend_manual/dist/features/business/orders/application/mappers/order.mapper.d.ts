@@ -1,13 +1,8 @@
 import { Order } from '../../domain/entities/order.entity.js';
+import { OrderResponseDto } from '../dto/order-response.dto.js';
 import { OrderModel } from '../../infrastructure/persistence/models/order.model.js';
 export declare class OrderMapper {
-    static toEntity(model: OrderModel): Order;
-    static toResponse(model: OrderModel): {
-        id: any;
-        clientId: number;
-        orderDate: Date;
-        status: string;
-        createdAt: any;
-        updatedAt: any;
-    };
+    static toDomain(model: OrderModel): Order;
+    static toResponse(entity: Order): OrderResponseDto;
+    static toPersistence(entity: Order): Partial<OrderModel>;
 }

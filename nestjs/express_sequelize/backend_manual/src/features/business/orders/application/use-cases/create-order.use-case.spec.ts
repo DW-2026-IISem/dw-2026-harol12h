@@ -1,6 +1,9 @@
-import { CreateOrderUseCase } from './create-order.use-case';
-import { IOrderRepository } from '../../domain/interfaces/order-repository.interface';
-import { Order } from '../../domain/entities/order.entity';
+import { CreateOrderUseCase } from './create-order.use-case.js';
+import type { IOrderRepository } 
+  from '../../domain/interfaces/order-repository.interface.js';
+import { ORDER_REPOSITORY } 
+  from '../../domain/interfaces/order-repository.interface.js';
+import { Order } from '../../domain/entities/order.entity.js';
 
 class MockOrderRepository implements IOrderRepository {
   async create(order: Order): Promise<Order> { return order; }
