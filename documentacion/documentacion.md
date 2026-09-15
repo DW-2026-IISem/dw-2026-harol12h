@@ -6563,3 +6563,29 @@ export async function seedProducts() {
 EOF_BACKEND_IA
 ```
 ![](img/172.png)
+
+#### 10.26 src/features/business/products/domain/interfaces/product-repository.interface.ts
+
+Define la interfaz del repositorio de productos para aplicar inversión de dependencias.
+
+**ruta** `src/features/business/products/domain/interfaces/product-repository.interface.ts`
+
+```bash
+mkdir -p src/features/business/products/domain/interfaces
+cat > src/features/business/products/domain/interfaces/product-repository.interface.ts <<'EOF_BACKEND_IA'
+import { Product } from '../entities/product.entity.js';
+import { ProductModel } from '../../infrastructure/persistence/models/product.model.js';
+import { ProductFilterDto } from '../../application/dto/product-filter.dto.js';
+
+export const PRODUCT_REPOSITORY = 'PRODUCT_REPOSITORY';
+
+export interface IProductRepository {
+  create(product: Product): Promise<ProductModel>;
+  findById(id: number): Promise<ProductModel | null>;
+  findAll(filter?: ProductFilterDto): Promise<{ items: ProductModel[]; meta?: any }>;
+  update(product: Partial<Product>): Promise<ProductModel>;
+  delete(id: number): Promise<void>;
+}
+EOF_BACKEND_IA
+```
+![](img/173.png)
