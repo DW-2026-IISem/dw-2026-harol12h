@@ -7509,3 +7509,17 @@ export class OrdersController {
 EOF_BACKEND_MANUAL
 ```
 ![](img/197.png)
+
+#### 10.2.20 src/features/business/orders/index.ts
+
+Exportar módulo Orders.
+
+**ruta** `src/features/business/orders/index.ts`
+
+```bash
+mkdir -p src/features/business/orders
+cat > src/features/business/orders/index.ts <<'EOF_BACKEND_MANUAL'
+export { OrdersModule } from './orders.module';
+EOF_BACKEND_MANUAL
+```
+![](img/198.png)
