@@ -6100,3 +6100,24 @@ export class OrdersModule {}
 EOF_BACKEND_IA
 ```
 ![](img/157.png)
+
+#### 10.12 src/features/business/orders/infrastructure/persistence/seeders/orders.seeder.ts
+
+Genera pedidos de prueba asociados a clientes.
+
+**ruta** `src/features/business/orders/infrastructure/persistence/seeders/orders.seeder.ts`
+
+```bash
+mkdir -p src/features/business/orders/infrastructure/persistence/seeders
+cat > src/features/business/orders/infrastructure/persistence/seeders/orders.seeder.ts <<'EOF_BACKEND_IA'
+import { OrderModel } from '../models/order.model.js';
+
+export async function seedOrders() {
+  await OrderModel.bulkCreate([
+    { clientId: 1, orderDate: new Date(), status: 'PENDING' },
+    { clientId: 2, orderDate: new Date(), status: 'COMPLETED' },
+  ]);
+}
+EOF_BACKEND_IA
+```
+![](img/158.png)
