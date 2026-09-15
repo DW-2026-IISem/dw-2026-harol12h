@@ -7045,3 +7045,34 @@ export async function seedOrders(): Promise<void> {
 EOF_BACKEND_MANUAL
 ```
 ![](img/185.png)
+
+#### 10.2.7 src/features/business/orders/application/dto/create-order.dto.ts
+
+DTO de entrada para crear pedidos vía HTTP.
+
+**ruta** `src/features/business/orders/application/dto/create-order.dto.ts`
+
+```bash
+mkdir -p src/features/business/orders/application/dto
+cat > src/features/business/orders/application/dto/create-order.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsDateString, IsInt, IsNotEmpty, IsString } from 'class-validator';
+
+export class CreateOrderDto {
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  clientId: number;
+
+  @ApiProperty({ example: '2026-09-15' })
+  @IsDateString()
+  orderDate: Date;
+
+  @ApiProperty({ example: 'PENDING' })
+  @IsString()
+  @IsNotEmpty()
+  status: string;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/186.png)
+
