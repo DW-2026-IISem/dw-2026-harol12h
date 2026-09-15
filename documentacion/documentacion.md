@@ -7046,7 +7046,7 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/185.png)
 
-#### 10.2.7 src/features/business/orders/application/dto/create-order.dto.ts
+#### 10.2.8 src/features/business/orders/application/dto/create-order.dto.ts
 
 DTO de entrada para crear pedidos vía HTTP.
 
@@ -7076,3 +7076,64 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/186.png)
 
+#### 10.2.9 src/features/business/orders/application/dto/update-order.dto.ts
+
+DTO para actualizar estado de pedidos. 
+
+**ruta** `src/features/business/orders/application/dto/update-order.dto.ts`
+
+```bash
+cat > src/features/business/orders/application/dto/update-order.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
+
+export class UpdateOrderDto {
+  @ApiPropertyOptional({ example: 'COMPLETED' })
+  @IsOptional()
+  @IsString()
+  status?: string;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/187.png)
+
+#### 10.2.10 src/features/business/orders/application/dto/order-filter.dto.ts
+
+DTO para filtros de búsqueda y paginación de pedidos.
+
+**ruta** `src/features/business/orders/application/dto/order-filter.dto.ts`
+
+```bash
+cat > src/features/business/orders/application/dto/order-filter.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+
+export class OrderFilterDto {
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @ApiPropertyOptional({ example: 10 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  limit?: number;
+
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  clientId?: number;
+
+  @ApiPropertyOptional({ example: 'PENDING' })
+  @IsOptional()
+  @IsString()
+  status?: string;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/188.png)
