@@ -7322,3 +7322,38 @@ export class GetOrderUseCase {
 EOF_BACKEND_MANUAL
 ```
 ![](img/193.png)
+
+#### 10.2.16 src/features/business/orders/application/use-cases/list-orders.use-case.ts
+
+Listar pedidos con filtros y paginación.
+
+**ruta** `src/features/business/orders/application/use-cases/list-orders.use-case.ts`
+
+```bash
+cat > src/features/business/orders/application/use-cases/list-orders.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  IOrderRepository,
+  ORDER_REPOSITORY,
+} from '../../domain/interfaces/order-repository.interface';
+import { OrderFilterDto } from '../dto/order-filter.dto';
+import { OrderMapper } from '../mappers/order.mapper';
+
+@Injectable()
+export class ListOrdersUseCase {
+  constructor(
+    @Inject(ORDER_REPOSITORY)
+    private readonly orderRepository: IOrderRepository,
+  ) {}
+
+  async execute(filter: OrderFilterDto) {
+    const result = await this.orderRepository.findAll(filter);
+    return {
+      items: result.items.map((o) => OrderMapper.toResponse(o)),
+      meta: result.meta,
+    };
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/194.png)

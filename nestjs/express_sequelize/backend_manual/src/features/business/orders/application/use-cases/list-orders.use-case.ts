@@ -1,7 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { IOrderRepository } from '../../domain/interfaces/order-repository.interface.js';
-import { ORDER_REPOSITORY } from '../../domain/interfaces/order-repository.interface.js';
-import { OrderMapper } from '../mappers/order.mapper.js';
+import {
+  IOrderRepository,
+  ORDER_REPOSITORY,
+} from '../../domain/interfaces/order-repository.interface';
+import { OrderFilterDto } from '../dto/order-filter.dto';
+import { OrderMapper } from '../mappers/order.mapper';
 
 @Injectable()
 export class ListOrdersUseCase {
@@ -10,8 +13,11 @@ export class ListOrdersUseCase {
     private readonly orderRepository: IOrderRepository,
   ) {}
 
-  async execute() {
-    const orders = await this.orderRepository.findAll();
-    return orders.map((order) => OrderMapper.toResponse(order));
+  async execute(filter: OrderFilterDto) {
+    const result = await this.orderRepository.findAll(filter);
+    return {
+      items: result.items.map((o) => OrderMapper.toResponse(o)),
+      meta: result.meta,
+    };
   }
 }
