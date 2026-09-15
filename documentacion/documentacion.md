@@ -7394,3 +7394,26 @@ export class UpdateOrderUseCase {
 EOF_BACKEND_MANUAL
 ```
 ![](img/195.png)
+
+#### 10.2.18 src/features/business/orders/presentation/http/serializers/order.serializer.ts
+
+Serializer para respuestas HTTP de pedidos.
+
+**ruta** `src/features/business/orders/presentation/http/serializers/order.serializer.ts`
+
+```bash
+mkdir -p src/features/business/orders/presentation/http/serializers
+cat > src/features/business/orders/presentation/http/serializers/order.serializer.ts <<'EOF_BACKEND_MANUAL'
+import { Order } from '../../../domain/entities/order.entity';
+import { OrderResponseDto } from '../../../application/dto/order-response.dto';
+import { OrderMapper } from '../../../application/mappers/order.mapper';
+
+export class OrderSerializer {
+  static serialize(entity: Order): OrderResponseDto {
+    return OrderMapper.toResponse(entity);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/196.png)
+
