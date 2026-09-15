@@ -5,6 +5,7 @@ import { CreateOrderUseCase } from './application/use-cases/create-order.use-cas
 import { GetOrderUseCase } from './application/use-cases/get-order.use-case.js';
 import { ListOrdersUseCase } from './application/use-cases/list-orders.use-case.js';
 import { UpdateOrderUseCase } from './application/use-cases/update-order.use-case.js';
+import { DeleteOrderUseCase } from './application/use-cases/delete-order.use-case.js';
 
 @Module({
   controllers: [OrdersController],
@@ -14,6 +15,7 @@ import { UpdateOrderUseCase } from './application/use-cases/update-order.use-cas
     GetOrderUseCase,
     ListOrdersUseCase,
     UpdateOrderUseCase,
+    DeleteOrderUseCase,
   ],
 })
 export class OrdersModule {}
