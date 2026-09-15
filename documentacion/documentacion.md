@@ -5822,3 +5822,37 @@ export class OrderRepository {
 EOF_BACKEND_IA
 ```
 ![](img/149.png)
+
+#### 10.4 src/features/business/orders/application/dto/create-order.dto.ts  
+
+Define los DTOs para crear y actualizar pedidos.
+
+**ruta** `src/features/business/orders/application/dto/create-order.dto.ts`
+`src/features/business/orders/application/dto/update-order.dto.ts`
+
+```bash
+mkdir -p src/features/business/orders/application/dto
+cat > src/features/business/orders/application/dto/create-order.dto.ts <<'EOF_BACKEND_IA'
+import { ApiProperty } from '@nestjs/swagger';
+
+export class CreateOrderDto {
+  @ApiProperty({ example: 1 })
+  clientId: number;
+
+  @ApiProperty({ example: '2026-09-14' })
+  orderDate: Date;
+
+  @ApiProperty({ example: 'PENDING' })
+  status: string;
+}
+EOF_BACKEND_IA
+
+cat > src/features/business/orders/application/dto/update-order.dto.ts <<'EOF_BACKEND_IA'
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateOrderDto } from './create-order.dto.js';
+
+export class UpdateOrderDto extends PartialType(CreateOrderDto) {}
+EOF_BACKEND_IA
+```
+![](img/150.png)
+
