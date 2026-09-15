@@ -6246,3 +6246,23 @@ export interface IOrderRepository {
 EOF_BACKEND_IA
 ```
 ![](img/162.png)
+
+#### 10.17 src/features/business/orders/domain/exceptions/order-not-found.exception.ts
+
+Excepción personalizada para cuando un pedido no existe.
+
+**ruta** `src/features/business/orders/domain/exceptions/order-not-found.exception.ts`
+
+```bash
+mkdir -p src/features/business/orders/domain/exceptions
+cat > src/features/business/orders/domain/exceptions/order-not-found.exception.ts <<'EOF_BACKEND_IA'
+import { DomainException } from '../../../../../common/exceptions/domain.exception.js';
+
+export class OrderNotFoundException extends DomainException {
+  constructor(id: number) {
+    super(`El pedido con ID ${id} no existe.`);
+  }
+}
+EOF_BACKEND_IA
+```
+![](img/163.png)
