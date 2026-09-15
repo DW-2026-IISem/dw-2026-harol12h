@@ -7255,3 +7255,37 @@ export class CreateOrderUseCase {
 EOF_BACKEND_MANUAL
 ```
 ![](img/191.png)
+
+#### 10.2.14 src/features/business/orders/application/use-cases/delete-order.use-case.ts
+
+Caso de uso para eliminar pedidos.
+
+**ruta** `src/features/business/orders/application/use-cases/delete-order.use-case.ts`
+
+```bash
+cat > src/features/business/orders/application/use-cases/delete-order.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import { OrderNotFoundException } from '../../domain/exceptions/order-not-found.exception';
+import {
+  IOrderRepository,
+  ORDER_REPOSITORY,
+} from '../../domain/interfaces/order-repository.interface';
+
+@Injectable()
+export class DeleteOrderUseCase {
+  constructor(
+    @Inject(ORDER_REPOSITORY)
+    private readonly orderRepository: IOrderRepository,
+  ) {}
+
+  async execute(id: number): Promise<void> {
+    const order = await this.orderRepository.findById(id);
+    if (!order) {
+      throw new OrderNotFoundException(id);
+    }
+    await this.orderRepository.delete(id);
+  }
+}
+EOF_BACKEND_MANUAL
+``` 
+![](img/192.png)
