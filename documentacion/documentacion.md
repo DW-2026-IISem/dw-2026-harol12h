@@ -5702,3 +5702,11 @@ EOF_BACKEND_IA
 ```
 ![](img/145.png)
 
+#### verificacion de arranque 
+
+Confirma FK a product_types, seeder y CRUD `/api/products`.
+
+```bash
+npm run start:dev
+```
+![](img/146.png)
