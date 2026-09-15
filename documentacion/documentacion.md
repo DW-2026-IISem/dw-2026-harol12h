@@ -5710,3 +5710,45 @@ Confirma FK a product_types, seeder y CRUD `/api/products`.
 npm run start:dev
 ```
 ![](img/146.png)
+
+------------------------------------------------------------------------
+
+## FASE 10 
+
+### 10.1 src/features/business/orders/domain/entities/order.entity.ts
+
+Define la entidad de dominio Order con reglas de negocio (ej. fecha obligatoria, cliente requerido).
+
+**ruta** `src/features/business/orders/domain/entities/order.entity.ts`
+
+```bash
+mkdir -p src/features/business/orders/domain/entities
+cat > src/features/business/orders/domain/entities/order.entity.ts <<'EOF_BACKEND_IA'
+import { DomainException } from '../../../../../common/exceptions/domain.exception.js';
+
+export class Order {
+  constructor(
+    public readonly id: number | null,
+    public readonly clientId: number,
+    public readonly orderDate: Date,
+    public readonly status: string,
+  ) {
+    if (!clientId) {
+      throw new DomainException('El pedido debe estar asociado a un cliente.');
+    }
+    if (!orderDate) {
+      throw new DomainException('El pedido debe tener una fecha.');
+    }
+  }
+
+  static create(props: {
+    clientId: number;
+    orderDate: Date;
+    status: string;
+  }): Order {
+    return new Order(null, props.clientId, props.orderDate, props.status);
+  }
+}
+EOF_BACKEND_IA
+```
+![](img/147.png)
