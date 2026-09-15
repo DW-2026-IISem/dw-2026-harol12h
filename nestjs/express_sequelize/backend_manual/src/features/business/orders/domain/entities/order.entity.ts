@@ -1,25 +1,40 @@
-import { DomainException } from '../../../../../common/exceptions/domain.exception.js';
+export interface OrderProps {
+  id?: number;
+  clientId: number;
+  orderDate: Date;
+  status: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 export class Order {
-  constructor(
-    public readonly id: number | null,
-    public readonly clientId: number,
-    public readonly orderDate: Date,
-    public readonly status: string,
-  ) {
-    if (!clientId) {
-      throw new DomainException('El pedido debe estar asociado a un cliente.');
-    }
-    if (!orderDate) {
-      throw new DomainException('El pedido debe tener una fecha.');
-    }
+  id?: number;
+  clientId: number;
+  orderDate: Date;
+  status: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+
+  private constructor(props: OrderProps) {
+    this.id = props.id;
+    this.clientId = props.clientId;
+    this.orderDate = props.orderDate;
+    this.status = props.status;
+    this.createdAt = props.createdAt;
+    this.updatedAt = props.updatedAt;
   }
 
-  static create(props: {
-    clientId: number;
-    orderDate: Date;
-    status: string;
-  }): Order {
-    return new Order(null, props.clientId, props.orderDate, props.status);
+  static create(props: Omit<OrderProps, 'id' | 'createdAt' | 'updatedAt'>): Order {
+    if (!props.clientId) throw new Error('El pedido debe tener cliente');
+    if (!props.orderDate) throw new Error('El pedido debe tener fecha');
+    return new Order(props);
+  }
+
+  static reconstitute(props: OrderProps): Order {
+    return new Order(props);
+  }
+
+  updateStatus(status: string): void {
+    this.status = status;
   }
 }
