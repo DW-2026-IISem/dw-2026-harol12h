@@ -7596,3 +7596,26 @@ export async function createSequelizeInstance(options: any): Promise<Sequelize> 
 EOF_BACKEND_MANUAL
 ```
 ![](img/200.png)
+
+#### 10.2.23 src/features/business/business.module.ts
+
+Agregar OrdersModule.
+
+**ruta** `src/features/business/business.module.ts`
+
+```bash
+cat > src/features/business/business.module.ts <<'EOF_BACKEND_MANUAL'
+import { Module } from '@nestjs/common';
+import { ClientsModule } from './clients/clients.module';
+import { CollectionsModule } from './collections/collections.module';
+import { ProductsModule } from './products/products.module';
+import { OrdersModule } from './orders/orders.module';
+
+@Module({
+  imports: [ClientsModule, CollectionsModule, ProductsModule, OrdersModule],
+  exports: [ClientsModule, CollectionsModule, ProductsModule, OrdersModule],
+})
+export class BusinessModule {}
+EOF_BACKEND_MANUAL
+```
+![](img/201.png)
