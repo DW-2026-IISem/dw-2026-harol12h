@@ -6836,3 +6836,34 @@ export class OrderNotFoundException extends EntityNotFoundException {
 EOF_BACKEND_MANUAL
 ```
 ![](img/180.png)
+
+#### 10.2.3 src/features/business/orders/domain/interfaces/order-repository.interface.ts
+
+Contrato del repositorio de pedidos.
+
+**ruta** `src/features/business/orders/domain/interfaces/order-repository.interface.ts`
+
+```bash
+mkdir -p src/features/business/orders/domain/interfaces
+cat > src/features/business/orders/domain/interfaces/order-repository.interface.ts <<'EOF_BACKEND_MANUAL'
+import { PaginatedResult } from '../../../../../common/interfaces/pagination.interface';
+import { Order } from '../entities/order.entity';
+
+export const ORDER_REPOSITORY = 'ORDER_REPOSITORY';
+
+export interface OrderFindAllParams {
+  page?: number;
+  limit?: number;
+  clientId?: number;
+  status?: string;
+}
+
+export interface IOrderRepository {
+  create(order: Order): Promise<Order>;
+  update(order: Order): Promise<Order>;
+  delete(id: number): Promise<void>;
+  findById(id: number): Promise<Order | null>;
+  findAll(params: OrderFindAllParams): Promise<PaginatedResult<Order>>;
+}
+EOF_BACKEND_MANUAL
+```
