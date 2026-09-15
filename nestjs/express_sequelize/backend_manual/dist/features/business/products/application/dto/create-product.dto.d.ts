@@ -1,3 +1,4 @@
+import { Status } from '../../../../../common/enums/status.enum.js';
 export declare class CreateProductDto {
     name: string;
     brand: string;
@@ -5,4 +6,6 @@ export declare class CreateProductDto {
     minStock: number;
     quantity: number;
     productTypeId: number;
+    collectionId: number;
+    status?: Status;
 }

@@ -3,11 +3,13 @@ import {
   IsInt,
   IsNotEmpty,
   IsNumber,
+  IsEnum,
   IsPositive,
   IsString,
   MaxLength,
   Min,
 } from 'class-validator';
+import { Status } from '../../../../../common/enums/status.enum.js';
 
 export class CreateProductDto {
   @ApiProperty({ example: 'Smartphone X' })
@@ -41,4 +43,13 @@ export class CreateProductDto {
   @IsInt()
   @IsPositive()
   productTypeId: number;
+
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  @IsPositive()
+  collectionId: number;
+
+  @ApiProperty({ enum: Status, example: Status.ACTIVE, required: false })
+  @IsEnum(Status)
+  status?: Status;
 }

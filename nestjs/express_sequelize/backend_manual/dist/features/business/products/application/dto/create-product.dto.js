@@ -8,7 +8,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsNumber, IsPositive, IsString, MaxLength, Min, } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber, IsEnum, IsPositive, IsString, MaxLength, Min, } from 'class-validator';
+import { Status } from '../../../../../common/enums/status.enum.js';
 export class CreateProductDto {
     name;
     brand;
@@ -16,6 +17,8 @@ export class CreateProductDto {
     minStock;
     quantity;
     productTypeId;
+    collectionId;
+    status;
 }
 __decorate([
     ApiProperty({ example: 'Smartphone X' }),
@@ -55,4 +58,15 @@ __decorate([
     IsPositive(),
     __metadata("design:type", Number)
 ], CreateProductDto.prototype, "productTypeId", void 0);
+__decorate([
+    ApiProperty({ example: 1 }),
+    IsInt(),
+    IsPositive(),
+    __metadata("design:type", Number)
+], CreateProductDto.prototype, "collectionId", void 0);
+__decorate([
+    ApiProperty({ enum: Status, example: Status.ACTIVE, required: false }),
+    IsEnum(Status),
+    __metadata("design:type", String)
+], CreateProductDto.prototype, "status", void 0);
 //# sourceMappingURL=create-product.dto.js.map

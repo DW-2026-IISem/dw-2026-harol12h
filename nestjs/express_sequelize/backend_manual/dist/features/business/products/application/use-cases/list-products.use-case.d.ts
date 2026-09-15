@@ -4,7 +4,19 @@ export declare class ListProductsUseCase {
     private readonly productRepository;
     constructor(productRepository: IProductRepository);
     execute(filter: ProductFilterDto): Promise<{
-        items: import("../dto/product-response.dto.js").ProductResponseDto[];
-        meta: import("../../../../../common/interfaces/pagination.interface.js").PaginationMeta;
+        items: {
+            id: any;
+            name: string;
+            brand: string;
+            price: number;
+            minStock: number;
+            quantity: number;
+            productTypeId: number;
+            collectionId: number;
+            status: string;
+            createdAt: any;
+            updatedAt: any;
+        }[];
+        meta: any;
     }>;
 }

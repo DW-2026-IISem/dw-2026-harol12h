@@ -1,5 +1,5 @@
 import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
-import { ClientModel } from '../../../clients/infrastructure/persistence/models/client.model.js';
+import { ClientModel } from '../../../../clients/infrastructure/persistence/models/client.model.js';
 
 @Table({ tableName: 'orders', timestamps: true })
 export class OrderModel extends Model {

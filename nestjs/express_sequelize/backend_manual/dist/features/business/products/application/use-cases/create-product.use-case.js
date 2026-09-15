@@ -11,8 +11,8 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 import { Inject, Injectable } from '@nestjs/common';
+import { PRODUCT_REPOSITORY } from '../../domain/interfaces/product-repository.interface.js';
 import { Product } from '../../domain/entities/product.entity.js';
-import * as productRepositoryInterface from '../../domain/interfaces/product-repository.interface.js';
 import { ProductMapper } from '../mappers/product.mapper.js';
 let CreateProductUseCase = class CreateProductUseCase {
     productRepository;
@@ -20,14 +20,23 @@ let CreateProductUseCase = class CreateProductUseCase {
         this.productRepository = productRepository;
     }
     async execute(dto) {
-        const product = Product.create(dto);
+        const product = Product.create({
+            name: dto.name,
+            brand: dto.brand,
+            price: dto.price,
+            minStock: dto.minStock,
+            quantity: dto.quantity,
+            productTypeId: dto.productTypeId,
+            collectionId: dto.collectionId,
+            status: dto.status,
+        });
         const created = await this.productRepository.create(product);
         return ProductMapper.toResponse(created);
     }
 };
 CreateProductUseCase = __decorate([
     Injectable(),
-    __param(0, Inject(productRepositoryInterface.PRODUCT_REPOSITORY)),
+    __param(0, Inject(PRODUCT_REPOSITORY)),
     __metadata("design:paramtypes", [Object])
 ], CreateProductUseCase);
 export { CreateProductUseCase };

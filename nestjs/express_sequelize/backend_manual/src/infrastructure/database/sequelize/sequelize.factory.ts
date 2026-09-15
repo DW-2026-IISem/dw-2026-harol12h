@@ -10,14 +10,13 @@ export const ALL_MODELS = [
   CollectionModel,
   ProductTypeModel,
   ProductModel,
-  OrderModel, // ✅ nuevo
+  OrderModel,
 ];
 
 export function createSequelizeInstance(options: any) {
   const sequelize = new Sequelize(options);
   sequelize.addModels(ALL_MODELS);
 
-  // Asociaciones
   ClientModel.hasMany(OrderModel, { foreignKey: 'clientId' });
   OrderModel.belongsTo(ClientModel, { foreignKey: 'clientId' });
 

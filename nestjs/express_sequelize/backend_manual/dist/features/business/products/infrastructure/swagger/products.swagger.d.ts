@@ -7,6 +7,7 @@ export declare class ProductSwagger {
     minStock: number;
     quantity: number;
     productTypeId: number;
+    collectionId: number;
     status: Status;
     createdAt: Date;
     updatedAt: Date;

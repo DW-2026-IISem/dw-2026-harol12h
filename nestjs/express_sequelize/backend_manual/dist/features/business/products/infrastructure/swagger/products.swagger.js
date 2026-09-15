@@ -17,6 +17,7 @@ export class ProductSwagger {
     minStock;
     quantity;
     productTypeId;
+    collectionId;
     status;
     createdAt;
     updatedAt;
@@ -49,6 +50,10 @@ __decorate([
     ApiProperty({ example: 1 }),
     __metadata("design:type", Number)
 ], ProductSwagger.prototype, "productTypeId", void 0);
+__decorate([
+    ApiProperty({ example: 1 }),
+    __metadata("design:type", Number)
+], ProductSwagger.prototype, "collectionId", void 0);
 __decorate([
     ApiProperty({ enum: Status, example: Status.ACTIVE }),
     __metadata("design:type", String)

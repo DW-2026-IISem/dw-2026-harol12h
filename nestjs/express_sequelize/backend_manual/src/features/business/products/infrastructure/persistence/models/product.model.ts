@@ -1,50 +1,32 @@
-import {
-  AutoIncrement,
-  Column,
-  CreatedAt,
-  DataType,
-  Model,
-  PrimaryKey,
-  Table,
-  UpdatedAt,
-} from 'sequelize-typescript';
-import { Status } from '../../../../../../common/enums/status.enum.js';
+import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
+import { CollectionModel } from '../../../../collections/infrastructure/persistence/models/collection.model.js';
+import { ProductTypeModel } from '../../../../product-types/infrastructure/persistence/models/product-type.model.js';
 
-@Table({ tableName: 'products' })
+@Table({ tableName: 'products', timestamps: true })
 export class ProductModel extends Model {
-  @PrimaryKey
-  @AutoIncrement
-  @Column(DataType.INTEGER)
-  declare id: number;
-
-  @Column({ type: DataType.STRING(150), allowNull: false })
+  @Column({ type: DataType.STRING, allowNull: false })
   declare name: string;
 
-  @Column({ type: DataType.STRING(100), allowNull: false })
+  @Column({ type: DataType.STRING, allowNull: false })
   declare brand: string;
 
-  @Column({ type: DataType.BIGINT, allowNull: false })
+  @Column({ type: DataType.INTEGER, allowNull: false })
   declare price: number;
 
-  @Column({ type: DataType.INTEGER, allowNull: false, defaultValue: 0 })
+  @Column({ type: DataType.INTEGER, allowNull: false })
   declare minStock: number;
 
-  @Column({ type: DataType.INTEGER, allowNull: false, defaultValue: 0 })
+  @Column({ type: DataType.INTEGER, allowNull: false })
   declare quantity: number;
 
+  @ForeignKey(() => ProductTypeModel)
   @Column({ type: DataType.INTEGER, allowNull: false })
   declare productTypeId: number;
 
-  @Column({
-    type: DataType.ENUM(...Object.values(Status)),
-    allowNull: false,
-    defaultValue: Status.ACTIVE,
-  })
-  declare status: Status;
+  @ForeignKey(() => CollectionModel)
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  declare collectionId: number;
 
-  @CreatedAt
-  declare createdAt: Date;
-
-  @UpdatedAt
-  declare updatedAt: Date;
+  @Column({ type: DataType.STRING, allowNull: false })
+  declare status: string;
 }

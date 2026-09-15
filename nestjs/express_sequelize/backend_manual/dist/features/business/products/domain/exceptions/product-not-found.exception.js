@@ -1,7 +1,7 @@
-import { EntityNotFoundException } from '../../../../../common/exceptions/entity-not-found.exception.js';
-export class ProductNotFoundException extends EntityNotFoundException {
+import { DomainException } from '../../../../../common/exceptions/domain.exception.js';
+export class ProductNotFoundException extends DomainException {
     constructor(id) {
-        super('Producto', id);
+        super(`El producto con ID ${id} no existe.`);
     }
 }
 //# sourceMappingURL=product-not-found.exception.js.map

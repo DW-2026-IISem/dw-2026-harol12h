@@ -4,29 +4,23 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-import { Module, Global } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { DatabaseDialect } from '../../../config/environment/env.interface.js';
-import { SEQUELIZE_TOKEN } from '../../../common/constants/database.constants.js';
-import { createSequelizeInstance } from './sequelize.factory.js';
-import { DatabaseSeederService } from '../seeders/database-seeder.service.js';
+import { Module } from '@nestjs/common';
+import { getSequelizeOptions } from './sequelize.options.js';
+import { Sequelize } from 'sequelize-typescript';
 let SequelizeDatabaseModule = class SequelizeDatabaseModule {
 };
 SequelizeDatabaseModule = __decorate([
-    Global(),
     Module({
         providers: [
             {
-                provide: SEQUELIZE_TOKEN,
-                useFactory: async (configService) => {
-                    const dialect = configService.get('environment.database.dialect', DatabaseDialect.MySQL);
-                    return createSequelizeInstance(dialect ?? DatabaseDialect.MySQL);
+                provide: 'SEQUELIZE',
+                useFactory: async () => {
+                    const options = getSequelizeOptions();
+                    return new Sequelize(options);
                 },
-                inject: [ConfigService],
             },
-            DatabaseSeederService,
         ],
-        exports: [SEQUELIZE_TOKEN],
+        exports: ['SEQUELIZE'],
     })
 ], SequelizeDatabaseModule);
 export { SequelizeDatabaseModule };

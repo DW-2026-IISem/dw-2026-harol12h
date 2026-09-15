@@ -1,6 +1,5 @@
 export declare class ProductFilterDto {
-    page?: number;
-    limit?: number;
-    search?: string;
+    collectionId?: number;
     productTypeId?: number;
+    status?: string;
 }

@@ -1,3 +1,9 @@
-import { SequelizeOptions } from 'sequelize-typescript';
-import { DatabaseDialect } from '../../../config/environment/env.interface.js';
-export declare function getSequelizeOptions(dialect: DatabaseDialect): Partial<SequelizeOptions>;
+export declare function getSequelizeOptions(): {
+    dialect: import("../../../config/environment/env.interface.js").DatabaseDialect;
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    database: string;
+    logging: boolean;
+};

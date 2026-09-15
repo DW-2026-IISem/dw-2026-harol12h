@@ -6706,7 +6706,7 @@ EOF_BACKEND_IA
 ```
 ![](img/176.png)
 
-#### src/features/business/products/infrastructure/swagger/products.swagger.ts
+#### 10.30 src/features/business/products/infrastructure/swagger/products.swagger.ts
 
 Define ejemplos y documentación Swagger para endpoints de productos.
 
@@ -6755,3 +6755,10 @@ export class ProductSwagger {
 EOF_BACKEND_IA
 ```
 ![](img/177.png)
+
+#### 10.28 — Verificar tablas
+
+```bash
+npm run start:dev
+```
+![](img/178.png)

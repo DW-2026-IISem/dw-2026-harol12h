@@ -1,30 +1,20 @@
-import { registerAs } from '@nestjs/config';
-import { resolveDialectCredentials } from '../environment/db-env.js';
 import { DatabaseDialect } from '../environment/env.interface.js';
-
-
-export const DATABASE_CONFIG_NAME = 'database';
+import { resolveDialectCredentials } from '../environment/db-env.js';
 
 const dialectModuleMap: Record<DatabaseDialect, string> = {
   [DatabaseDialect.MySQL]: 'mysql2',
   [DatabaseDialect.Postgres]: 'pg',
+  [DatabaseDialect.SQLite]: 'sqlite3',
   [DatabaseDialect.MSSQL]: 'tedious',
   [DatabaseDialect.Oracle]: 'oracledb',
 };
 
-export const databaseConfig = registerAs(DATABASE_CONFIG_NAME, () => {
-  const dialect =
-    (process.env.DB_DIALECT as DatabaseDialect) || DatabaseDialect.MySQL;
-  const credentials = resolveDialectCredentials({
-    DB_DIALECT: dialect,
-    ...process.env,
-  });
+export const databaseConfig = () => {
+  const dialect = (process.env.DB_DIALECT as DatabaseDialect) || DatabaseDialect.MySQL;
+  const credentials = resolveDialectCredentials();
 
   return {
+    dialectModule: dialectModuleMap[dialect],
     ...credentials,
-    dialectModulePath: dialectModuleMap[dialect],
-    autoLoadModels: true,
-    synchronize: process.env.NODE_ENV !== 'production',
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
   };
-});
+};

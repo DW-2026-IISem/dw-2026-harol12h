@@ -1,22 +1,21 @@
-import { registerAs } from '@nestjs/config';
 import { resolveDialectCredentials } from './db-env.js';
-import { Environment } from './env.interface.js';
 import { validate } from './env.validation.js';
-export const ENV_CONFIG_NAME = 'environment';
-export const envConfig = registerAs(ENV_CONFIG_NAME, () => {
-    const validated = validate(process.env);
-    return {
+export const envConfig = () => {
+    const validated = validate({
+        APP_PORT: parseInt(process.env.APP_PORT ?? '3002', 10),
+        DB_DIALECT: process.env.DB_DIALECT,
+        DB_HOST: process.env.DB_HOST,
+        DB_PORT: parseInt(process.env.DB_PORT ?? '5432', 10),
+        DB_USER: process.env.DB_USER,
+        DB_PASS: process.env.DB_PASS,
+        DB_NAME: process.env.DB_NAME,
+    });
+    const env = {
         app: {
-            port: validated.PORT,
-            nodeEnv: validated.NODE_ENV ?? Environment.Development,
+            port: validated.APP_PORT,
         },
-        database: resolveDialectCredentials(validated),
-        jwt: {
-            secret: validated.JWT_SECRET,
-            expiresIn: validated.JWT_EXPIRES_IN,
-            refreshSecret: validated.JWT_REFRESH_SECRET,
-            refreshExpiresIn: validated.JWT_REFRESH_EXPIRES_IN,
-        },
+        db: resolveDialectCredentials(),
     };
-});
+    return env;
+};
 //# sourceMappingURL=env.config.js.map

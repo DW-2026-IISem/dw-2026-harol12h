@@ -11,7 +11,6 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 import { Inject, Injectable } from '@nestjs/common';
-import { ProductNotFoundException } from '../../domain/exceptions/product-not-found.exception.js';
 import { PRODUCT_REPOSITORY } from '../../domain/interfaces/product-repository.interface.js';
 import { ProductMapper } from '../mappers/product.mapper.js';
 let GetProductUseCase = class GetProductUseCase {
@@ -21,9 +20,8 @@ let GetProductUseCase = class GetProductUseCase {
     }
     async execute(id) {
         const product = await this.productRepository.findById(id);
-        if (!product) {
-            throw new ProductNotFoundException(id);
-        }
+        if (!product)
+            throw new Error(`Product ${id} not found`);
         return ProductMapper.toResponse(product);
     }
 };

@@ -7,58 +7,47 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { AutoIncrement, Column, CreatedAt, DataType, Model, PrimaryKey, Table, UpdatedAt, } from 'sequelize-typescript';
-import { Status } from '../../../../../../common/enums/status.enum.js';
+import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
+import { CollectionModel } from '../../../../collections/infrastructure/persistence/models/collection.model.js';
+import { ProductTypeModel } from '../../../../product-types/infrastructure/persistence/models/product-type.model.js';
 let ProductModel = class ProductModel extends Model {
 };
 __decorate([
-    PrimaryKey,
-    AutoIncrement,
-    Column(DataType.INTEGER),
-    __metadata("design:type", Number)
-], ProductModel.prototype, "id", void 0);
-__decorate([
-    Column({ type: DataType.STRING(150), allowNull: false }),
+    Column({ type: DataType.STRING, allowNull: false }),
     __metadata("design:type", String)
 ], ProductModel.prototype, "name", void 0);
 __decorate([
-    Column({ type: DataType.STRING(100), allowNull: false }),
+    Column({ type: DataType.STRING, allowNull: false }),
     __metadata("design:type", String)
 ], ProductModel.prototype, "brand", void 0);
 __decorate([
-    Column({ type: DataType.BIGINT, allowNull: false }),
+    Column({ type: DataType.INTEGER, allowNull: false }),
     __metadata("design:type", Number)
 ], ProductModel.prototype, "price", void 0);
 __decorate([
-    Column({ type: DataType.INTEGER, allowNull: false, defaultValue: 0 }),
+    Column({ type: DataType.INTEGER, allowNull: false }),
     __metadata("design:type", Number)
 ], ProductModel.prototype, "minStock", void 0);
 __decorate([
-    Column({ type: DataType.INTEGER, allowNull: false, defaultValue: 0 }),
+    Column({ type: DataType.INTEGER, allowNull: false }),
     __metadata("design:type", Number)
 ], ProductModel.prototype, "quantity", void 0);
 __decorate([
+    ForeignKey(() => ProductTypeModel),
     Column({ type: DataType.INTEGER, allowNull: false }),
     __metadata("design:type", Number)
 ], ProductModel.prototype, "productTypeId", void 0);
 __decorate([
-    Column({
-        type: DataType.ENUM(...Object.values(Status)),
-        allowNull: false,
-        defaultValue: Status.ACTIVE,
-    }),
+    ForeignKey(() => CollectionModel),
+    Column({ type: DataType.INTEGER, allowNull: false }),
+    __metadata("design:type", Number)
+], ProductModel.prototype, "collectionId", void 0);
+__decorate([
+    Column({ type: DataType.STRING, allowNull: false }),
     __metadata("design:type", String)
 ], ProductModel.prototype, "status", void 0);
-__decorate([
-    CreatedAt,
-    __metadata("design:type", Date)
-], ProductModel.prototype, "createdAt", void 0);
-__decorate([
-    UpdatedAt,
-    __metadata("design:type", Date)
-], ProductModel.prototype, "updatedAt", void 0);
 ProductModel = __decorate([
-    Table({ tableName: 'products' })
+    Table({ tableName: 'products', timestamps: true })
 ], ProductModel);
 export { ProductModel };
 //# sourceMappingURL=product.model.js.map

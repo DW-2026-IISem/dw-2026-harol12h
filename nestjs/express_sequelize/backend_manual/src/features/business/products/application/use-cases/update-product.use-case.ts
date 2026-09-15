@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ProductNotFoundException } from '../../domain/exceptions/product-not-found.exception.js';
 import type { IProductRepository } from '../../domain/interfaces/product-repository.interface.js';
 import { PRODUCT_REPOSITORY } from '../../domain/interfaces/product-repository.interface.js';
 import { UpdateProductDto } from '../dto/update-product.dto.js';
@@ -13,13 +12,13 @@ export class UpdateProductUseCase {
   ) {}
 
   async execute(id: number, dto: UpdateProductDto) {
-    const product = await this.productRepository.findById(id);
-    if (!product) {
-      throw new ProductNotFoundException(id);
-    }
+    const existing = await this.productRepository.findById(id);
+    if (!existing) throw new Error(`Product ${id} not found`);
 
-    product.update(dto);
-    const updated = await this.productRepository.update(product);
+    const domain = ProductMapper.toDomain(existing);
+    const updatedDomain = { ...domain, ...dto };
+
+    const updated = await this.productRepository.update(updatedDomain);
     return ProductMapper.toResponse(updated);
   }
 }

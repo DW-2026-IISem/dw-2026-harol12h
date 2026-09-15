@@ -8,42 +8,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsPositive, IsString, Min } from 'class-validator';
 export class ProductFilterDto {
-    page;
-    limit;
-    search;
+    collectionId;
     productTypeId;
+    status;
 }
 __decorate([
     ApiPropertyOptional({ example: 1 }),
-    IsOptional(),
-    Type(() => Number),
-    IsInt(),
-    Min(1),
     __metadata("design:type", Number)
-], ProductFilterDto.prototype, "page", void 0);
-__decorate([
-    ApiPropertyOptional({ example: 10 }),
-    IsOptional(),
-    Type(() => Number),
-    IsInt(),
-    IsPositive(),
-    __metadata("design:type", Number)
-], ProductFilterDto.prototype, "limit", void 0);
-__decorate([
-    ApiPropertyOptional({ example: 'smartphone' }),
-    IsOptional(),
-    IsString(),
-    __metadata("design:type", String)
-], ProductFilterDto.prototype, "search", void 0);
+], ProductFilterDto.prototype, "collectionId", void 0);
 __decorate([
     ApiPropertyOptional({ example: 1 }),
-    IsOptional(),
-    Type(() => Number),
-    IsInt(),
-    IsPositive(),
     __metadata("design:type", Number)
 ], ProductFilterDto.prototype, "productTypeId", void 0);
+__decorate([
+    ApiPropertyOptional({ example: 'ACTIVE' }),
+    __metadata("design:type", String)
+], ProductFilterDto.prototype, "status", void 0);
 //# sourceMappingURL=product-filter.dto.js.map

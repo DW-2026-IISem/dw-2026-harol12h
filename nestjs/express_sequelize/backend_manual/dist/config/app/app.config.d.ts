@@ -1,8 +1,11 @@
-import { Environment } from '../environment/env.interface.js';
-export declare const appConfig: (() => {
-    port: number;
-    nodeEnv: Environment;
-}) & import("@nestjs/config").ConfigFactoryKeyHost<{
-    port: number;
-    nodeEnv: Environment;
-}>;
+export declare enum NodeEnvironment {
+    Development = "development",
+    Production = "production",
+    Test = "test"
+}
+export declare const APP_DEFAULTS: {
+    NODE_ENV: NodeEnvironment;
+};
+export declare const appConfig: () => {
+    nodeEnv: NodeEnvironment;
+};

@@ -13,12 +13,60 @@ export declare class ProductsController {
     private readonly updateProduct;
     private readonly deleteProduct;
     constructor(createProduct: CreateProductUseCase, getProduct: GetProductUseCase, listProducts: ListProductsUseCase, updateProduct: UpdateProductUseCase, deleteProduct: DeleteProductUseCase);
-    create(dto: CreateProductDto): Promise<import("../../application/dto/product-response.dto.js").ProductResponseDto>;
-    list(filter: ProductFilterDto): Promise<{
-        items: import("../../application/dto/product-response.dto.js").ProductResponseDto[];
-        meta: import("../../../../../common/interfaces/pagination.interface.js").PaginationMeta;
+    create(dto: CreateProductDto): Promise<{
+        id: any;
+        name: string;
+        brand: string;
+        price: number;
+        minStock: number;
+        quantity: number;
+        productTypeId: number;
+        collectionId: number;
+        status: string;
+        createdAt: any;
+        updatedAt: any;
     }>;
-    get(id: number): Promise<import("../../application/dto/product-response.dto.js").ProductResponseDto>;
-    update(id: number, dto: UpdateProductDto): Promise<import("../../application/dto/product-response.dto.js").ProductResponseDto>;
+    list(filter: ProductFilterDto): Promise<{
+        items: {
+            id: any;
+            name: string;
+            brand: string;
+            price: number;
+            minStock: number;
+            quantity: number;
+            productTypeId: number;
+            collectionId: number;
+            status: string;
+            createdAt: any;
+            updatedAt: any;
+        }[];
+        meta: any;
+    }>;
+    get(id: number): Promise<{
+        id: any;
+        name: string;
+        brand: string;
+        price: number;
+        minStock: number;
+        quantity: number;
+        productTypeId: number;
+        collectionId: number;
+        status: string;
+        createdAt: any;
+        updatedAt: any;
+    }>;
+    update(id: number, dto: UpdateProductDto): Promise<{
+        id: any;
+        name: string;
+        brand: string;
+        price: number;
+        minStock: number;
+        quantity: number;
+        productTypeId: number;
+        collectionId: number;
+        status: string;
+        createdAt: any;
+        updatedAt: any;
+    }>;
     delete(id: number): Promise<void>;
 }

@@ -5,50 +5,30 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { Injectable } from '@nestjs/common';
-import { Op } from 'sequelize';
-import { buildPaginatedResult, normalizePagination, } from '../../../../../../common/utils/pagination.util.js';
-import { ProductMapper } from '../../../application/mappers/product.mapper.js';
 import { ProductModel } from '../models/product.model.js';
+import { ProductMapper } from '../../../application/mappers/product.mapper.js';
 let ProductRepository = class ProductRepository {
     async create(product) {
-        const model = await ProductModel.create(ProductMapper.toPersistence(product));
-        return ProductMapper.toDomain(model);
+        return await ProductModel.create(ProductMapper.toPersistence(product));
     }
     async update(product) {
         await ProductModel.update(ProductMapper.toPersistence(product), {
             where: { id: product.id },
         });
         const updated = await ProductModel.findByPk(product.id);
-        return ProductMapper.toDomain(updated);
-    }
-    async delete(id) {
-        await ProductModel.destroy({ where: { id } });
+        return updated;
     }
     async findById(id) {
-        const model = await ProductModel.findByPk(id);
-        return model ? ProductMapper.toDomain(model) : null;
+        return await ProductModel.findByPk(id);
     }
-    async findAll(params) {
-        const { page, limit, offset } = normalizePagination(params.page, params.limit);
-        const where = {};
-        if (params.search) {
-            Object.assign(where, {
-                [Op.or]: [
-                    { name: { [Op.like]: `%${params.search}%` } },
-                    { brand: { [Op.like]: `%${params.search}%` } },
-                ],
-            });
-        }
-        if (params.productTypeId) {
-            where.productTypeId = params.productTypeId;
-        }
-        const { rows, count } = await ProductModel.findAndCountAll({
-            where,
-            limit,
-            offset,
-            order: [['createdAt', 'DESC']],
-        });
-        return buildPaginatedResult(rows.map((row) => ProductMapper.toDomain(row)), count, page, limit);
+    async findAll(filter) {
+        const rows = await ProductModel.findAll({ where: { ...filter } });
+        return { items: rows };
+    }
+    async delete(id) {
+        const existing = await ProductModel.findByPk(id);
+        if (existing)
+            await existing.destroy();
     }
 };
 ProductRepository = __decorate([
