@@ -7646,3 +7646,39 @@ export class DatabaseSeederService {
 EOF_BACKEND_MANUAL
 ```
 ![](img/202.png)
+
+#### 10.2.25 src/features/business/orders/domain/entities/order.entity.spec.ts
+
+Prueba unitaria de la entidad Order.
+
+**ruta** `src/features/business/orders/domain/entities/order.entity.spec.ts`
+
+```bash
+mkdir -p src/features/business/orders/domain/entities
+cat > src/features/business/orders/domain/entities/order.entity.spec.ts <<'EOF_BACKEND_MANUAL'
+import { Order } from './order.entity';
+
+describe('Order Entity', () => {
+  it('should create a valid order', () => {
+    const order = Order.create({
+      clientId: 1,
+      orderDate: new Date(),
+      status: 'PENDING',
+    });
+    expect(order.clientId).toBe(1);
+    expect(order.status).toBe('PENDING');
+  });
+
+  it('should update status', () => {
+    const order = Order.create({
+      clientId: 1,
+      orderDate: new Date(),
+      status: 'PENDING',
+    });
+    order.updateStatus('COMPLETED');
+    expect(order.status).toBe('COMPLETED');
+  });
+});
+EOF_BACKEND_MANUAL
+```
+![](img/203.png)
