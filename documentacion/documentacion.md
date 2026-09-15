@@ -6589,3 +6589,23 @@ export interface IProductRepository {
 EOF_BACKEND_IA
 ```
 ![](img/173.png)
+
+#### 10.27 src/features/business/products/domain/exceptions/product-not-found.exception.ts
+
+Excepción personalizada para cuando un producto no existe.
+
+**ruta** `src/features/business/products/domain/exceptions/product-not-found.exception.ts`
+
+```bash
+cat > src/features/business/products/domain/exceptions/product-not-found.exception.ts <<'EOF_BACKEND_IA'
+import { DomainException } from '../../../../../common/exceptions/domain.exception.js';
+
+export class ProductNotFoundException extends DomainException {
+  constructor(id: number) {
+    super(`El producto con ID ${id} no existe.`);
+  }
+}
+EOF_BACKEND_IA
+```
+
+![](img/174.png)
