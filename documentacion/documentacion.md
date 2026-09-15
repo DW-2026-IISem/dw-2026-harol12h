@@ -7752,3 +7752,37 @@ describe('CreateOrderUseCase', () => {
 EOF_BACKEND_MANUAL
 ```
 ![](img/205.png)
+
+#### 10.2.28 src/features/business/orders/presentation/http/controllers/orders.controller.spec.ts
+
+Prueba unitaria del controller de Orders.
+
+**ruta** `src/features/business/orders/presentation/http/controllers/orders.controller.spec.ts`
+ 
+```bash
+mkdir -p src/features/business/orders/presentation/http/controllers
+cat > src/features/business/orders/presentation/http/controllers/orders.controller.spec.ts <<'EOF_BACKEND_MANUAL'
+import { OrdersController } from './orders.controller';
+import { CreateOrderUseCase } from '../../../application/use-cases/create-order.use-case';
+
+describe('OrdersController', () => {
+  it('should call create use case', async () => {
+    const mockUseCase = { execute: jest.fn().mockResolvedValue({ id: 1 }) };
+    const controller = new OrdersController(
+      mockUseCase as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+    const result = await controller.create({
+      clientId: 1,
+      orderDate: new Date(),
+      status: 'PENDING',
+    });
+    expect(result.id).toBe(1);
+  });
+});
+EOF_BACKEND_MANUAL
+```
+![](img/206.png)
