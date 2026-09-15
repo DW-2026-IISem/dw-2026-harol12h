@@ -5887,3 +5887,35 @@ export class OrderMapper {
 EOF_BACKEND_IA
 ```
 ![](img/151.png)
+
+#### 10.6 src/features/business/orders/application/use-cases/create-order.use-case.ts
+
+Crea un pedido validando cliente y fecha.
+
+**ruta** `src/features/business/orders/application/use-cases/create-order.use-case.ts`
+
+```bash
+mkdir -p src/features/business/orders/application/use-cases
+cat > src/features/business/orders/application/use-cases/create-order.use-case.ts <<'EOF_BACKEND_IA'
+import { Inject, Injectable } from '@nestjs/common';
+import type { IOrderRepository } from '../../domain/interfaces/order-repository.interface.js';
+import { ORDER_REPOSITORY } from '../../domain/interfaces/order-repository.interface.js';
+import { CreateOrderDto } from '../dto/create-order.dto.js';
+import { Order } from '../../domain/entities/order.entity.js';
+import { OrderMapper } from '../mappers/order.mapper.js';
+
+@Injectable()
+export class CreateOrderUseCase {
+  constructor(
+    @Inject(ORDER_REPOSITORY)
+    private readonly orderRepository: IOrderRepository,
+  ) {}
+
+  async execute(dto: CreateOrderDto) {
+    const order = Order.create(dto);
+    const created = await this.orderRepository.create(order);
+    return OrderMapper.toResponse(created);
+  }
+}
+EOF_BACKEND_IA
+```
