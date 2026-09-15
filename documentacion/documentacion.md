@@ -7014,4 +7014,34 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/184.png)
 
+#### 10.2.7 src/features/business/orders/infrastructure/persistence/seeders/orders.seeder.ts
 
+Seeder inicial para pedidos de prueba.
+
+**ruta** `src/features/business/orders/infrastructure/persistence/seeders/orders.seeder.ts`
+
+```bash
+mkdir -p src/features/business/orders/infrastructure/persistence/seeders
+cat > src/features/business/orders/infrastructure/persistence/seeders/orders.seeder.ts <<'EOF_BACKEND_MANUAL'
+import { OrderModel } from '../models/order.model';
+
+export async function seedOrders(): Promise<void> {
+  const count = await OrderModel.count();
+  if (count > 0) return;
+
+  await OrderModel.bulkCreate([
+    {
+      clientId: 1,
+      orderDate: new Date(),
+      status: 'PENDING',
+    },
+    {
+      clientId: 2,
+      orderDate: new Date(),
+      status: 'COMPLETED',
+    },
+  ]);
+}
+EOF_BACKEND_MANUAL
+```
+![](img/185.png)
