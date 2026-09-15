@@ -6188,7 +6188,7 @@ EOF_BACKEND_IA
 ```
 ![](img/160.png)
 
-#### 10.14 src/features/business/orders/infrastructure/swagger/orders.swagger.ts
+#### 10.15 src/features/business/orders/infrastructure/swagger/orders.swagger.ts
 
 Define ejemplos y documentación Swagger para pedidos.
 
@@ -6221,3 +6221,28 @@ export class OrderSwagger {
 EOF_BACKEND_IA
 ```
 ![](img/161.png)
+
+#### 10.16 src/features/business/orders/domain/interfaces/order-repository.interface.ts
+
+Define la interfaz del repositorio de pedidos para aplicar el patrón de inversión de dependencias.
+
+**ruta** `src/features/business/orders/domain/interfaces/order-repository.interface.ts`
+
+```bash
+mkdir -p src/features/business/orders/domain/interfaces
+cat > src/features/business/orders/domain/interfaces/order-repository.interface.ts <<'EOF_BACKEND_IA'
+import { Order } from '../entities/order.entity.js';
+import { OrderModel } from '../../infrastructure/persistence/models/order.model.js';
+
+export const ORDER_REPOSITORY = 'ORDER_REPOSITORY';
+
+export interface IOrderRepository {
+  create(order: Order): Promise<OrderModel>;
+  findById(id: number): Promise<OrderModel | null>;
+  findAll(): Promise<OrderModel[]>;
+  update(order: Partial<Order>): Promise<OrderModel>;
+  delete(id: number): Promise<void>;
+}
+EOF_BACKEND_IA
+```
+![](img/162.png)
