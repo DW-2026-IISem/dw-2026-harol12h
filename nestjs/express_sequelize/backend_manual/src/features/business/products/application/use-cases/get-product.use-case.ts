@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ProductNotFoundException } from '../../domain/exceptions/product-not-found.exception.js';
 import type { IProductRepository } from '../../domain/interfaces/product-repository.interface.js';
 import { PRODUCT_REPOSITORY } from '../../domain/interfaces/product-repository.interface.js';
 import { ProductMapper } from '../mappers/product.mapper.js';
@@ -13,9 +12,7 @@ export class GetProductUseCase {
 
   async execute(id: number) {
     const product = await this.productRepository.findById(id);
-    if (!product) {
-      throw new ProductNotFoundException(id);
-    }
+    if (!product) throw new Error(`Product ${id} not found`);
     return ProductMapper.toResponse(product);
   }
 }

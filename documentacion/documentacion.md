@@ -6494,3 +6494,33 @@ export class ListProductsUseCase {
 EOF_BACKEND_IA
 ```
 ![](img/170.png)
+
+#### 10.24 src/features/business/products/application/use-cases/get-product.use-case.ts
+
+Obtiene un producto por ID.
+
+**ruta** `src/features/business/products/application/use-cases/get-product.use-case.ts`
+
+```bash
+cat > src/features/business/products/application/use-cases/get-product.use-case.ts <<'EOF_BACKEND_IA'
+import { Inject, Injectable } from '@nestjs/common';
+import type { IProductRepository } from '../../domain/interfaces/product-repository.interface.js';
+import { PRODUCT_REPOSITORY } from '../../domain/interfaces/product-repository.interface.js';
+import { ProductMapper } from '../mappers/product.mapper.js';
+
+@Injectable()
+export class GetProductUseCase {
+  constructor(
+    @Inject(PRODUCT_REPOSITORY)
+    private readonly productRepository: IProductRepository,
+  ) {}
+
+  async execute(id: number) {
+    const product = await this.productRepository.findById(id);
+    if (!product) throw new Error(`Product ${id} not found`);
+    return ProductMapper.toResponse(product);
+  }
+}
+EOF_BACKEND_IA
+```
+![](img/171.png)
