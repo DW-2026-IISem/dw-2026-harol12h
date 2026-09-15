@@ -7137,3 +7137,36 @@ export class OrderFilterDto {
 EOF_BACKEND_MANUAL
 ```
 ![](img/188.png)
+
+#### 10.2.11 src/features/business/orders/application/dto/order-response.dto.ts
+
+DTO de salida para respuestas HTTP de pedidos.
+
+**ruta** `src/features/business/orders/application/dto/order-response.dto.ts`
+
+```bash
+cat > src/features/business/orders/application/dto/order-response.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty } from '@nestjs/swagger';
+
+export class OrderResponseDto {
+  @ApiProperty({ example: 1 })
+  id: number;
+
+  @ApiProperty({ example: 1 })
+  clientId: number;
+
+  @ApiProperty({ example: '2026-09-15' })
+  orderDate: Date;
+
+  @ApiProperty({ example: 'PENDING' })
+  status: string;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/189.png)
