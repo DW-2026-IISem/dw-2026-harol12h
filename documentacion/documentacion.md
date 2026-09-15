@@ -5951,3 +5951,31 @@ EOF_BACKEND_IA
 ```
 ![](img/153.png)
 
+#### 10.8 src/features/business/orders/application/use-cases/list-orders.use-case.ts
+
+Lista todos los pedidos.
+
+**ruta** `src/features/business/orders/application/use-cases/list-orders.use-case.ts`
+
+```bash
+cat > src/features/business/orders/application/use-cases/list-orders.use-case.ts <<'EOF_BACKEND_IA'
+import { Inject, Injectable } from '@nestjs/common';
+import type { IOrderRepository } from '../../domain/interfaces/order-repository.interface.js';
+import { ORDER_REPOSITORY } from '../../domain/interfaces/order-repository.interface.js';
+import { OrderMapper } from '../mappers/order.mapper.js';
+
+@Injectable()
+export class ListOrdersUseCase {
+  constructor(
+    @Inject(ORDER_REPOSITORY)
+    private readonly orderRepository: IOrderRepository,
+  ) {}
+
+  async execute() {
+    const orders = await this.orderRepository.findAll();
+    return orders.map((order) => OrderMapper.toResponse(order));
+  }
+}
+EOF_BACKEND_IA
+```
+![](img/154.png)
