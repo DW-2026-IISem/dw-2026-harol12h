@@ -5715,7 +5715,7 @@ npm run start:dev
 
 ## FASE 10 
 
-### 10.1 src/features/business/orders/domain/entities/order.entity.ts
+#### 10.1 src/features/business/orders/domain/entities/order.entity.ts
 
 Define la entidad de dominio Order con reglas de negocio (ej. fecha obligatoria, cliente requerido).
 
@@ -5752,3 +5752,31 @@ export class Order {
 EOF_BACKEND_IA
 ```
 ![](img/147.png)
+
+#### 10.2 src/features/business/orders/infrastructure/persistence/models/order.model.ts
+
+Modelo Sequelize para la tabla orders.
+
+**ruta** `src/features/business/orders/infrastructure/persistence/models/order.model.ts`
+
+```bash
+mkdir -p src/features/business/orders/infrastructure/persistence/models
+cat > src/features/business/orders/infrastructure/persistence/models/order.model.ts <<'EOF_BACKEND_IA'
+import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
+import { ClientModel } from '../../../clients/infrastructure/persistence/models/client.model.js';
+
+@Table({ tableName: 'orders', timestamps: true })
+export class OrderModel extends Model {
+  @ForeignKey(() => ClientModel)
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  declare clientId: number;
+
+  @Column({ type: DataType.DATE, allowNull: false })
+  declare orderDate: Date;
+
+  @Column({ type: DataType.STRING, allowNull: false })
+  declare status: string;
+}
+EOF_BACKEND_IA
+```
+![](img/148.png)
