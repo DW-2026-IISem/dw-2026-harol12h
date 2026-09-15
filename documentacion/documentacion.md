@@ -6413,3 +6413,50 @@ export class ProductFilterDto {
 EOF_BACKEND_IA
 ```
 ![](img/168.png)
+
+#### 10.22 src/features/business/products/application/mappers/product.mapper.ts
+
+Convierte entre entidad, modelo y DTO de respuesta.
+
+**ruta** `src/features/business/products/application/mappers/product.mapper.ts`
+
+```bash
+mkdir -p src/features/business/products/application/mappers
+cat > src/features/business/products/application/mappers/product.mapper.ts <<'EOF_BACKEND_IA'
+import { Product } from '../../domain/entities/product.entity.js';
+import { ProductModel } from '../../infrastructure/persistence/models/product.model.js';
+
+export class ProductMapper {
+  static toEntity(model: ProductModel): Product {
+    return new Product(
+      model.id,
+      model.name,
+      model.brand,
+      model.price,
+      model.minStock,
+      model.quantity,
+      model.productTypeId,
+      model.collectionId,
+      model.status,
+    );
+  }
+
+  static toResponse(model: ProductModel) {
+    return {
+      id: model.id,
+      name: model.name,
+      brand: model.brand,
+      price: model.price,
+      minStock: model.minStock,
+      quantity: model.quantity,
+      productTypeId: model.productTypeId,
+      collectionId: model.collectionId,
+      status: model.status,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+    };
+  }
+}
+EOF_BACKEND_IA
+```
+![](img/169.png)
