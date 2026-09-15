@@ -6990,3 +6990,28 @@ export class OrderRepository implements IOrderRepository {
 EOF_BACKEND_MANUAL
 ```
 ![alt text](img/183.png)
+
+#### 10.2.6 src/features/business/orders/infrastructure/persistence/migrations/create-orders-table.migration.ts
+
+Migración documental de la tabla orders.
+
+**ruta** `src/features/business/orders/infrastructure/persistence/migrations/create-orders-table.migration.ts`
+
+```bash
+mkdir -p src/features/business/orders/infrastructure/persistence/migrations
+cat > src/features/business/orders/infrastructure/persistence/migrations/create-orders-table.migration.ts <<'EOF_BACKEND_MANUAL'
+export const createOrdersTableMigration = {
+  name: 'create-orders-table',
+  async up(): Promise<void> {
+    // Sequelize sync handles table creation in development.
+    // Production: CREATE TABLE orders (id, clientId, orderDate, status, createdAt, updatedAt)
+  },
+  async down(): Promise<void> {
+    // Production: DROP TABLE orders
+  },
+};
+EOF_BACKEND_MANUAL
+```
+![](img/184.png)
+
+
