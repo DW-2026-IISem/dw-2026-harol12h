@@ -7682,3 +7682,72 @@ describe('Order Entity', () => {
 EOF_BACKEND_MANUAL
 ```
 ![](img/203.png)
+
+#### 10.2.26 res/business/orders/infrastructure/persistence/repositories/order.repository.spec.ts
+
+Prueba unitaria del repositorio de Orders.
+
+**ruta** `res/business/orders/infrastructure/persistence/repositories/order.repository.spec.ts`
+
+```bash
+mkdir -p src/features/business/orders/infrastructure/persistence/repositories
+cat > src/features/business/orders/infrastructure/persistence/repositories/order.repository.spec.ts <<'EOF_BACKEND_MANUAL'
+import { OrderRepository } from './order.repository';
+import { Order } from '../../../domain/entities/order.entity';
+
+describe('OrderRepository', () => {
+  let repository: OrderRepository;
+
+  beforeEach(() => {
+    repository = new OrderRepository();
+  });
+
+  it('should create an order', async () => {
+    const order = Order.create({
+      clientId: 1,
+      orderDate: new Date(),
+      status: 'PENDING',
+    });
+    const created = await repository.create(order);
+    expect(created.clientId).toBe(1);
+  });
+});
+EOF_BACKEND_MANUAL
+```
+![](img/204.png)
+
+#### 10.2.27 src/features/business/orders/application/use-cases/create-order.use-case.spec.ts
+
+Prueba unitaria del caso de uso CreateOrderUseCase.
+
+**ruta** `src/features/business/orders/application/use-cases/create-order.use-case.spec.ts`
+
+```bash
+mkdir -p src/features/business/orders/application/use-cases
+cat > src/features/business/orders/application/use-cases/create-order.use-case.spec.ts <<'EOF_BACKEND_MANUAL'
+import { CreateOrderUseCase } from './create-order.use-case';
+import { IOrderRepository } from '../../domain/interfaces/order-repository.interface';
+import { Order } from '../../domain/entities/order.entity';
+
+class MockOrderRepository implements IOrderRepository {
+  async create(order: Order): Promise<Order> { return order; }
+  async update(order: Order): Promise<Order> { return order; }
+  async delete(id: number): Promise<void> {}
+  async findById(id: number): Promise<Order | null> { return null; }
+  async findAll(): Promise<any> { return { items: [], meta: {} }; }
+}
+
+describe('CreateOrderUseCase', () => {
+  it('should create an order', async () => {
+    const repo = new MockOrderRepository();
+    const useCase = new CreateOrderUseCase(repo as any);
+    const result = await useCase.execute({
+      clientId: 1,
+      orderDate: new Date(),
+      status: 'PENDING',
+    });
+    expect(result.clientId).toBe(1);
+  });
+});
+EOF_BACKEND_MANUAL
+```
