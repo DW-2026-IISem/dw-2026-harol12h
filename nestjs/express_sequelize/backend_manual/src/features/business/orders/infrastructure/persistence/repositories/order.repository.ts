@@ -1,29 +1,60 @@
 import { Injectable } from '@nestjs/common';
-import { OrderModel } from '../models/order.model.js';
-import { Order } from '../../../domain/entities/order.entity.js';
+import { Op } from 'sequelize';
+import {
+  buildPaginatedResult,
+  normalizePagination,
+} from '../../../../../../common/utils/pagination.util';
+import { Order } from '../../../domain/entities/order.entity';
+import {
+  IOrderRepository,
+  OrderFindAllParams,
+} from '../../../domain/interfaces/order-repository.interface';
+import { OrderMapper } from '../../../application/mappers/order.mapper';
+import { OrderModel } from '../models/order.model';
 
 @Injectable()
-export class OrderRepository {
-  async create(order: Order): Promise<OrderModel> {
-    return await OrderModel.create(order as any);
+export class OrderRepository implements IOrderRepository {
+  async create(order: Order): Promise<Order> {
+    const model = await OrderModel.create(OrderMapper.toPersistence(order));
+    return OrderMapper.toDomain(model);
   }
 
-  async findById(id: number): Promise<OrderModel | null> {
-    return await OrderModel.findByPk(id);
-  }
-
-  async findAll(): Promise<OrderModel[]> {
-    return await OrderModel.findAll();
-  }
-
-  async update(order: Order): Promise<OrderModel> {
-    const existing = await OrderModel.findByPk(order.id!);
-    if (!existing) throw new Error('Order not found');
-    return await existing.update(order as any);
+  async update(order: Order): Promise<Order> {
+    await OrderModel.update(OrderMapper.toPersistence(order), {
+      where: { id: order.id },
+    });
+    const updated = await OrderModel.findByPk(order.id!);
+    return OrderMapper.toDomain(updated!);
   }
 
   async delete(id: number): Promise<void> {
-    const existing = await OrderModel.findByPk(id);
-    if (existing) await existing.destroy();
+    await OrderModel.destroy({ where: { id } });
+  }
+
+  async findById(id: number): Promise<Order | null> {
+    const model = await OrderModel.findByPk(id);
+    return model ? OrderMapper.toDomain(model) : null;
+  }
+
+  async findAll(params: OrderFindAllParams) {
+    const { page, limit, offset } = normalizePagination(params.page, params.limit);
+
+    const where: any = {};
+    if (params.clientId) where.clientId = params.clientId;
+    if (params.status) where.status = params.status;
+
+    const { rows, count } = await OrderModel.findAndCountAll({
+      where,
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']],
+    });
+
+    return buildPaginatedResult(
+      rows.map((row) => OrderMapper.toDomain(row)),
+      count,
+      page,
+      limit,
+    );
   }
 }
