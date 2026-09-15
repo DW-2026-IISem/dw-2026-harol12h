@@ -11,6 +11,7 @@ describe('Product Entity', () => {
       minStock: 5,
       quantity: 10,
       productTypeId: 1,
+      collectionId: 1,
     });
     expect(product.name).toBe('Laptop');
     expect(product.price).toBe(1000);
@@ -25,6 +26,7 @@ describe('Product Entity', () => {
         minStock: 5,
         quantity: 10,
         productTypeId: 1,
+        collectionId: 1,
       }),
     ).toThrow(InvalidProductPriceException);
   });
@@ -38,6 +40,7 @@ describe('Product Entity', () => {
         minStock: -5,
         quantity: 10,
         productTypeId: 1,
+        collectionId: 1,
       }),
     ).toThrow(InvalidProductStockException);
   });
