@@ -23,6 +23,9 @@ export class ProductSwagger {
   @ApiProperty({ example: 1 })
   productTypeId: number;
 
+  @ApiProperty({ example: 1 })
+  collectionId: number;
+
   @ApiProperty({ enum: Status, example: Status.ACTIVE })
   status: Status;
 
