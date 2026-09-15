@@ -3,6 +3,7 @@ import { CreateOrderUseCase } from '../../application/use-cases/create-order.use
 import { GetOrderUseCase } from '../../application/use-cases/get-order.use-case.js';
 import { ListOrdersUseCase } from '../../application/use-cases/list-orders.use-case.js';
 import { UpdateOrderUseCase } from '../../application/use-cases/update-order.use-case.js';
+import { DeleteOrderUseCase } from '../../application/use-cases/delete-order.use-case.js';
 import { CreateOrderDto } from '../../application/dto/create-order.dto.js';
 import { UpdateOrderDto } from '../../application/dto/update-order.dto.js';
 
@@ -13,6 +14,7 @@ export class OrdersController {
     private readonly getOrder: GetOrderUseCase,
     private readonly listOrders: ListOrdersUseCase,
     private readonly updateOrder: UpdateOrderUseCase,
+    private readonly deleteOrder: DeleteOrderUseCase,
   ) {}
 
   @Post()
@@ -37,7 +39,7 @@ export class OrdersController {
 
   @Delete(':id')
   async remove(@Param('id') id: number) {
-    // Aquí podrías implementar DeleteOrderUseCase si lo necesitas
+    await this.deleteOrder.execute(id);
     return { message: `Order ${id} deleted` };
   }
 }
