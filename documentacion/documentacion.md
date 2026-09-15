@@ -6121,3 +6121,26 @@ export async function seedOrders() {
 EOF_BACKEND_IA
 ```
 ![](img/158.png)
+
+#### 10.13 src/infrastructure/database/sequelize/seeders/index.ts
+
+Ejecuta el seeder de pedidos junto con los demás.
+
+**ruta** `src/infrastructure/database/sequelize/seeders/index.ts`
+
+```bash
+cat > src/infrastructure/database/sequelize/seeders/index.ts <<'EOF_BACKEND_IA'
+import { seedClients } from '../../../../features/business/clients/infrastructure/persistence/seeders/clients.seeder.js';
+import { seedCollections } from '../../../../features/business/collections/infrastructure/persistence/seeders/collections.seeder.js';
+import { seedProducts } from '../../../../features/business/products/infrastructure/persistence/seeders/products.seeder.js';
+import { seedOrders } from '../../../../features/business/orders/infrastructure/persistence/seeders/orders.seeder.js';
+
+export async function runSeeders() {
+  await seedClients();
+  await seedCollections();
+  await seedProducts();
+  await seedOrders(); // ✅ nuevo
+}
+EOF_BACKEND_IA
+```
+![](img/159.png)
