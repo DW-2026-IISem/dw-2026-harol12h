@@ -6187,3 +6187,37 @@ export function createSequelizeInstance(options: any) {
 EOF_BACKEND_IA
 ```
 ![](img/160.png)
+
+#### 10.14 src/features/business/orders/infrastructure/swagger/orders.swagger.ts
+
+Define ejemplos y documentación Swagger para pedidos.
+
+**ruta** `src/features/business/orders/infrastructure/swagger/orders.swagger.ts`
+
+```bash
+mkdir -p src/features/business/orders/infrastructure/swagger
+cat > src/features/business/orders/infrastructure/swagger/orders.swagger.ts <<'EOF_BACKEND_IA'
+import { ApiProperty } from '@nestjs/swagger';
+
+export class OrderSwagger {
+  @ApiProperty({ example: 1 })
+  id: number;
+
+  @ApiProperty({ example: 1 })
+  clientId: number;
+
+  @ApiProperty({ example: '2026-09-14' })
+  orderDate: Date;
+
+  @ApiProperty({ example: 'PENDING' })
+  status: string;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+EOF_BACKEND_IA
+```
+![](img/161.png)
