@@ -7,12 +7,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 import { Module } from '@nestjs/common';
 import { ClientsModule } from './clients/clients.module.js';
 import { CollectionsModule } from './collections/collections.module.js';
+import { ProductsModule } from './products/products.module.js';
 let BusinessModule = class BusinessModule {
 };
 BusinessModule = __decorate([
     Module({
-        imports: [ClientsModule, CollectionsModule],
-        exports: [ClientsModule, CollectionsModule],
+        imports: [
+            ClientsModule,
+            CollectionsModule,
+            ProductsModule,
+        ],
     })
 ], BusinessModule);
 export { BusinessModule };

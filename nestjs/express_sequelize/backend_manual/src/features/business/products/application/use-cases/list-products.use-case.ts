@@ -1,8 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  IProductRepository,
-  PRODUCT_REPOSITORY,
-} from '../../domain/interfaces/product-repository.interface.js';
+import type { IProductRepository } from '../../domain/interfaces/product-repository.interface.js';
+import { PRODUCT_REPOSITORY } from '../../domain/interfaces/product-repository.interface.js';
 import { ProductFilterDto } from '../dto/product-filter.dto.js';
 import { ProductMapper } from '../mappers/product.mapper.js';
 

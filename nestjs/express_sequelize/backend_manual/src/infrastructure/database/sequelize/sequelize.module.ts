@@ -16,7 +16,7 @@ import { DatabaseSeederService } from '../seeders/database-seeder.service.js';
           'environment.database.dialect',
           DatabaseDialect.MySQL,
         );
-        return createSequelizeInstance(dialect);
+        return createSequelizeInstance(dialect ?? DatabaseDialect.MySQL);
       },
       inject: [ConfigService],
     },

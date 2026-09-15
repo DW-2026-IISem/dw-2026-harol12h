@@ -3,7 +3,6 @@ import {
   Column,
   CreatedAt,
   DataType,
-  ForeignKey,
   Model,
   PrimaryKey,
   Table,
@@ -33,7 +32,6 @@ export class ProductModel extends Model {
   @Column({ type: DataType.INTEGER, allowNull: false, defaultValue: 0 })
   declare quantity: number;
 
-  @ForeignKey(() => Number)
   @Column({ type: DataType.INTEGER, allowNull: false })
   declare productTypeId: number;
 

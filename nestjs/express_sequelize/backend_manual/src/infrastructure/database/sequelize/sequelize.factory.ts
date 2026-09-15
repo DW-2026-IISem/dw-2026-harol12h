@@ -1,18 +1,20 @@
+import { Sequelize } from 'sequelize-typescript';
 import { ClientModel } from '../../../features/business/clients/infrastructure/persistence/models/client.model.js';
 import { CollectionModel } from '../../../features/business/collections/infrastructure/persistence/models/collection.model.js';
 import { ProductModel } from '../../../features/business/products/infrastructure/persistence/models/product.model.js';
-import { ProductTypeModel } from '../../../features/business/product-types/infrastructure/persistence/models/product-type.model.js';
+import { DatabaseDialect } from '../../../config/environment/env.interface.js';
+import { getSequelizeOptions } from './sequelize.options.js';
 
-export const ALL_MODELS = [
-  ClientModel,
-  CollectionModel,
-  ProductTypeModel,
-  ProductModel, // ✅ nuevo
-];
+export const ALL_MODELS = [ClientModel, CollectionModel, ProductModel];
 
-// Asociaciones
-CollectionModel.hasMany(ProductModel, { foreignKey: 'collectionId' });
-ProductModel.belongsTo(CollectionModel, { foreignKey: 'collectionId' });
+export function createSequelizeInstance(dialect: DatabaseDialect): Sequelize {
+  const sequelize = new Sequelize({
+    ...getSequelizeOptions(dialect),
+    models: ALL_MODELS,
+  });
 
-ProductTypeModel.hasMany(ProductModel, { foreignKey: 'productTypeId' });
-ProductModel.belongsTo(ProductTypeModel, { foreignKey: 'productTypeId' });
+  CollectionModel.hasMany(ProductModel, { foreignKey: 'collectionId' });
+  ProductModel.belongsTo(CollectionModel, { foreignKey: 'collectionId' });
+
+  return sequelize;
+}

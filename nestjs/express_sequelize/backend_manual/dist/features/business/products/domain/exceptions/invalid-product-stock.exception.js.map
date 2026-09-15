@@ -1,0 +1,1 @@
+{"version":3,"file":"invalid-product-stock.exception.js","sourceRoot":"","sources":["../../../../../../src/features/business/products/domain/exceptions/invalid-product-stock.exception.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,eAAe,EAAE,MAAM,sDAAsD,CAAC;AAEvF,MAAM,OAAO,4BAA6B,SAAQ,eAAe;IAC/D,YAAY,KAAa;QACvB,KAAK,CAAC,aAAa,KAAK,yBAAyB,CAAC,CAAC;IACrD,CAAC;CACF"}

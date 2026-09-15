@@ -1,0 +1,1 @@
+{"version":3,"file":"create-products-table.migration.js","sourceRoot":"","sources":["../../../../../../../src/features/business/products/infrastructure/persistence/migrations/create-products-table.migration.ts"],"names":[],"mappings":"AAAA,MAAM,CAAC,MAAM,4BAA4B,GAAG;IAC1C,IAAI,EAAE,uBAAuB;IAC7B,KAAK,CAAC,EAAE;IAGR,CAAC;IACD,KAAK,CAAC,IAAI;IAEV,CAAC;CACF,CAAC"}

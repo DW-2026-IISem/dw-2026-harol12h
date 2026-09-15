@@ -20,7 +20,7 @@ SequelizeDatabaseModule = __decorate([
                 provide: SEQUELIZE_TOKEN,
                 useFactory: async (configService) => {
                     const dialect = configService.get('environment.database.dialect', DatabaseDialect.MySQL);
-                    return createSequelizeInstance(dialect);
+                    return createSequelizeInstance(dialect ?? DatabaseDialect.MySQL);
                 },
                 inject: [ConfigService],
             },

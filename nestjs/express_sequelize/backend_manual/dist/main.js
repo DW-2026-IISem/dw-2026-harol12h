@@ -1,42 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module.js';
-import { getLoggerConfig } from './config/logger/logger.config.js';
-import { GlobalExceptionFilter } from './common/filters/global-exception.filter.js';
-import { ResponseInterceptor } from './common/interceptors/response.interceptor.js';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
-import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor.js';
-import { CustomValidationPipe } from './common/pipes/validation.pipe.js';
-import { setupSwagger } from './config/swagger/swagger.config.js';
-import { GLOBAL_PREFIX } from './common/constants/app.constants.js';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule, {
-        logger: getLoggerConfig().logLevels,
-    });
+    const app = await NestFactory.create(AppModule);
     const configService = app.get(ConfigService);
-    const port = configService.get('app.port', 3002);
-    app.setGlobalPrefix(GLOBAL_PREFIX);
-    app.useGlobalFilters(new GlobalExceptionFilter());
-    app.useGlobalInterceptors(new ResponseInterceptor(), new LoggingInterceptor(), new TimeoutInterceptor());
-    app.useGlobalPipes(new CustomValidationPipe());
-    setupSwagger(app);
-    try {
-        await app.listen(port);
-        console.log(`🚀 Application running on: http://localhost:${port}`);
-        console.log(`📘 Swagger: http://localhost:${port}/api/docs`);
-    }
-    catch (error) {
-        if (error?.code === 'EADDRINUSE') {
-            console.error(`❌ El puerto ${port} ya está en uso (EADDRINUSE).\n` +
-                `   Solución rápida:\n` +
-                `   1) npm run free:port\n` +
-                `   2) npm run start:dev\n` +
-                `   O cambia PORT en el archivo .env`);
-            await app.close();
-            process.exit(1);
-        }
-        throw error;
-    }
+    const config = new DocumentBuilder()
+        .setTitle('API')
+        .setDescription('Documentación de la API')
+        .setVersion('1.0')
+        .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api', app, document);
+    const port = configService.get('environment.app.port') ?? 3002;
+    await app.listen(port);
+    console.log(`🚀 Application is running on: http://localhost:${port}/api`);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map
