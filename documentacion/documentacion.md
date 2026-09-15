@@ -7220,3 +7220,38 @@ EOF_BACKEND_MANUAL
 ```
 
 ![](img/190.png)
+
+#### 10.2.13 src/features/business/orders/application/use-cases/create-order.use-case.ts
+
+Caso de uso para crear pedidos.
+
+**ruta** `src/features/business/orders/application/use-cases/create-order.use-case.ts`
+
+```bash
+mkdir -p src/features/business/orders/application/use-cases
+cat > src/features/business/orders/application/use-cases/create-order.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import { Order } from '../../domain/entities/order.entity';
+import {
+  IOrderRepository,
+  ORDER_REPOSITORY,
+} from '../../domain/interfaces/order-repository.interface';
+import { CreateOrderDto } from '../dto/create-order.dto';
+import { OrderMapper } from '../mappers/order.mapper';
+
+@Injectable()
+export class CreateOrderUseCase {
+  constructor(
+    @Inject(ORDER_REPOSITORY)
+    private readonly orderRepository: IOrderRepository,
+  ) {}
+
+  async execute(dto: CreateOrderDto) {
+    const order = Order.create(dto);
+    const created = await this.orderRepository.create(order);
+    return OrderMapper.toResponse(created);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/191.png)
