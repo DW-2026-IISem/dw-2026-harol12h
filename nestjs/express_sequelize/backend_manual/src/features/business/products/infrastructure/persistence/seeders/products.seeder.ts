@@ -1,28 +1,26 @@
 import { ProductModel } from '../models/product.model.js';
-import { Status } from '../../../../../../common/enums/status.enum.js';
 
-export async function seedProducts(): Promise<void> {
-  const count = await ProductModel.count();
-  if (count > 0) return;
-
+export async function seedProducts() {
   await ProductModel.bulkCreate([
     {
-      name: 'Smartphone X',
-      brand: 'TechBrand',
-      price: 59999,
+      name: 'Camisa Blanca',
+      brand: 'ModaCo',
+      price: 50000,
       minStock: 5,
-      quantity: 50,
+      quantity: 20,
       productTypeId: 1,
-      status: Status.ACTIVE,
+      collectionId: 1,
+      status: 'ACTIVE',
     },
     {
-      name: 'Wireless Headphones',
-      brand: 'AudioPro',
-      price: 12999,
-      minStock: 10,
-      quantity: 100,
-      productTypeId: 1,
-      status: Status.ACTIVE,
+      name: 'Pantalón Jeans',
+      brand: 'DenimCo',
+      price: 120000,
+      minStock: 3,
+      quantity: 15,
+      productTypeId: 2,
+      collectionId: 1,
+      status: 'ACTIVE',
     },
   ]);
 }

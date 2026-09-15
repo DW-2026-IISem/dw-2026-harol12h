@@ -6524,3 +6524,42 @@ export class GetProductUseCase {
 EOF_BACKEND_IA
 ```
 ![](img/171.png)
+
+#### 10.25 src/features/business/products/infrastructure/persistence/seeders/products.seeder.ts
+
+Genera productos de prueba asociados a colecciones y tipos.
+
+**ruta** `src/features/business/products/infrastructure/persistence/seeders/products.seeder.ts`
+
+```bash
+mkdir -p src/features/business/products/infrastructure/persistence/seeders
+cat > src/features/business/products/infrastructure/persistence/seeders/products.seeder.ts <<'EOF_BACKEND_IA'
+import { ProductModel } from '../models/product.model.js';
+
+export async function seedProducts() {
+  await ProductModel.bulkCreate([
+    {
+      name: 'Camisa Blanca',
+      brand: 'ModaCo',
+      price: 50000,
+      minStock: 5,
+      quantity: 20,
+      productTypeId: 1,
+      collectionId: 1,
+      status: 'ACTIVE',
+    },
+    {
+      name: 'Pantalón Jeans',
+      brand: 'DenimCo',
+      price: 120000,
+      minStock: 3,
+      quantity: 15,
+      productTypeId: 2,
+      collectionId: 1,
+      status: 'ACTIVE',
+    },
+  ]);
+}
+EOF_BACKEND_IA
+```
+![](img/172.png)
