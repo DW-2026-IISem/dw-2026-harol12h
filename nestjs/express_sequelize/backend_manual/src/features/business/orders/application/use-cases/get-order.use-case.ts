@@ -1,7 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { IOrderRepository } from '../../domain/interfaces/order-repository.interface.js';
-import { ORDER_REPOSITORY } from '../../domain/interfaces/order-repository.interface.js';
-import { OrderMapper } from '../mappers/order.mapper.js';
+import { OrderNotFoundException } from '../../domain/exceptions/order-not-found.exception';
+import {
+  IOrderRepository,
+  ORDER_REPOSITORY,
+} from '../../domain/interfaces/order-repository.interface';
+import { OrderMapper } from '../mappers/order.mapper';
 
 @Injectable()
 export class GetOrderUseCase {
@@ -12,7 +15,7 @@ export class GetOrderUseCase {
 
   async execute(id: number) {
     const order = await this.orderRepository.findById(id);
-    if (!order) throw new Error(`Order ${id} not found`);
+    if (!order) throw new OrderNotFoundException(id);
     return OrderMapper.toResponse(order);
   }
 }
