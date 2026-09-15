@@ -5856,3 +5856,34 @@ EOF_BACKEND_IA
 ```
 ![](img/150.png)
 
+#### 10.5 src/features/business/orders/application/mappers/order.mapper.ts
+ 
+Convierte entre entidad Order, modelo Sequelize y DTO de respuesta.
+
+**ruta** `src/features/business/orders/application/mappers/order.mapper.ts`
+
+```bash
+mkdir -p src/features/business/orders/application/mappers
+cat > src/features/business/orders/application/mappers/order.mapper.ts <<'EOF_BACKEND_IA'
+import { Order } from '../../domain/entities/order.entity.js';
+import { OrderModel } from '../../infrastructure/persistence/models/order.model.js';
+
+export class OrderMapper {
+  static toEntity(model: OrderModel): Order {
+    return new Order(model.id, model.clientId, model.orderDate, model.status);
+  }
+
+  static toResponse(model: OrderModel) {
+    return {
+      id: model.id,
+      clientId: model.clientId,
+      orderDate: model.orderDate,
+      status: model.status,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+    };
+  }
+}
+EOF_BACKEND_IA
+```
+![](img/151.png)
