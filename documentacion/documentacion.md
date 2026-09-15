@@ -6388,3 +6388,28 @@ export class OrdersModule {}
 EOF_BACKEND_IA
 ```
 ![](img/167.png)
+
+#### 10.21 src/features/business/products/application/dto/product-filter.dto.ts
+
+Define filtros para listar productos (ej. por colección, tipo, estado).
+
+**ruta** `src/features/business/products/application/dto/product-filter.dto.ts`
+
+```bash
+mkdir -p src/features/business/products/application/dto
+cat > src/features/business/products/application/dto/product-filter.dto.ts <<'EOF_BACKEND_IA'
+import { ApiPropertyOptional } from '@nestjs/swagger';
+
+export class ProductFilterDto {
+  @ApiPropertyOptional({ example: 1 })
+  collectionId?: number;
+
+  @ApiPropertyOptional({ example: 1 })
+  productTypeId?: number;
+
+  @ApiPropertyOptional({ example: 'ACTIVE' })
+  status?: string;
+}
+EOF_BACKEND_IA
+```
+![](img/168.png)
