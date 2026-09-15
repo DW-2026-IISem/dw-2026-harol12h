@@ -7751,3 +7751,4 @@ describe('CreateOrderUseCase', () => {
 });
 EOF_BACKEND_MANUAL
 ```
+![](img/205.png)
