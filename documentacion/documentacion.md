@@ -6816,3 +6816,23 @@ export class Order {
 EOF_BACKEND_MANUAL
 ``` 
 ![](img/179.png)
+
+#### 10.2.2 src/features/business/orders/domain/exceptions/order-not-found.exception.ts
+
+Excepción personalizada cuando no se encuentra un pedido.
+
+**ruta** `src/features/business/orders/domain/exceptions/order-not-found.exception.ts`
+
+```bash
+mkdir -p src/features/business/orders/domain/exceptions
+cat > src/features/business/orders/domain/exceptions/order-not-found.exception.ts <<'EOF_BACKEND_MANUAL'
+import { EntityNotFoundException } from '../../../../../common/exceptions/entity-not-found.exception';
+
+export class OrderNotFoundException extends EntityNotFoundException {
+  constructor(id: number) {
+    super('Pedido', id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/180.png)

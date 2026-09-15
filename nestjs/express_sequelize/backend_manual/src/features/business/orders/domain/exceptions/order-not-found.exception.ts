@@ -1,7 +1,7 @@
-import { DomainException } from '../../../../../common/exceptions/domain.exception.js';
+import { EntityNotFoundException } from '../../../../../common/exceptions/entity-not-found.exception';
 
-export class OrderNotFoundException extends DomainException {
+export class OrderNotFoundException extends EntityNotFoundException {
   constructor(id: number) {
-    super(`El pedido con ID ${id} no existe.`);
+    super('Pedido', id);
   }
 }
