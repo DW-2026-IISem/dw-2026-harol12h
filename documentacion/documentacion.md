@@ -9011,3 +9011,28 @@ export async function seedBranches(): Promise<void> {
 EOF_BACKEND_MANUAL
 ```
 ![](img/242.png)
+
+#### src/features/business/branches/application/dto/create-branch.dto.ts
+DTO para crear sucursales.
+
+```bash
+mkdir -p src/features/business/branches/application/dto
+cat > src/features/business/branches/application/dto/create-branch.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+
+export class CreateBranchDto {
+  @ApiProperty({ example: 'Sucursal Principal' })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name: string;
+
+  @ApiPropertyOptional({ example: 'Sucursal central de la empresa' })
+  @IsOptional()
+  @IsString()
+  description?: string;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/243.png)
