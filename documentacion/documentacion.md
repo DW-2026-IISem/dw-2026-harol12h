@@ -9717,3 +9717,31 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/264.png)
 
+#### 12.3 src/features/business/inventory/domain/interfaces/inventory-repository.interface.ts
+Interfaz del repositorio de inventario.
+
+```bash
+mkdir -p src/features/business/inventory/domain/interfaces
+cat > src/features/business/inventory/domain/interfaces/inventory-repository.interface.ts <<'EOF_BACKEND_MANUAL'
+import { PaginatedResult } from '../../../../../common/interfaces/pagination.interface.js';
+import { Inventory } from '../entities/inventory.entity.js';
+
+export const INVENTORY_REPOSITORY = 'INVENTORY_REPOSITORY';
+
+export interface InventoryFindAllParams {
+  page?: number;
+  limit?: number;
+  branchId?: number;
+  variantId?: number;
+}
+
+export interface IInventoryRepository {
+  create(inventory: Inventory): Promise<Inventory>;
+  update(inventory: Inventory): Promise<Inventory>;
+  delete(id: number): Promise<void>;
+  findById(id: number): Promise<Inventory | null>;
+  findAll(params: InventoryFindAllParams): Promise<PaginatedResult<Inventory>>;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/265.png)
