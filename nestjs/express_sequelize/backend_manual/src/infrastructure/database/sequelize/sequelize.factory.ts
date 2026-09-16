@@ -6,10 +6,13 @@ import { OrderModel } from '../../../features/business/orders/infrastructure/per
 import { OrderDetailModel } from '../../../features/business/order-details/infrastructure/persistence/models/order-detail.model.js';
 import { VariantModel } from '../../../features/business/variants/infrastructure/persistence/models/variant.model.js';
 import { BranchModel } from '../../../features/business/branches/infrastructure/persistence/models/branch.model.js';
+import { InventoryModel } from '../../../features/business/inventory/infrastructure/persistence/models/inventory.model.js';
+import { ProductTypeModel } from '../../../features/business/product-types/infrastructure/persistence/models/product-type.model.js';
 
 export const ALL_MODELS = [
   ClientModel,
   CollectionModel,
+  ProductTypeModel,
   ProductModel,
   OrderModel,
   OrderDetailModel,
@@ -40,13 +43,8 @@ export async function createSequelizeInstance(options: any): Promise<Sequelize> 
   BranchModel.hasMany(ClientModel, { foreignKey: 'branchId' });
   ClientModel.belongsTo(BranchModel, { foreignKey: 'branchId' });
 
+  InventoryModel.belongsTo(BranchModel, { foreignKey: 'branchId' });
+  InventoryModel.belongsTo(VariantModel, { foreignKey: 'variantId' });
+
   return sequelize;
 }
-
-
-import { InventoryModel } from '../../../features/business/inventory/infrastructure/persistence/models/inventory.model.js';
-
-
-// Relaciones
-InventoryModel.belongsTo(BranchModel, { foreignKey: 'branchId' });
-InventoryModel.belongsTo(VariantModel, { foreignKey: 'variantId' });

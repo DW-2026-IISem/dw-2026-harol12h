@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
+import { createSequelizeInstance } from './sequelize.factory.js';
 import { getSequelizeOptions } from './sequelize.options.js';
-import { Sequelize } from 'sequelize-typescript';
 
 @Module({
   providers: [
@@ -8,7 +8,9 @@ import { Sequelize } from 'sequelize-typescript';
       provide: 'SEQUELIZE',
       useFactory: async () => {
         const options = getSequelizeOptions();
-        return new Sequelize(options);
+        const sequelize = await createSequelizeInstance(options);
+        await sequelize.sync();
+        return sequelize;
       },
     },
   ],

@@ -5,8 +5,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { Module } from '@nestjs/common';
+import { createSequelizeInstance } from './sequelize.factory.js';
 import { getSequelizeOptions } from './sequelize.options.js';
-import { Sequelize } from 'sequelize-typescript';
 let SequelizeDatabaseModule = class SequelizeDatabaseModule {
 };
 SequelizeDatabaseModule = __decorate([
@@ -16,7 +16,9 @@ SequelizeDatabaseModule = __decorate([
                 provide: 'SEQUELIZE',
                 useFactory: async () => {
                     const options = getSequelizeOptions();
-                    return new Sequelize(options);
+                    const sequelize = await createSequelizeInstance(options);
+                    await sequelize.sync();
+                    return sequelize;
                 },
             },
         ],
