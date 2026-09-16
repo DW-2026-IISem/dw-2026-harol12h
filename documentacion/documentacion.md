@@ -8862,3 +8862,47 @@ export interface IBranchRepository {
 EOF_BACKEND_MANUAL
 ```
 ![](img/238.png)
+
+#### src/features/business/branches/infrastructure/persistence/models/branch.model.ts
+Modelo Sequelize para la tabla branches.
+
+```bash
+mkdir -p src/features/business/branches/infrastructure/persistence/models
+cat > src/features/business/branches/infrastructure/persistence/models/branch.model.ts <<'EOF_BACKEND_MANUAL'
+import {
+  AutoIncrement,
+  Column,
+  CreatedAt,
+  DataType,
+  Model,
+  PrimaryKey,
+  Table,
+  UpdatedAt,
+} from 'sequelize-typescript';
+
+@Table({ tableName: 'branches' })
+export class BranchModel extends Model {
+  @PrimaryKey
+  @AutoIncrement
+  @Column(DataType.INTEGER)
+  declare id: number;
+
+  @Column({ type: DataType.STRING(100), allowNull: false })
+  declare name: string;
+
+  @Column({ type: DataType.TEXT, allowNull: true })
+  declare description: string | null;
+
+  @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true })
+  declare isActive: boolean;
+
+  @CreatedAt
+  declare createdAt: Date;
+
+  @UpdatedAt
+  declare updatedAt: Date;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/239.png)
+
