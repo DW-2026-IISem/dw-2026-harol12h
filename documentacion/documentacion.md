@@ -10332,3 +10332,21 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/282.png)
 
+#### 12.22 src/infrastructure/database/sequelize/sequelize.factory.ts
+Registrar InventoryModel en la lista de modelos y relaciones.
+
+```bash
+# ⚠️ Este bloque se agrega dentro del archivo existente sequelize.factory.ts
+# Solo muestro la parte relevante para Inventario
+
+import { InventoryModel } from '../../../features/business/inventory/infrastructure/persistence/models/inventory.model.js';
+
+export const ALL_MODELS = [
+  // otros modelos...
+  InventoryModel,
+];
+
+// Relaciones
+InventoryModel.belongsTo(BranchModel, { foreignKey: 'branchId' });
+InventoryModel.belongsTo(VariantModel, { foreignKey: 'variantId' });
+```

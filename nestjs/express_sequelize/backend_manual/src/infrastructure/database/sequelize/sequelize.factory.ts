@@ -14,7 +14,8 @@ export const ALL_MODELS = [
   OrderModel,
   OrderDetailModel,
   VariantModel,
-  BranchModel
+  BranchModel,
+  InventoryModel,
 ];
 
 export async function createSequelizeInstance(options: any): Promise<Sequelize> {
@@ -41,3 +42,11 @@ export async function createSequelizeInstance(options: any): Promise<Sequelize> 
 
   return sequelize;
 }
+
+
+import { InventoryModel } from '../../../features/business/inventory/infrastructure/persistence/models/inventory.model.js';
+
+
+// Relaciones
+InventoryModel.belongsTo(BranchModel, { foreignKey: 'branchId' });
+InventoryModel.belongsTo(VariantModel, { foreignKey: 'variantId' });
