@@ -10167,3 +10167,33 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/278.png)
 
+#### 12.17 src/features/business/inventory/application/use-cases/list-inventory.use-case.ts
+Caso de uso para listar inventario con filtros y paginación.
+
+```bash
+cat > src/features/business/inventory/application/use-cases/list-inventory.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import type { IInventoryRepository } from '../../domain/interfaces/inventory-repository.interface.js';
+import { INVENTORY_REPOSITORY } from '../../domain/interfaces/inventory-repository.interface.js';
+import { InventoryFilterDto } from '../dto/inventory-filter.dto.js';
+import { InventoryMapper } from '../mappers/inventory.mapper.js';
+import { Inventory } from '../../domain/entities/inventory.entity.js';
+
+@Injectable()
+export class ListInventoryUseCase {
+  constructor(
+    @Inject(INVENTORY_REPOSITORY)
+    private readonly inventoryRepository: IInventoryRepository,
+  ) {}
+
+  async execute(filter: InventoryFilterDto) {
+    const result = await this.inventoryRepository.findAll(filter);
+    return {
+      items: result.items.map((i: Inventory) => InventoryMapper.toResponse(i)),
+      meta: result.meta,
+    };
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/279.png)
