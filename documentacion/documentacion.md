@@ -8973,3 +8973,23 @@ export class BranchRepository implements IBranchRepository {
 EOF_BACKEND_MANUAL
 ```
 ![](img/240.png)
+
+#### src/features/business/branches/infrastructure/persistence/migrations/create-branches-table.migration.ts
+Migración documental de la tabla branches.
+
+```bash
+mkdir -p src/features/business/branches/infrastructure/persistence/migrations
+cat > src/features/business/branches/infrastructure/persistence/migrations/create-branches-table.migration.ts <<'EOF_BACKEND_MANUAL'
+export const createBranchesTableMigration = {
+  name: 'create-branches-table',
+  async up(): Promise<void> {
+    // Sequelize sync handles table creation in development.
+    // Production: CREATE TABLE branches (id, name, description, isActive, createdAt, updatedAt)
+  },
+  async down(): Promise<void> {
+    // Production: DROP TABLE branches
+  },
+};
+EOF_BACKEND_MANUAL
+```
+![](img/241.png)
