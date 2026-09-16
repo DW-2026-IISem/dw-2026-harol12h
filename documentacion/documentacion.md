@@ -10320,3 +10320,15 @@ export class InventoryModule {}
 EOF_BACKEND_MANUAL
 ```
 ![](img/281.png)
+
+#### 12.21 src/features/business/inventory/index.ts
+Barrel export del módulo Inventario.
+
+```bash
+mkdir -p src/features/business/inventory
+cat > src/features/business/inventory/index.ts <<'EOF_BACKEND_MANUAL'
+export { InventoryModule } from './inventory.module.js';
+EOF_BACKEND_MANUAL
+```
+![](img/282.png)
+
