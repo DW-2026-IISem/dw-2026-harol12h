@@ -9049,3 +9049,36 @@ export class UpdateBranchDto extends PartialType(CreateBranchDto) {}
 EOF_BACKEND_MANUAL
 ```
 ![](img/244.png)
+
+#### src/features/business/branches/application/dto/branch-filter.dto.ts
+DTO para filtros de búsqueda y paginación de sucursales.
+
+```bash
+cat > src/features/business/branches/application/dto/branch-filter.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+
+export class BranchFilterDto {
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @ApiPropertyOptional({ example: 10 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  limit?: number;
+
+  @ApiPropertyOptional({ example: 'Sucursal' })
+  @IsOptional()
+  @IsString()
+  search?: string;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/245.png)
+
