@@ -9470,7 +9470,8 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/256.png)
 
-#### 
+#### src/infrastructure/database/seeders/database-seeder.service.ts
+Ejecutar seedBranches.
 
 ```baash 
 import { Module } from '@nestjs/common';
@@ -9501,3 +9502,29 @@ import { VariantsModule } from './variants/variants.module.js';
 })
 export class BusinessModule {} 
 ```
+
+#### src/features/business/branches/domain/entities/branch.entity.spec.ts
+Prueba unitaria de la entidad Branch.
+
+```bash
+mkdir -p src/features/business/branches/domain/entities
+cat > src/features/business/branches/domain/entities/branch.entity.spec.ts <<'EOF_BACKEND_MANUAL'
+import { Branch } from './branch.entity.js';
+
+describe('Branch Entity', () => {
+  it('should create a valid branch', () => {
+    const branch = Branch.create({ name: 'Sucursal Principal' });
+    expect(branch.name).toBe('Sucursal Principal');
+    expect(branch.isActive).toBe(true);
+  });
+
+  it('should update branch', () => {
+    const branch = Branch.create({ name: 'Sucursal Principal' });
+    branch.update({ name: 'Sucursal Norte', isActive: false });
+    expect(branch.name).toBe('Sucursal Norte');
+    expect(branch.isActive).toBe(false);
+  });
+});
+EOF_BACKEND_MANUAL
+```
+![](img/257.png)
