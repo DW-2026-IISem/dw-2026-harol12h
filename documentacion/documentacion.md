@@ -9649,7 +9649,7 @@ npm run start:dev
 ``` 
 ![](img/262.png)
 
-## creacion de tabla inventory
+## 12 creacion de tabla inventory
 #### src/features/business/inventory/domain/entities/inventory.entity.ts
 Entidad de dominio para inventario.
 
@@ -9699,4 +9699,21 @@ export class Inventory {
 EOF_BACKEND_MANUAL
 ```
 ![](img/263.png)
+
+#### 12.2 src/features/business/inventory/domain/exceptions/inventory-not-found.exception.ts
+Excepción personalizada para inventario no encontrado.
+
+```bash
+mkdir -p src/features/business/inventory/domain/exceptions
+cat > src/features/business/inventory/domain/exceptions/inventory-not-found.exception.ts <<'EOF_BACKEND_MANUAL'
+import { EntityNotFoundException } from '../../../../../common/exceptions/entity-not-found.exception.js';
+
+export class InventoryNotFoundException extends EntityNotFoundException {
+  constructor(id: number) {
+    super('Inventario', id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/264.png)
 
