@@ -8818,3 +8818,47 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/236.png)
 
+#### 11.2 src/features/business/branches/domain/exceptions/branch-not-found.exception.ts
+Excepción personalizada para sucursales no encontradas.
+
+```bash
+mkdir -p src/features/business/branches/domain/exceptions
+cat > src/features/business/branches/domain/exceptions/branch-not-found.exception.ts <<'EOF_BACKEND_MANUAL'
+import { EntityNotFoundException } from '../../../../../common/exceptions/entity-not-found.exception.js';
+
+export class BranchNotFoundException extends EntityNotFoundException {
+  constructor(id: number) {
+    super('Sucursal', id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/237.png)
+
+#### 11.3 src/features/business/branches/domain/interfaces/branch-repository.interface.ts
+Interfaz del repositorio de sucursales.
+
+```bash
+mkdir -p src/features/business/branches/domain/interfaces
+cat > src/features/business/branches/domain/interfaces/branch-repository.interface.ts <<'EOF_BACKEND_MANUAL'
+import { PaginatedResult } from '../../../../../common/interfaces/pagination.interface.js';
+import { Branch } from '../entities/branch.entity.js';
+
+export const BRANCH_REPOSITORY = 'BRANCH_REPOSITORY';
+
+export interface BranchFindAllParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface IBranchRepository {
+  create(branch: Branch): Promise<Branch>;
+  update(branch: Branch): Promise<Branch>;
+  delete(id: number): Promise<void>;
+  findById(id: number): Promise<Branch | null>;
+  findAll(params: BranchFindAllParams): Promise<PaginatedResult<Branch>>;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/238.png)
