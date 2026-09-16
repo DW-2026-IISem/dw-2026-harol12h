@@ -9974,3 +9974,33 @@ export class InventoryFilterDto {
 EOF_BACKEND_MANUAL
 ```
 ![](img/272.png)
+
+#### 12.11 src/features/business/inventory/application/dto/inventory-response.dto.ts
+DTO de salida para respuestas HTTP de inventario.
+
+```bash
+cat > src/features/business/inventory/application/dto/inventory-response.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty } from '@nestjs/swagger';
+
+export class InventoryResponseDto {
+  @ApiProperty({ example: 1 })
+  id: number;
+
+  @ApiProperty({ example: 1 })
+  branchId: number;
+
+  @ApiProperty({ example: 2 })
+  variantId: number;
+
+  @ApiProperty({ example: 100 })
+  quantity: number;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/273.png)
