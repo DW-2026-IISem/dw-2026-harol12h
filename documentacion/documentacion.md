@@ -10350,3 +10350,25 @@ export const ALL_MODELS = [
 InventoryModel.belongsTo(BranchModel, { foreignKey: 'branchId' });
 InventoryModel.belongsTo(VariantModel, { foreignKey: 'variantId' });
 ```
+
+#### 12.23 src/features/business/business.module.ts
+Agregar InventoryModule al módulo de negocio.
+
+```bash
+# ⚠️ Este bloque se agrega dentro del archivo existente business.module.ts
+# Solo muestro la parte relevante para Inventario
+
+import { InventoryModule } from './inventory/inventory.module.js';
+
+@Module({
+  imports: [
+    // otros módulos...
+    InventoryModule,
+  ],
+  exports: [
+    // otros módulos...
+    InventoryModule,
+  ],
+})
+export class BusinessModule {}
+```
