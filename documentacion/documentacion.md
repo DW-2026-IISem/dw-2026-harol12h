@@ -8279,3 +8279,31 @@ export class DeleteVariantUseCase {
 EOF_BACKEND_MANUAL
 ```
 ![](img/220.png)
+
+#### 10.3.15 src/features/business/variants/application/use-cases/get-variant.use-case.ts
+Caso de uso para obtener una variante por ID.
+
+```bash
+cat > src/features/business/variants/application/use-cases/get-variant.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import { VariantNotFoundException } from '../../domain/exceptions/variant-not-found.exception.js';
+import type { IVariantRepository } from '../../domain/interfaces/variant-repository.interface.js';
+import { VARIANT_REPOSITORY } from '../../domain/interfaces/variant-repository.interface.js';
+import { VariantMapper } from '../mappers/variant.mapper.js';
+
+@Injectable()
+export class GetVariantUseCase {
+  constructor(
+    @Inject(VARIANT_REPOSITORY)
+    private readonly variantRepository: IVariantRepository,
+  ) {}
+
+  async execute(id: number) {
+    const variant = await this.variantRepository.findById(id);
+    if (!variant) throw new VariantNotFoundException(id);
+    return VariantMapper.toResponse(variant);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/221.png)
