@@ -9036,3 +9036,16 @@ export class CreateBranchDto {
 EOF_BACKEND_MANUAL
 ```
 ![](img/243.png)
+
+#### src/features/business/branches/application/dto/update-branch.dto.ts
+DTO para actualizar sucursales.
+
+```bash
+cat > src/features/business/branches/application/dto/update-branch.dto.ts <<'EOF_BACKEND_MANUAL'
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateBranchDto } from './create-branch.dto.js';
+
+export class UpdateBranchDto extends PartialType(CreateBranchDto) {}
+EOF_BACKEND_MANUAL
+```
+![](img/244.png)
