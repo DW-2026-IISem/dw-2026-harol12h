@@ -9247,3 +9247,31 @@ export class DeleteBranchUseCase {
 EOF_BACKEND_MANUAL
 ```
 ![](img/250.png)
+
+#### src/features/business/branches/application/use-cases/get-branch.use-case.ts
+Caso de uso para obtener una sucursal por ID.
+
+```bash
+cat > src/features/business/branches/application/use-cases/get-branch.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import { BranchNotFoundException } from '../../domain/exceptions/branch-not-found.exception.js';
+import type { IBranchRepository } from '../../domain/interfaces/branch-repository.interface.js';
+import { BRANCH_REPOSITORY } from '../../domain/interfaces/branch-repository.interface.js';
+import { BranchMapper } from '../mappers/branch.mapper.js';
+
+@Injectable()
+export class GetBranchUseCase {
+  constructor(
+    @Inject(BRANCH_REPOSITORY)
+    private readonly branchRepository: IBranchRepository,
+  ) {}
+
+  async execute(id: number) {
+    const branch = await this.branchRepository.findById(id);
+    if (!branch) throw new BranchNotFoundException(id);
+    return BranchMapper.toResponse(branch);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/251.png)
