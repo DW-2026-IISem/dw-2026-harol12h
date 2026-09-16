@@ -8052,3 +8052,40 @@ export const createVariantsTableMigration = {
 EOF_BACKEND_MANUAL
 ```
 ![](img/213.png)
+
+#### 10.3.07 src/features/business/variants/infrastructure/persistence/seeders/variants.seeder.ts
+ 
+Seeder inicial para variantes de producto.
+
+```bash
+mkdir -p
+```
+#### 10.3.08 src/features/business/variants/application/dto/create-variant.dto.ts
+
+DTO de entrada para crear variantes vía HTTP.
+
+```bash
+mkdir -p src/features/business/variants/application/dto
+cat > src/features/business/variants/application/dto/create-variant.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsInt, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+
+export class CreateVariantDto {
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  productId: number;
+
+  @ApiProperty({ example: 'Talla M' })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name: string;
+
+  @ApiPropertyOptional({ example: 'Variante de talla mediana' })
+  @IsOptional()
+  @IsString()
+  description?: string;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/214.png)
