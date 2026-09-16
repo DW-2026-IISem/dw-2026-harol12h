@@ -10004,3 +10004,48 @@ export class InventoryResponseDto {
 EOF_BACKEND_MANUAL
 ```
 ![](img/273.png)
+#### 12.12 src/features/business/inventory/application/mappers/inventory.mapper.ts
+Mapper entre entidad, modelo Sequelize y DTO de respuesta.
+
+```bash
+mkdir -p src/features/business/inventory/application/mappers
+cat > src/features/business/inventory/application/mappers/inventory.mapper.ts <<'EOF_BACKEND_MANUAL'
+import { Inventory } from '../../domain/entities/inventory.entity.js';
+import { InventoryResponseDto } from '../dto/inventory-response.dto.js';
+import { InventoryModel } from '../../infrastructure/persistence/models/inventory.model.js';
+
+export class InventoryMapper {
+  static toDomain(model: InventoryModel): Inventory {
+    return Inventory.reconstitute({
+      id: model.id,
+      branchId: model.branchId,
+      variantId: model.variantId,
+      quantity: model.quantity,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+    });
+  }
+
+  static toResponse(entity: Inventory): InventoryResponseDto {
+    return {
+      id: entity.id!,
+      branchId: entity.branchId,
+      variantId: entity.variantId,
+      quantity: entity.quantity,
+      createdAt: entity.createdAt!,
+      updatedAt: entity.updatedAt!,
+    };
+  }
+
+  static toPersistence(entity: Inventory): Partial<InventoryModel> {
+    return {
+      id: entity.id,
+      branchId: entity.branchId,
+      variantId: entity.variantId,
+      quantity: entity.quantity,
+    };
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/274.png)
