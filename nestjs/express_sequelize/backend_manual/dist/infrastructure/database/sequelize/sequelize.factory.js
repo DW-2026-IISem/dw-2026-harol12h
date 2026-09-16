@@ -5,6 +5,7 @@ import { ProductModel } from '../../../features/business/products/infrastructure
 import { OrderModel } from '../../../features/business/orders/infrastructure/persistence/models/order.model.js';
 import { OrderDetailModel } from '../../../features/business/order-details/infrastructure/persistence/models/order-detail.model.js';
 import { VariantModel } from '../../../features/business/variants/infrastructure/persistence/models/variant.model.js';
+import { BranchModel } from '../../../features/business/branches/infrastructure/persistence/models/branch.model.js';
 export const ALL_MODELS = [
     ClientModel,
     CollectionModel,
@@ -12,6 +13,7 @@ export const ALL_MODELS = [
     OrderModel,
     OrderDetailModel,
     VariantModel,
+    BranchModel
 ];
 export async function createSequelizeInstance(options) {
     const sequelize = new Sequelize(options);
@@ -26,6 +28,8 @@ export async function createSequelizeInstance(options) {
     OrderDetailModel.belongsTo(OrderModel, { foreignKey: 'orderId' });
     ProductModel.hasMany(OrderDetailModel, { foreignKey: 'productId' });
     OrderDetailModel.belongsTo(ProductModel, { foreignKey: 'productId' });
+    BranchModel.hasMany(ClientModel, { foreignKey: 'branchId' });
+    ClientModel.belongsTo(BranchModel, { foreignKey: 'branchId' });
     return sequelize;
 }
 //# sourceMappingURL=sequelize.factory.js.map

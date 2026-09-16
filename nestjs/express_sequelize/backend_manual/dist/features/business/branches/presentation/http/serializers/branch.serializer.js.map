@@ -1,0 +1,1 @@
+{"version":3,"file":"branch.serializer.js","sourceRoot":"","sources":["../../../../../../../src/features/business/branches/presentation/http/serializers/branch.serializer.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,YAAY,EAAE,MAAM,+CAA+C,CAAC;AAE7E,MAAM,OAAO,gBAAgB;IAC3B,MAAM,CAAC,SAAS,CAAC,MAAc;QAC7B,OAAO,YAAY,CAAC,UAAU,CAAC,MAAM,CAAC,CAAC;IACzC,CAAC;CACF"}

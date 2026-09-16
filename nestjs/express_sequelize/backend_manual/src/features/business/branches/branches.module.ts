@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { BRA`NCH_REPOSITORY } from './domain/interfaces/branch-repository.interface.js';
+import { BRANCH_REPOSITORY } from './domain/interfaces/branch-repository.interface.js';
 import { BranchRepository } from './infrastructure/persistence/repositories/branch.repository.js';
 import { CreateBranchUseCase } from './application/use-cases/create-branch.use-case.js';
 import { UpdateBranchUseCase } from './application/use-cases/update-branch.use-case.js';

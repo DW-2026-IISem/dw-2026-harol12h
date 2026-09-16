@@ -29,7 +29,7 @@ import { GetBranchUseCase } from '../../../application/use-cases/get-branch.use-
 import { ListBranchesUseCase } from '../../../application/use-cases/list-branches.use-case.js';
 
 @ApiTags('Branches')
-@Controller('branches')
+@Controller('api/branches')
 export class BranchesController {
   constructor(
     private readonly createBranchUseCase: CreateBranchUseCase,
