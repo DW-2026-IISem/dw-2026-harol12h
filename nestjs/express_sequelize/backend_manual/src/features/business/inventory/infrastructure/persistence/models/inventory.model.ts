@@ -9,8 +9,8 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
-import { BranchModel } from '../../../branches/infrastructure/persistence/models/branch.model.js';
-import { VariantModel } from '../../../variants/infrastructure/persistence/models/variant.model.js';
+import { BranchModel } from '../../../../branches/infrastructure/persistence/models/branch.model.js';
+import { VariantModel } from '../../../../variants/infrastructure/persistence/models/variant.model.js';
 
 @Table({ tableName: 'inventory' })
 export class InventoryModel extends Model {

@@ -10550,7 +10550,7 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/286.png)
 
-12.30 src/features/business/inventory/application/use-cases/get-inventory.use-case.spec.ts
+#### 12.30 src/features/business/inventory/application/use-cases/get-inventory.use-case.spec.ts
 Prueba unitaria del caso de uso GetInventoryUseCase.
 
 ```bash
@@ -10581,3 +10581,9 @@ describe('GetInventoryUseCase', () => {
 });
 EOF_BACKEND_MANUAL
 ```
+#### 10.28 — Verificar tablas
+
+```bash
+npm run start:dev
+```
+![](img/288.png)

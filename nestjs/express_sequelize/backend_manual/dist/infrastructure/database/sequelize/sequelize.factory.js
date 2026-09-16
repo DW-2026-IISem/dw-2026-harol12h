@@ -13,7 +13,8 @@ export const ALL_MODELS = [
     OrderModel,
     OrderDetailModel,
     VariantModel,
-    BranchModel
+    BranchModel,
+    InventoryModel,
 ];
 export async function createSequelizeInstance(options) {
     const sequelize = new Sequelize(options);
@@ -32,4 +33,7 @@ export async function createSequelizeInstance(options) {
     ClientModel.belongsTo(BranchModel, { foreignKey: 'branchId' });
     return sequelize;
 }
+import { InventoryModel } from '../../../features/business/inventory/infrastructure/persistence/models/inventory.model.js';
+InventoryModel.belongsTo(BranchModel, { foreignKey: 'branchId' });
+InventoryModel.belongsTo(VariantModel, { foreignKey: 'variantId' });
 //# sourceMappingURL=sequelize.factory.js.map
