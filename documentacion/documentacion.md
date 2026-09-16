@@ -9922,3 +9922,16 @@ export class CreateInventoryDto {
 EOF_BACKEND_MANUAL
 ```
 ![](img/270.png)
+
+#### 12.9 src/features/business/inventory/application/dto/update-inventory.dto.ts
+DTO para actualizar registros de inventario.
+
+```bash
+cat > src/features/business/inventory/application/dto/update-inventory.dto.ts <<'EOF_BACKEND_MANUAL'
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateInventoryDto } from './create-inventory.dto.js';
+
+export class UpdateInventoryDto extends PartialType(CreateInventoryDto) {}
+EOF_BACKEND_MANUAL
+```
+![](img/271.png)
