@@ -8222,3 +8222,60 @@ export class VariantMapper {
 EOF_BACKEND_MANUAL
 ```
 ![](img/218.png)
+
+#### 10.3.13 src/features/business/variants/application/use-cases/create-variant.use-case.ts
+Caso de uso para crear variantes.
+
+```bash
+mkdir -p src/features/business/variants/application/use-cases
+cat > src/features/business/variants/application/use-cases/create-variant.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import { Variant } from '../../domain/entities/variant.entity.js';
+import type { IVariantRepository } from '../../domain/interfaces/variant-repository.interface.js';
+import { VARIANT_REPOSITORY } from '../../domain/interfaces/variant-repository.interface.js';
+import { CreateVariantDto } from '../dto/create-variant.dto.js';
+import { VariantMapper } from '../mappers/variant.mapper.js';
+
+@Injectable()
+export class CreateVariantUseCase {
+  constructor(
+    @Inject(VARIANT_REPOSITORY)
+    private readonly variantRepository: IVariantRepository,
+  ) {}
+
+  async execute(dto: CreateVariantDto) {
+    const variant = Variant.create(dto);
+    const created = await this.variantRepository.create(variant);
+    return VariantMapper.toResponse(created);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/219.png)
+
+#### 10.3.14 src/features/business/variants/application/use-cases/delete-variant.use-case.ts
+Caso de uso para eliminar variantes.
+
+```bash
+cat > src/features/business/variants/application/use-cases/delete-variant.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import { VariantNotFoundException } from '../../domain/exceptions/variant-not-found.exception.js';
+import type { IVariantRepository } from '../../domain/interfaces/variant-repository.interface.js';
+import { VARIANT_REPOSITORY } from '../../domain/interfaces/variant-repository.interface.js';
+
+@Injectable()
+export class DeleteVariantUseCase {
+  constructor(
+    @Inject(VARIANT_REPOSITORY)
+    private readonly variantRepository: IVariantRepository,
+  ) {}
+
+  async execute(id: number): Promise<void> {
+    const variant = await this.variantRepository.findById(id);
+    if (!variant) throw new VariantNotFoundException(id);
+    await this.variantRepository.delete(id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/220.png)
