@@ -9415,3 +9415,24 @@ export class BranchesController {
 EOF_BACKEND_MANUAL
 ```
 ![](img/254.png)
+
+#### src/features/business/branches/index.ts
+Barrel export del módulo Branches.
+
+```bash
+mkdir -p src/features/business/branches
+cat > src/features/business/branches/index.ts <<'EOF_BACKEND_MANUAL'
+export { BranchesModule } from './branches.module.js';
+EOF_BACKEND_MANUA
+```
+
+#### src/features/business/branches/index.ts
+Barrel export del módulo Branches.
+
+```bash
+mkdir -p src/features/business/branches
+cat > src/features/business/branches/index.ts <<'EOF_BACKEND_MANUAL'
+export { BranchesModule } from './branches.module.js';
+EOF_BACKEND_MANUAL
+```
+![](img/255.png)
