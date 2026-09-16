@@ -11603,3 +11603,256 @@ export class ReturnResponseDto {
 EOF_BACKEND_MANUAL
 ```
 ![](img/325.png)
+
+#### 17.11 src/features/business/returns/application/mappers/return.mapper.ts
+```bash
+mkdir -p src/features/business/returns/application/mappers
+cat > src/features/business/returns/application/mappers/return.mapper.ts <<'EOF_BACKEND_MANUAL'
+import { Return } from '../../domain/entities/return.entity.js';
+import { ReturnModel } from '../infrastructure/persistence/models/return.model.js';
+
+export class ReturnMapper {
+  static toDomain(model: ReturnModel): Return {
+    return Return.reconstitute({
+      id: model.id,
+      orderId: model.orderId,
+      date: model.date,
+      reason: model.reason,
+      total: model.total,
+      status: model.status,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+    });
+  }
+
+  static toPersistence(entity: Return): any {
+    return {
+      id: entity.id,
+      orderId: entity.orderId,
+      date: entity.date,
+      reason: entity.reason,
+      total: entity.total,
+      status: entity.status,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+    };
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/326.png)
+#### 17.12 src/features/business/returns/application/use-cases/create-return.usecase.ts
+```bash
+mkdir -p src/features/business/returns/application/use-cases
+cat > src/features/business/returns/application/use-cases/create-return.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { Return } from '../../domain/entities/return.entity.js';
+import { IReturnRepository, RETURN_REPOSITORY } from '../../domain/interfaces/return-repository.interface.js';
+
+@Injectable()
+export class CreateReturnUseCase {
+  constructor(
+    @Inject(RETURN_REPOSITORY)
+    private readonly repository: IReturnRepository,
+  ) {}
+
+  async execute(props: Omit<Return, 'id' | 'createdAt' | 'updatedAt'>): Promise<Return> {
+    const returnEntity = Return.create(props);
+    return this.repository.create(returnEntity);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/327.png)
+#### 17.13 src/features/business/returns/application/use-cases/update-return.usecase.ts
+```bash
+cat > src/features/business/returns/application/use-cases/update-return.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { Return } from '../../domain/entities/return.entity.js';
+import { IReturnRepository, RETURN_REPOSITORY } from '../../domain/interfaces/return-repository.interface.js';
+
+@Injectable()
+export class UpdateReturnUseCase {
+  constructor(
+    @Inject(RETURN_REPOSITORY)
+    private readonly repository: IReturnRepository,
+  ) {}
+
+  async execute(returnEntity: Return): Promise<Return> {
+    return this.repository.update(returnEntity);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/328.png)
+#### 17.14 src/features/business/returns/application/use-cases/delete-return.usecase.ts
+```bash
+cat > src/features/business/returns/application/use-cases/delete-return.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { IReturnRepository, RETURN_REPOSITORY } from '../../domain/interfaces/return-repository.interface.js';
+
+@Injectable()
+export class DeleteReturnUseCase {
+  constructor(
+    @Inject(RETURN_REPOSITORY)
+    private readonly repository: IReturnRepository,
+  ) {}
+
+  async execute(id: number): Promise<void> {
+    await this.repository.delete(id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/329.png)
+#### 17.15 src/features/business/returns/application/use-cases/find-return.usecase.ts
+```bash
+cat > src/features/business/returns/application/use-cases/find-return.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { Return } from '../../domain/entities/return.entity.js';
+import { IReturnRepository, RETURN_REPOSITORY } from '../../domain/interfaces/return-repository.interface.js';
+
+@Injectable()
+export class FindReturnUseCase {
+  constructor(
+    @Inject(RETURN_REPOSITORY)
+    private readonly repository: IReturnRepository,
+  ) {}
+
+  async execute(id: number): Promise<Return | null> {
+    return this.repository.findById(id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/330.png)
+
+#### 17.16 src/features/business/returns/application/use-cases/list-returns.usecase.ts
+```bash
+cat > src/features/business/returns/application/use-cases/list-returns.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { IReturnRepository, RETURN_REPOSITORY, ReturnFindAllParams } from '../../domain/interfaces/return-repository.interface.js';
+
+@Injectable()
+export class ListReturnsUseCase {
+  constructor(
+    @Inject(RETURN_REPOSITORY)
+    private readonly repository: IReturnRepository,
+  ) {}
+
+  async execute(params: ReturnFindAllParams) {
+    return this.repository.findAll(params);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/331.png)
+#### 17.17 src/features/business/returns/presentation/http/controllers/returns.controller.ts
+```bash
+mkdir -p src/features/business/returns/presentation/http/controllers
+cat > src/features/business/returns/presentation/http/controllers/returns.controller.ts <<'EOF_BACKEND_MANUAL'
+import { Controller, Post, Get, Patch, Delete, Param, Body } from '@nestjs/common';
+import { CreateReturnUseCase } from '../../../application/use-cases/create-return.usecase.js';
+import { UpdateReturnUseCase } from '../../../application/use-cases/update-return.usecase.js';
+import { DeleteReturnUseCase } from '../../../application/use-cases/delete-return.usecase.js';
+import { FindReturnUseCase } from '../../../application/use-cases/find-return.usecase.js';
+import { ListReturnsUseCase } from '../../../application/use-cases/list-returns.usecase.js';
+import { CreateReturnDto } from '../../../application/dto/create-return.dto.js';
+import { UpdateReturnDto } from '../../../application/dto/update-return.dto.js';
+
+@Controller('returns')
+export class ReturnsController {
+  constructor(
+    private readonly createReturn: CreateReturnUseCase,
+    private readonly updateReturn: UpdateReturnUseCase,
+    private readonly deleteReturn: DeleteReturnUseCase,
+    private readonly findReturn: FindReturnUseCase,
+    private readonly listReturns: ListReturnsUseCase,
+  ) {}
+
+  @Post()
+  async create(@Body() dto: CreateReturnDto) {
+    return this.createReturn.execute(dto);
+  }
+
+  @Get()
+  async list() {
+    return this.listReturns.execute({});
+  }
+
+  @Get(':id')
+  async find(@Param('id') id: number) {
+    return this.findReturn.execute(id);
+  }
+
+  @Patch(':id')
+  async update(@Param('id') id: number, @Body() dto: UpdateReturnDto) {
+    const returnEntity = { id, ...dto } as any;
+    return this.updateReturn.execute(returnEntity);
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: number) {
+    return this.deleteReturn.execute(id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/332.png)
+#### 17.18 src/features/business/returns/returns.module.ts
+```bash
+cat > src/features/business/returns/returns.module.ts <<'EOF_BACKEND_MANUAL'
+import { Module } from '@nestjs/common';
+import { ReturnsController } from './presentation/http/controllers/returns.controller.js';
+import { ReturnRepository } from './infrastructure/persistence/repositories/return.repository.js';
+import { CreateReturnUseCase } from './application/use-cases/create-return.usecase.js';
+import { UpdateReturnUseCase } from './application/use-cases/update-return.usecase.js';
+import { DeleteReturnUseCase } from './application/use-cases/delete-return.usecase.js';
+import { FindReturnUseCase } from './application/use-cases/find-return.usecase.js';
+import { ListReturnsUseCase } from './application/use-cases/list-returns.usecase.js';
+import { RETURN_REPOSITORY } from './domain/interfaces/return-repository.interface.js';
+
+@Module({
+  controllers: [ReturnsController],
+  providers: [
+    { provide: RETURN_REPOSITORY, useClass: ReturnRepository },
+    CreateReturnUseCase,
+    UpdateReturnUseCase,
+    DeleteReturnUseCase,
+    FindReturnUseCase,
+    ListReturnsUseCase,
+  ],
+})
+export class ReturnsModule {}
+EOF_BACKEND_MANUAL
+```
+![](img/333.png)
+#### 17.19 src/features/business/returns/application/services/return.service.ts
+```bash
+mkdir -p src/features/business/returns/application/services
+cat > src/features/business/returns/application/services/return.service.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { Return } from '../../domain/entities/return.entity.js';
+import { IReturnRepository, RETURN_REPOSITORY } from '../../domain/interfaces/return-repository.interface.js';
+
+@Injectable()
+export class ReturnService {
+  constructor(
+    @Inject(RETURN_REPOSITORY)
+    private readonly repository: IReturnRepository,
+  ) {}
+
+  async processReturn(returnEntity: Return): Promise<Return> {
+    // Aquí podrías integrar lógica adicional (ej: validaciones de inventario)
+    return this.repository.create(returnEntity);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/334.png)
+#### 17.20 src/features/business/returns/application/events/return-created.event.ts
+```bash
+mkdir -p src/features/business/returns/application/events
+cat > src/features/business
+```
+![](img/335.png)
