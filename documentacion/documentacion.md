@@ -10384,7 +10384,7 @@ export class DatabaseSeederService {
 }
 ```
 
-12.25 src/features/business/inventory/domain/entities/inventory.entity.spec.ts
+#### 12.25 src/features/business/inventory/domain/entities/inventory.entity.spec.ts
 Prueba unitaria de la entidad Inventory.
 
 ```bash
@@ -10412,3 +10412,53 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/283.png)
 
+
+#### 12.26 src/features/business/inventory/infrastructure/persistence/repositories/inventory.repository.spec.ts
+Prueba unitaria del repositorio Inventory.
+
+```bash
+mkdir -p src/features/business/inventory/infrastructure/persistence/repositories
+cat > src/features/business/inventory/infrastructure/persistence/repositories/inventory.repository.spec.ts <<'EOF_BACKEND_MANUAL'
+import { InventoryRepository } from './inventory.repository.js';
+import { Inventory } from '../../../domain/entities/inventory.entity.js';
+
+describe('InventoryRepository', () => {
+  let repository: InventoryRepository;
+
+  beforeEach(() => {
+    repository = new InventoryRepository();
+  });
+
+  it('should create inventory', async () => {
+    const inventory = Inventory.create({ branchId: 1, variantId: 1, quantity: 10 });
+    const created = await repository.create(inventory);
+    expect(created.quantity).toBe(10);
+  });
+});
+EOF_BACKEND_MANUAL
+```
+#### 12.26 src/features/business/inventory/infrastructure/persistence/repositories/inventory.repository.spec.ts
+Prueba unitaria del repositorio Inventory.
+
+```bash
+mkdir -p src/features/business/inventory/infrastructure/persistence/repositories
+cat > src/features/business/inventory/infrastructure/persistence/repositories/inventory.repository.spec.ts <<'EOF_BACKEND_MANUAL'
+import { InventoryRepository } from './inventory.repository.js';
+import { Inventory } from '../../../domain/entities/inventory.entity.js';
+
+describe('InventoryRepository', () => {
+  let repository: InventoryRepository;
+
+  beforeEach(() => {
+    repository = new InventoryRepository();
+  });
+
+  it('should create inventory', async () => {
+    const inventory = Inventory.create({ branchId: 1, variantId: 1, quantity: 10 });
+    const created = await repository.create(inventory);
+    expect(created.quantity).toBe(10);
+  });
+});
+EOF_BACKEND_MANUAL
+```
+![](img/284.png)
