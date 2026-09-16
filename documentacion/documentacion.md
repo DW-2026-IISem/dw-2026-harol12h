@@ -9082,3 +9082,33 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/245.png)
 
+#### src/features/business/branches/application/dto/branch-response.dto.ts
+DTO de salida para respuestas HTTP de sucursales.
+
+```bash
+cat > src/features/business/branches/application/dto/branch-response.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export class BranchResponseDto {
+  @ApiProperty({ example: 1 })
+  id: number;
+
+  @ApiProperty({ example: 'Sucursal Principal' })
+  name: string;
+
+  @ApiPropertyOptional({ example: 'Sucursal central de la empresa' })
+  description?: string;
+
+  @ApiProperty({ example: true })
+  isActive: boolean;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+EOF_BACKEND_MANUAL
+```
+
+![](img/246.png)
