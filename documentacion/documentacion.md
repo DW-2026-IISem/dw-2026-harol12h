@@ -8478,3 +8478,48 @@ export class VariantsController {
 EOF_BACKEND_MANUAL
 ```
 ![](img/225.png)
+
+#### 10.3.20 src/features/business/variants/index.ts
+Barrel export del módulo Variants.
+
+```bash
+mkdir -p src/features/business/variants
+cat > src/features/business/variants/index.ts <<'EOF_BACKEND_MANUAL'
+export { VariantsModule } from './variants.module.js';
+EOF_BACKEND_MANUAL
+```
+![](img/226.png)
+
+#### 10.3.21 src/features/business/variants/variants.module.ts
+Módulo NestJS del feature Variants.
+
+```bash
+mkdir -p src/features/business/variants
+cat > src/features/business/variants/variants.module.ts <<'EOF_BACKEND_MANUAL'
+import { Module } from '@nestjs/common';
+import { VARIANT_REPOSITORY } from './domain/interfaces/variant-repository.interface.js';
+import { VariantRepository } from './infrastructure/persistence/repositories/variant.repository.js';
+import { CreateVariantUseCase } from './application/use-cases/create-variant.use-case.js';
+import { UpdateVariantUseCase } from './application/use-cases/update-variant.use-case.js';
+import { DeleteVariantUseCase } from './application/use-cases/delete-variant.use-case.js';
+import { GetVariantUseCase } from './application/use-cases/get-variant.use-case.js';
+import { ListVariantsUseCase } from './application/use-cases/list-variants.use-case.js';
+import { VariantsController } from './presentation/http/controllers/variants.controller.js';
+
+@Module({
+  controllers: [VariantsController],
+  providers: [
+    VariantRepository,
+    { provide: VARIANT_REPOSITORY, useExisting: VariantRepository },
+    CreateVariantUseCase,
+    UpdateVariantUseCase,
+    DeleteVariantUseCase,
+    GetVariantUseCase,
+    ListVariantsUseCase,
+  ],
+  exports: [VARIANT_REPOSITORY],
+})
+export class VariantsModule {}
+EOF_BACKEND_MANUAL
+```
+![](img/227.png)
