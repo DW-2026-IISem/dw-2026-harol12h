@@ -8606,3 +8606,63 @@ export class BusinessModule {}
 EOF_BACKEND_MANUAL
 ```
 ![](img/229.png)
+
+#### 10.3.24 src/infrastructure/database/seeders/database-seeder.service.ts
+Ejecutar seedVariants.
+
+```bash
+cat > src/infrastructure/database/seeders/database-seeder.service.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable } from '@nestjs/common';
+import { seedClients } from '../../../features/business/clients/infrastructure/persistence/seeders/clients.seeder.js';
+import { seedCollections } from '../../../features/business/collections/infrastructure/persistence/seeders/collections.seeder.js';
+import { seedProducts } from '../../../features/business/products/infrastructure/persistence/seeders/products.seeder.js';
+import { seedOrders } from '../../../features/business/orders/infrastructure/persistence/seeders/orders.seeder.js';
+import { seedOrderDetails } from '../../../features/business/order-details/infrastructure/persistence/seeders/order-details.seeder.js';
+import { seedVariants } from '../../../features/business/variants/infrastructure/persistence/seeders/variants.seeder.js';
+
+@Injectable()
+export class DatabaseSeederService {
+  async runAllSeeders(): Promise<void> {
+    await seedClients();
+    await seedCollections();
+    await seedProducts();
+    await seedOrders();
+    await seedOrderDetails();
+    await seedVariants();
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/230.png)
+
+#### 10.3.25 src/features/business/variants/domain/entities/variant.entity.spec.ts
+Prueba unitaria de la entidad Variant.
+
+```bash
+mkdir -p src/features/business/variants/domain/entities
+cat > src/features/business/variants/domain/entities/variant.entity.spec.ts <<'EOF_BACKEND_MANUAL'
+import { Variant } from './variant.entity.js';
+
+describe('Variant Entity', () => {
+  it('should create a valid variant', () => {
+    const variant = Variant.create({
+      productId: 1,
+      name: 'Talla M',
+      description: 'Variante mediana',
+    });
+    expect(variant.name).toBe('Talla M');
+    expect(variant.isActive).toBe(true);
+  });
+
+  it('should update variant', () => {
+    const variant = Variant.create({
+      productId: 1,
+      name: 'Talla M',
+    });
+    variant.update({ name: 'Talla L', isActive: false });
+    expect(variant.name).toBe('Talla L');
+    expect(variant.isActive).toBe(false);
+  });
+});
+EOF_BACKEND_MANUAL
+```
