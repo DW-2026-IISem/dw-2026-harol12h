@@ -9857,3 +9857,24 @@ export class InventoryRepository implements IInventoryRepository {
 EOF_BACKEND_MANUAL
 ```
 ![](img/267.png)
+
+#### 12.6 src/features/business/inventory/infrastructure/persistence/migrations/create-inventory-table.migration.ts
+Migración documental de la tabla inventory.
+
+```bash
+mkdir -p src/features/business/inventory/infrastructure/persistence/migrations
+cat > src/features/business/inventory/infrastructure/persistence/migrations/create-inventory-table.migration.ts <<'EOF_BACKEND_MANUAL'
+export const createInventoryTableMigration = {
+  name: 'create-inventory-table',
+  async up(): Promise<void> {
+    // Sequelize sync handles table creation in development.
+    // Production: CREATE TABLE inventory (id, branchId, variantId, quantity, createdAt, updatedAt)
+  },
+  async down(): Promise<void> {
+    // Production: DROP TABLE inventory
+  },
+};
+EOF_BACKEND_MANUAL
+```
+![](img/268.png)
+
