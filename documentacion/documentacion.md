@@ -8307,3 +8307,34 @@ export class GetVariantUseCase {
 EOF_BACKEND_MANUAL
 ```
 ![](img/221.png)
+
+#### 10.3.16 src/features/business/variants/application/use-cases/list-variants.use-case.ts
+Caso de uso para listar variantes con filtros y paginación.
+
+```bash
+cat > src/features/business/variants/application/use-cases/list-variants.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import type { IVariantRepository } from '../../domain/interfaces/variant-repository.interface.js';
+import { VARIANT_REPOSITORY } from '../../domain/interfaces/variant-repository.interface.js';
+import { VariantFilterDto } from '../dto/variant-filter.dto.js';
+import { VariantMapper } from '../mappers/variant.mapper.js';
+import { Variant } from '../../domain/entities/variant.entity.js';
+
+@Injectable()
+export class ListVariantsUseCase {
+  constructor(
+    @Inject(VARIANT_REPOSITORY)
+    private readonly variantRepository: IVariantRepository,
+  ) {}
+
+  async execute(filter: VariantFilterDto) {
+    const result = await this.variantRepository.findAll(filter);
+    return {
+      items: result.items.map((v: Variant) => VariantMapper.toResponse(v)),
+      meta: result.meta,
+    };
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/222.png)
