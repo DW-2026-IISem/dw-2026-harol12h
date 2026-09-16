@@ -5,6 +5,7 @@ import { seedProducts } from '../../../features/business/products/infrastructure
 import { seedOrders } from '../../../features/business/orders/infrastructure/persistence/seeders/orders.seeder.js';
 import { seedOrderDetails } from '../../../features/business/order-details/infrastructure/persistence/seeders/order-details.seeder.js';
 import { seedVariants } from '../../../features/business/variants/infrastructure/persistence/seeders/variants.seeder.js';
+import { seedInventory } from '../../../features/business/inventory/infrastructure/persistence/seeders/inventory.seeder.js';
 
 @Injectable()
 export class DatabaseSeederService {
@@ -15,5 +16,6 @@ export class DatabaseSeederService {
     await seedOrders();
     await seedOrderDetails();
     await seedVariants();
+    await seedInventory();
   }
 }

@@ -10336,8 +10336,6 @@ EOF_BACKEND_MANUAL
 Registrar InventoryModel en la lista de modelos y relaciones.
 
 ```bash
-# ⚠️ Este bloque se agrega dentro del archivo existente sequelize.factory.ts
-# Solo muestro la parte relevante para Inventario
 
 import { InventoryModel } from '../../../features/business/inventory/infrastructure/persistence/models/inventory.model.js';
 
@@ -10355,8 +10353,6 @@ InventoryModel.belongsTo(VariantModel, { foreignKey: 'variantId' });
 Agregar InventoryModule al módulo de negocio.
 
 ```bash
-# ⚠️ Este bloque se agrega dentro del archivo existente business.module.ts
-# Solo muestro la parte relevante para Inventario
 
 import { InventoryModule } from './inventory/inventory.module.js';
 
@@ -10371,4 +10367,19 @@ import { InventoryModule } from './inventory/inventory.module.js';
   ],
 })
 export class BusinessModule {}
+```
+
+#### 12.24 src/infrastructure/database/seeders/database-seeder.service.ts
+Ejecutar seedInventory.
+
+```bash
+import { seedInventory } from '../../../features/business/inventory/infrastructure/persistence/seeders/inventory.seeder.js';
+
+@Injectable()
+export class DatabaseSeederService {
+  async runAllSeeders(): Promise<void> {
+    // otros seeders...
+    await seedInventory();
+  }
+}
 ```
