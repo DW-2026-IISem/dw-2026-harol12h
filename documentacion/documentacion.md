@@ -10049,3 +10049,33 @@ export class InventoryMapper {
 EOF_BACKEND_MANUAL
 ```
 ![](img/274.png)
+
+#### 12.13 src/features/business/inventory/application/use-cases/create-inventory.use-case.ts
+Caso de uso para crear inventario.
+
+```bash
+mkdir -p src/features/business/inventory/application/use-cases
+cat > src/features/business/inventory/application/use-cases/create-inventory.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import { Inventory } from '../../domain/entities/inventory.entity.js';
+import type { IInventoryRepository } from '../../domain/interfaces/inventory-repository.interface.js';
+import { INVENTORY_REPOSITORY } from '../../domain/interfaces/inventory-repository.interface.js';
+import { CreateInventoryDto } from '../dto/create-inventory.dto.js';
+import { InventoryMapper } from '../mappers/inventory.mapper.js';
+
+@Injectable()
+export class CreateInventoryUseCase {
+  constructor(
+    @Inject(INVENTORY_REPOSITORY)
+    private readonly inventoryRepository: IInventoryRepository,
+  ) {}
+
+  async execute(dto: CreateInventoryDto) {
+    const inventory = Inventory.create(dto);
+    const created = await this.inventoryRepository.create(inventory);
+    return InventoryMapper.toResponse(created);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/275.png)
