@@ -9935,3 +9935,42 @@ export class UpdateInventoryDto extends PartialType(CreateInventoryDto) {}
 EOF_BACKEND_MANUAL
 ```
 ![](img/271.png)
+
+#### 12.10 src/features/business/inventory/application/dto/inventory-filter.dto.ts
+DTO para filtros de búsqueda y paginación de inventario.
+
+```bash
+cat > src/features/business/inventory/application/dto/inventory-filter.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, Min } from 'class-validator';
+
+export class InventoryFilterDto {
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @ApiPropertyOptional({ example: 10 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  limit?: number;
+
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  branchId?: number;
+
+  @ApiPropertyOptional({ example: 2 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  variantId?: number;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/272.png)
