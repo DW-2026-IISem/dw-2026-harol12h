@@ -8993,3 +8993,21 @@ export const createBranchesTableMigration = {
 EOF_BACKEND_MANUAL
 ```
 ![](img/241.png)
+
+#### src/features/business/branches/infrastructure/persistence/seeders/branches.seeder.ts
+Seeder inicial para sucursales.
+
+```bash
+mkdir -p src/features/business/branches/infrastructure/persistence/seeders
+cat > src/features/business/branches/infrastructure/persistence/seeders/branches.seeder.ts <<'EOF_BACKEND_MANUAL'
+import { BranchModel } from '../models/branch.model.js';
+
+export async function seedBranches(): Promise<void> {
+  await BranchModel.bulkCreate([
+    { name: 'Sucursal Principal', description: 'Sucursal central', isActive: true },
+    { name: 'Sucursal Norte', description: 'Sucursal ubicada al norte', isActive: true },
+  ]);
+}
+EOF_BACKEND_MANUAL
+```
+![](img/242.png)
