@@ -9611,5 +9611,33 @@ describe('BranchesController', () => {
 });
 EOF_BACKEND_MANUAL 
 ```
-![](img/260)
+![](img/260.png)
 
+#### src/features/business/branches/application/use-cases/list-branches.use-case.spec.ts
+Prueba unitaria del caso de uso ListBranchesUseCase.
+
+```bash
+cat > src/features/business/branches/application/use-cases/list-branches.use-case.spec.ts <<'EOF_BACKEND_MANUAL'
+import { ListBranchesUseCase } from './list-branches.use-case.js';
+import { Branch } from '../../domain/entities/branch.entity.js';
+import type { IBranchRepository } from '../../domain/interfaces/branch-repository.interface.js';
+
+class MockBranchRepository implements IBranchRepository {
+  async create(branch: Branch): Promise<Branch> { return branch; }
+  async update(branch: Branch): Promise<Branch> { return branch; }
+  async delete(id: number): Promise<void> {}
+  async findById(id: number): Promise<Branch | null> { return null; }
+  async findAll(): Promise<any> { return { items: [Branch.create({ name: 'Sucursal Principal' })], meta: {} }; }
+}
+
+describe('ListBranchesUseCase', () => {
+  it('should list branches', async () => {
+    const repo = new MockBranchRepository();
+    const useCase = new ListBranchesUseCase(repo as any);
+    const result = await useCase.execute({});
+    expect(result.items[0].name).toBe('Sucursal Principal');
+  });
+});
+EOF_BACKEND_MANUAL
+```
+![](img/261.png)
