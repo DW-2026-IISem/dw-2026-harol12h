@@ -9878,3 +9878,21 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/268.png)
 
+#### 12.7 src/features/business/inventory/infrastructure/persistence/seeders/inventory.seeder.ts
+Seeder inicial para inventario.
+
+```bash
+mkdir -p src/features/business/inventory/infrastructure/persistence/seeders
+cat > src/features/business/inventory/infrastructure/persistence/seeders/inventory.seeder.ts <<'EOF_BACKEND_MANUAL'
+import { InventoryModel } from '../models/inventory.model.js';
+
+export async function seedInventory(): Promise<void> {
+  await InventoryModel.bulkCreate([
+    { branchId: 1, variantId: 1, quantity: 100 },
+    { branchId: 1, variantId: 2, quantity: 50 },
+  ]);
+}
+EOF_BACKEND_MANUAL
+```
+![](img/269.png)
+
