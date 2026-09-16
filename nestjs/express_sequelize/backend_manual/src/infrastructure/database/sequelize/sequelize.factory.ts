@@ -9,6 +9,7 @@ import { BranchModel } from '../../../features/business/branches/infrastructure/
 import { InventoryModel } from '../../../features/business/inventory/infrastructure/persistence/models/inventory.model.js';
 import { ProductTypeModel } from '../../../features/business/product-types/infrastructure/persistence/models/product-type.model.js';
 import { PaymentModel } from '../../../features/business/payments/infrastructure/persistence/models/payment.model.js';
+import { ReturnModel } from '../../../features/business/returns/infrastructure/persistence/models/return.model.js';
 
 export const ALL_MODELS = [
   ClientModel,
@@ -21,6 +22,7 @@ export const ALL_MODELS = [
   BranchModel,
   InventoryModel,
   PaymentModel,
+  ReturnModel,
 ];
 
 export async function createSequelizeInstance(options: any): Promise<Sequelize> {
@@ -31,6 +33,8 @@ export async function createSequelizeInstance(options: any): Promise<Sequelize> 
   OrderModel.belongsTo(ClientModel, { foreignKey: 'clientId' });
   OrderModel.hasMany(PaymentModel, { foreignKey: 'orderId' });
   PaymentModel.belongsTo(OrderModel, { foreignKey: 'orderId' });
+  OrderModel.hasMany(ReturnModel, { foreignKey: 'orderId' });
+  ReturnModel.belongsTo(OrderModel, { foreignKey: 'orderId' });
 
   CollectionModel.hasMany(ProductModel, { foreignKey: 'collectionId' });
   ProductModel.belongsTo(CollectionModel, { foreignKey: 'collectionId' });

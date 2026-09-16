@@ -11853,6 +11853,24 @@ EOF_BACKEND_MANUAL
 #### 17.20 src/features/business/returns/application/events/return-created.event.ts
 ```bash
 mkdir -p src/features/business/returns/application/events
-cat > src/features/business
+cat > src/features/business/returns/application/events/return-created.event.ts <<'EOF_BACKEND_MANUAL'
+export class ReturnCreatedEvent {
+  constructor(
+    public readonly id: number,
+    public readonly orderId: number,
+    public readonly date: Date,
+    public readonly reason: string,
+    public readonly total: number,
+    public readonly status: string,
+    public readonly createdAt: Date,
+  ) {}
+}
+EOF_BACKEND_MANUAL
 ```
 ![](img/335.png)
+
+#### Verificar tablas
+
+```bash
+npm run start:dev
+``` 

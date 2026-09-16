@@ -1,5 +1,5 @@
 import { Return } from '../../domain/entities/return.entity.js';
-import { ReturnModel } from '../infrastructure/persistence/models/return.model.js';
+import { ReturnModel } from '../../infrastructure/persistence/models/return.model.js';
 
 export class ReturnMapper {
   static toDomain(model: ReturnModel): Return {

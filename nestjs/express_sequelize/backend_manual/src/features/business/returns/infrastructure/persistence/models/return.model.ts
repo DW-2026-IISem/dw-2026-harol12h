@@ -9,7 +9,7 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
-import { OrderModel } from '../../../orders/infrastructure/persistence/models/order.model.js';
+import { OrderModel } from '../../../../orders/infrastructure/persistence/models/order.model.js';
 
 @Table({ tableName: 'returns' })
 export class ReturnModel extends Model {
