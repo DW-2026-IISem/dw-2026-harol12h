@@ -9306,3 +9306,22 @@ export class ListBranchesUseCase {
 EOF_BACKEND_MANUAL
 ```
 ![](img/252.png)
+
+#### src/features/business/branches/presentation/http/serializers/branch.serializer.ts
+Serializer para respuestas HTTP de sucursales.
+
+```bash
+mkdir -p src/features/business/branches/presentation/http/serializers
+cat > src/features/business/branches/presentation/http/serializers/branch.serializer.ts <<'EOF_BACKEND_MANUAL'
+import { Branch } from '../../../domain/entities/branch.entity.js';
+import { BranchResponseDto } from '../../../application/dto/branch-response.dto.js';
+import { BranchMapper } from '../../../application/mappers/branch.mapper.js';
+
+export class BranchSerializer {
+  static serialize(entity: Branch): BranchResponseDto {
+    return BranchMapper.toResponse(entity);
+  }
+}
+EOF_BACKEND_MANUAL
+``` 
+![](img/253.png)
