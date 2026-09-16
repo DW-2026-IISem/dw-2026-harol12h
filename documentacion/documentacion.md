@@ -9554,3 +9554,33 @@ describe('BranchRepository', () => {
 EOF_BACKEND_MANUAL
 ```
 ![](img/258.png)
+
+#### src/features/business/branches/application/use-cases/create-branch.use-case.spec.ts
+Prueba unitaria del caso de uso CreateBranchUseCase.
+
+```bash
+mkdir -p src/features/business/branches/application/use-cases
+cat > src/features/business/branches/application/use-cases/create-branch.use-case.spec.ts <<'EOF_BACKEND_MANUAL'
+import { CreateBranchUseCase } from './create-branch.use-case.js';
+import { Branch } from '../../domain/entities/branch.entity.js';
+import type { IBranchRepository } from '../../domain/interfaces/branch-repository.interface.js';
+
+class MockBranchRepository implements IBranchRepository {
+  async create(branch: Branch): Promise<Branch> { return branch; }
+  async update(branch: Branch): Promise<Branch> { return branch; }
+  async delete(id: number): Promise<void> {}
+  async findById(id: number): Promise<Branch | null> { return null; }
+  async findAll(): Promise<any> { return { items: [], meta: {} }; }
+}
+
+describe('CreateBranchUseCase', () => {
+  it('should create a branch', async () => {
+    const repo = new MockBranchRepository();
+    const useCase = new CreateBranchUseCase(repo as any);
+    const result = await useCase.execute({ name: 'Sucursal Principal' });
+    expect(result.name).toBe('Sucursal Principal');
+  });
+});
+EOF_BACKEND_MANUAL
+```
+![](img/259.png)
