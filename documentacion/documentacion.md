@@ -8370,3 +8370,23 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/223.png)
 
+#### 10.3.18 src/features/business/variants/presentation/http/serializers/variant.serializer.ts
+Serializer para respuestas HTTP de variantes.
+
+```bash
+mkdir -p src/features/business/variants/presentation/http/serializers
+cat > src/features/business/variants/presentation/http/serializers/variant.serializer.ts <<'EOF_BACKEND_MANUAL'
+import { Variant } from '../../../domain/entities/variant.entity.js';
+import { VariantResponseDto } from '../../../application/dto/variant-response.dto.js';
+import { VariantMapper } from '../../../application/mappers/variant.mapper.js';
+
+export class VariantSerializer {
+  static serialize(entity: Variant): VariantResponseDto {
+    return VariantMapper.toResponse(entity);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/224.png)
+
+#### 
