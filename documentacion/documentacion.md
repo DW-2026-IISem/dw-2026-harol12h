@@ -9584,3 +9584,32 @@ describe('CreateBranchUseCase', () => {
 EOF_BACKEND_MANUAL
 ```
 ![](img/259.png)
+
+#### src/features/business/branches/presentation/http/controllers/branches.controller.spec.ts
+Prueba unitaria del controller Branches.
+
+```bash
+mkdir -p src/features/business/branches/presentation/http/controllers
+cat > src/features/business/branches/presentation/http/controllers/branches.controller.spec.ts <<'EOF_BACKEND_MANUAL'
+import { BranchesController } from './branches.controller.js';
+import { CreateBranchUseCase } from '../../../application/use-cases/create-branch.use-case.js';
+
+describe('BranchesController', () => {
+  it('should call create use case', async () => {
+    const mockUseCase = { execute: jest.fn().mockResolvedValue({ id: 1, name: 'Sucursal Principal' }) };
+    const controller = new BranchesController(
+      mockUseCase as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+    );
+    const result = await controller.create({ name: 'Sucursal Principal' });
+    expect(result.id).toBe(1);
+    expect(result.name).toBe('Sucursal Principal');
+  });
+});
+EOF_BACKEND_MANUAL 
+```
+![](img/260)
+
