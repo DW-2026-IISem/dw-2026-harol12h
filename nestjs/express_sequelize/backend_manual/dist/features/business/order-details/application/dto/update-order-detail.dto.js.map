@@ -1,0 +1,1 @@
+{"version":3,"file":"update-order-detail.dto.js","sourceRoot":"","sources":["../../../../../../src/features/business/order-details/application/dto/update-order-detail.dto.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,WAAW,EAAE,MAAM,sBAAsB,CAAC;AACnD,OAAO,EAAE,oBAAoB,EAAE,MAAM,8BAA8B,CAAC;AAEpE,MAAM,OAAO,oBAAqB,SAAQ,WAAW,CAAC,oBAAoB,CAAC;CAAG"}

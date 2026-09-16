@@ -9,12 +9,28 @@ import { ClientsModule } from './clients/clients.module.js';
 import { CollectionsModule } from './collections/collections.module.js';
 import { ProductsModule } from './products/products.module.js';
 import { OrdersModule } from './orders/orders.module.js';
+import { OrderDetailsModule } from './order-details/order-details.module.js';
+import { VariantsModule } from './variants/variants.module.js';
 let BusinessModule = class BusinessModule {
 };
 BusinessModule = __decorate([
     Module({
-        imports: [ClientsModule, CollectionsModule, ProductsModule, OrdersModule],
-        exports: [ClientsModule, CollectionsModule, ProductsModule, OrdersModule],
+        imports: [
+            ClientsModule,
+            CollectionsModule,
+            ProductsModule,
+            OrdersModule,
+            OrderDetailsModule,
+            VariantsModule,
+        ],
+        exports: [
+            ClientsModule,
+            CollectionsModule,
+            ProductsModule,
+            OrdersModule,
+            OrderDetailsModule,
+            VariantsModule,
+        ],
     })
 ], BusinessModule);
 export { BusinessModule };

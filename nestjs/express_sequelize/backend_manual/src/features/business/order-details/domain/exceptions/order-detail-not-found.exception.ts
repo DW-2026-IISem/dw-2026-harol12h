@@ -1,0 +1,1 @@
+export class OrderDetailNotFoundException extends Error { constructor(id:number){super('Detalle de pedido con ID "+id+" no encontrado');this.name="OrderDetailNotFoundException"} }

@@ -1,0 +1,1 @@
+{"version":3,"file":"variant.serializer.js","sourceRoot":"","sources":["../../../../../../../src/features/business/variants/presentation/http/serializers/variant.serializer.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,aAAa,EAAE,MAAM,gDAAgD,CAAC;AAE/E,MAAM,OAAO,iBAAiB;IAC5B,MAAM,CAAC,SAAS,CAAC,MAAe;QAC9B,OAAO,aAAa,CAAC,UAAU,CAAC,MAAM,CAAC,CAAC;IAC1C,CAAC;CACF"}
