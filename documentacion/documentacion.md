@@ -9641,3 +9641,10 @@ describe('ListBranchesUseCase', () => {
 EOF_BACKEND_MANUAL
 ```
 ![](img/261.png)
+
+#### Verificar tablas
+
+```bash
+npm run start:dev
+``` 
+![](img/262.png)
