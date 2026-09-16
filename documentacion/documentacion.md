@@ -9896,3 +9896,29 @@ EOF_BACKEND_MANUAL
 ```
 ![](img/269.png)
 
+#### 12.8 src/features/business/inventory/application/dto/create-inventory.dto.ts
+DTO para crear registros de inventario.
+
+```bash
+mkdir -p src/features/business/inventory/application/dto
+cat > src/features/business/inventory/application/dto/create-inventory.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsInt, Min } from 'class-validator';
+
+export class CreateInventoryDto {
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  branchId: number;
+
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  variantId: number;
+
+  @ApiProperty({ example: 100 })
+  @IsInt()
+  @Min(0)
+  quantity: number;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/270.png)
