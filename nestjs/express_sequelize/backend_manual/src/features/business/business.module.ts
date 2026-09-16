@@ -7,6 +7,7 @@ import { OrderDetailsModule } from './order-details/order-details.module.js';
 import { VariantsModule } from './variants/variants.module.js';
 import { BranchesModule } from './branches/branches.module.js';
 import { InventoryModule } from './inventory/inventory.module.js';
+import { PaymentsModule } from './payments/payments.module.js';
 
 
 @Module({
@@ -19,6 +20,7 @@ import { InventoryModule } from './inventory/inventory.module.js';
     VariantsModule,
     BranchesModule,
     InventoryModule,
+    PaymentsModule,
   ],
   exports: [
     ClientsModule,
@@ -29,6 +31,7 @@ import { InventoryModule } from './inventory/inventory.module.js';
     VariantsModule,
     BranchesModule,
     InventoryModule,
+    PaymentsModule,
   ],
 })
 export class BusinessModule {}

@@ -8,6 +8,7 @@ import { VariantModel } from '../../../features/business/variants/infrastructure
 import { BranchModel } from '../../../features/business/branches/infrastructure/persistence/models/branch.model.js';
 import { InventoryModel } from '../../../features/business/inventory/infrastructure/persistence/models/inventory.model.js';
 import { ProductTypeModel } from '../../../features/business/product-types/infrastructure/persistence/models/product-type.model.js';
+import { PaymentModel } from '../../../features/business/payments/infrastructure/persistence/models/payment.model.js';
 export const ALL_MODELS = [
     ClientModel,
     CollectionModel,
@@ -18,12 +19,15 @@ export const ALL_MODELS = [
     VariantModel,
     BranchModel,
     InventoryModel,
+    PaymentModel,
 ];
 export async function createSequelizeInstance(options) {
     const sequelize = new Sequelize(options);
     sequelize.addModels(ALL_MODELS);
     ClientModel.hasMany(OrderModel, { foreignKey: 'clientId' });
     OrderModel.belongsTo(ClientModel, { foreignKey: 'clientId' });
+    OrderModel.hasMany(PaymentModel, { foreignKey: 'orderId' });
+    PaymentModel.belongsTo(OrderModel, { foreignKey: 'orderId' });
     CollectionModel.hasMany(ProductModel, { foreignKey: 'collectionId' });
     ProductModel.belongsTo(CollectionModel, { foreignKey: 'collectionId' });
     ProductModel.hasMany(VariantModel, { foreignKey: 'productId' });

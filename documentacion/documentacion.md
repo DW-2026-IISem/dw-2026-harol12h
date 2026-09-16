@@ -10634,3 +10634,900 @@ export class Payment {
 EOF_BACKEND_MANUAL
 ```
 ![](img/289.png)
+
+#### 16.2 src/features/business/payments/domain/exceptions/payment-not-found.exception.ts
+```bash
+mkdir -p src/features/business/payments/domain/exceptions
+cat > src/features/business/payments/domain/exceptions/payment-not-found.exception.ts <<'EOF_BACKEND_MANUAL'
+import { EntityNotFoundException } from '../../../../../common/exceptions/entity-not-found.exception.js';
+
+export class PaymentNotFoundException extends EntityNotFoundException {
+  constructor(id: number) {
+    super('Pago', id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/290.png)
+
+#### 16.3 src/features/business/payments/domain/interfaces/payment-repository.interface.ts
+```bash
+mkdir -p src/features/business/payments/domain/interfaces
+cat > src/features/business/payments/domain/interfaces/payment-repository.interface.ts <<'EOF_BACKEND_MANUAL'
+import { PaginatedResult } from '../../../../../common/interfaces/pagination.interface.js';
+import { Payment } from '../entities/payment.entity.js';
+
+export const PAYMENT_REPOSITORY = 'PAYMENT_REPOSITORY';
+
+export interface PaymentFindAllParams {
+  page?: number;
+  limit?: number;
+  orderId?: number;
+  status?: string;
+}
+
+export interface IPaymentRepository {
+  create(payment: Payment): Promise<Payment>;
+  update(payment: Payment): Promise<Payment>;
+  delete(id: number): Promise<void>;
+  findById(id: number): Promise<Payment | null>;
+  findAll(params: PaymentFindAllParams): Promise<PaginatedResult<Payment>>;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/291.png)
+#### 16.4 src/features/business/payments/infrastructure/persistence/models/payment.model.ts
+```bash
+mkdir -p src/features/business/payments/infrastructure/persistence/models
+cat > src/features/business/payments/infrastructure/persistence/models/payment.model.ts <<'EOF_BACKEND_MANUAL'
+import {
+  AutoIncrement,
+  Column,
+  CreatedAt,
+  DataType,
+  ForeignKey,
+  Model,
+  PrimaryKey,
+  Table,
+  UpdatedAt,
+} from 'sequelize-typescript';
+import { OrderModel } from '../../../orders/infrastructure/persistence/models/order.model.js';
+
+@Table({ tableName: 'payments' })
+export class PaymentModel extends Model {
+  @PrimaryKey
+  @AutoIncrement
+  @Column(DataType.INTEGER)
+  declare id: number;
+
+  @ForeignKey(() => OrderModel)
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  declare orderId: number;
+
+  @Column({ type: DataType.STRING, allowNull: false })
+  declare method: string;
+
+  @Column({ type: DataType.FLOAT, allowNull: false })
+  declare amount: number;
+
+  @Column({ type: DataType.STRING, allowNull: false, defaultValue: 'pending' })
+  declare status: string;
+
+  @CreatedAt
+  declare createdAt: Date;
+
+  @UpdatedAt
+  declare updatedAt: Date;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/292.png)
+
+#### 16.5 src/features/business/payments/infrastructure/persistence/repositories/payment.repository.ts
+```bash
+mkdir -p src/features/business/payments/infrastructure/persistence/repositories
+cat > src/features/business/payments/infrastructure/persistence/repositories/payment.repository.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable } from '@nestjs/common';
+import {
+  buildPaginatedResult,
+  normalizePagination,
+} from '../../../../../../common/utils/pagination.util.js';
+import { Payment } from '../../../domain/entities/payment.entity.js';
+import type { IPaymentRepository, PaymentFindAllParams } from '../../../domain/interfaces/payment-repository.interface.js';
+import { PaymentMapper } from '../../../application/mappers/payment.mapper.js';
+import { PaymentModel } from '../models/payment.model.js';
+
+@Injectable()
+export class PaymentRepository implements IPaymentRepository {
+  async create(payment: Payment): Promise<Payment> {
+    const model = await PaymentModel.create(PaymentMapper.toPersistence(payment));
+    return PaymentMapper.toDomain(model);
+  }
+
+  async update(payment: Payment): Promise<Payment> {
+    await PaymentModel.update(PaymentMapper.toPersistence(payment), { where: { id: payment.id } });
+    const updated = await PaymentModel.findByPk(payment.id!);
+    return PaymentMapper.toDomain(updated!);
+  }
+
+  async delete(id: number): Promise<void> {
+    await PaymentModel.destroy({ where: { id } });
+  }
+
+  async findById(id: number): Promise<Payment | null> {
+    const model = await PaymentModel.findByPk(id);
+    return model ? PaymentMapper.toDomain(model) : null;
+  }
+
+  async findAll(params: PaymentFindAllParams) {
+    const { page, limit, offset } = normalizePagination(params.page, params.limit);
+    const where: any = {};
+    if (params.orderId) where.orderId = params.orderId;
+    if (params.status) where.status = params.status;
+
+    const { rows, count } = await PaymentModel.findAndCountAll({
+      where,
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']],
+    });
+
+    return buildPaginatedResult(
+      rows.map((row: PaymentModel) => PaymentMapper.toDomain(row)),
+      count,
+      page,
+      limit,
+    );
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/293.png)
+#### 16.6 src/features/business/payments/infrastructure/persistence/migrations/create-payments-table.migration.ts
+```bash
+mkdir -p src/features/business/payments/infrastructure/persistence/migrations
+cat > src/features/business/payments/infrastructure/persistence/migrations/create-payments-table.migration.ts <<'EOF_BACKEND_MANUAL'
+export const createPaymentsTableMigration = {
+  name: 'create-payments-table',
+  async up(): Promise<void> {
+    // Sequelize sync handles table creation in development.
+    // Production: CREATE TABLE payments (id, orderId, method, amount, status, createdAt, updatedAt)
+  },
+  async down(): Promise<void> {
+    // Production: DROP TABLE payments
+  },
+};
+EOF_BACKEND_MANUAL
+```
+![](img/295.png)
+#### 16.7 src/features/business/payments/infrastructure/persistence/seeders/payments.seeder.ts
+```bash
+mkdir -p src/features/business/payments/infrastructure/persistence/seeders
+cat > src/features/business/payments/infrastructure/persistence/seeders/payments.seeder.ts <<'EOF_BACKEND_MANUAL'
+import { PaymentModel } from '../models/payment.model.js';
+
+export async function seedPayments(): Promise<void> {
+  await PaymentModel.bulkCreate([
+    { orderId: 1, method: 'tarjeta', amount: 250.0, status: 'completed' },
+    { orderId: 2, method: 'efectivo', amount: 120.5, status: 'pending' },
+  ]);
+}
+EOF_BACKEND_MANUAL
+```
+![](img/294.png)
+#### 16.8 src/features/business/payments/application/dto/create-payment.dto.ts
+```bash
+mkdir -p src/features/business/payments/application/dto
+cat > src/features/business/payments/application/dto/create-payment.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsInt, IsNumber, Min, IsString } from 'class-validator';
+
+export class CreatePaymentDto {
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  orderId: number;
+
+  @ApiProperty({ example: 'tarjeta' })
+  @IsString()
+  method: string;
+
+  @ApiProperty({ example: 250.0 })
+  @IsNumber()
+  @Min(0)
+  amount: number;
+
+  @ApiProperty({ example: 'pending' })
+  @IsString()
+  status: string;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/296.png)
+
+#### 16.9 src/features/business/payments/application/dto/update-payment.dto.ts
+```bash
+cat > src/features/business/payments/application/dto/update-payment.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNumber, Min, IsString, IsOptional } from 'class-validator';
+
+export class UpdatePaymentDto {
+  @ApiPropertyOptional({ example: 'efectivo' })
+  @IsOptional()
+  @IsString()
+  method?: string;
+
+  @ApiPropertyOptional({ example: 120.5 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  amount?: number;
+
+  @ApiPropertyOptional({ example: 'completed' })
+  @IsOptional()
+  @IsString()
+  status?: string;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/297.png)
+#### 16.10 src/features/business/payments/application/dto/payment-response.dto.ts
+```bash
+cat > src/features/business/payments/application/dto/payment-response.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty } from '@nestjs/swagger';
+
+export class PaymentResponseDto {
+  @ApiProperty()
+  id: number;
+
+  @ApiProperty()
+  orderId: number;
+
+  @ApiProperty()
+  method: string;
+
+  @ApiProperty()
+  amount: number;
+
+  @ApiProperty()
+  status: string;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/298.png)
+
+#### 16.11 src/features/business/payments/application/mappers/payment.mapper.ts
+```bash
+mkdir -p src/features/business/payments/application/mappers
+cat > src/features/business/payments/application/mappers/payment.mapper.ts <<'EOF_BACKEND_MANUAL'
+import { Payment } from '../../domain/entities/payment.entity.js';
+import { PaymentModel } from '../infrastructure/persistence/models/payment.model.js';
+
+export class PaymentMapper {
+  static toDomain(model: PaymentModel): Payment {
+    return Payment.reconstitute({
+      id: model.id,
+      orderId: model.orderId,
+      method: model.method,
+      amount: model.amount,
+      status: model.status,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+    });
+  }
+
+  static toPersistence(entity: Payment): any {
+    return {
+      id: entity.id,
+      orderId: entity.orderId,
+      method: entity.method,
+      amount: entity.amount,
+      status: entity.status,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+    };
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/299.png)
+#### 16.12 src/features/business/payments/application/use-cases/create-payment.usecase.ts
+```bash
+mkdir -p src/features/business/payments/application/use-cases
+cat > src/features/business/payments/application/use-cases/create-payment.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable } from '@nestjs/common';
+import { Payment } from '../../domain/entities/payment.entity.js';
+import { IPaymentRepository, PAYMENT_REPOSITORY } from '../../domain/interfaces/payment-repository.interface.js';
+import { Inject } from '@nestjs/common';
+
+@Injectable()
+export class CreatePaymentUseCase {
+  constructor(
+    @Inject(PAYMENT_REPOSITORY)
+    private readonly repository: IPaymentRepository,
+  ) {}
+
+  async execute(props: Omit<Payment, 'id' | 'createdAt' | 'updatedAt'>): Promise<Payment> {
+    const payment = Payment.create(props);
+    return this.repository.create(payment);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/301.png)
+#### 16.13 src/features/business/payments/application/use-cases/update-payment.usecase.ts
+```bash
+cat > src/features/business/payments/application/use-cases/update-payment.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable } from '@nestjs/common';
+import { Payment } from '../../domain/entities/payment.entity.js';
+import { IPaymentRepository, PAYMENT_REPOSITORY } from '../../domain/interfaces/payment-repository.interface.js';
+import { Inject } from '@nestjs/common';
+
+@Injectable()
+export class UpdatePaymentUseCase {
+  constructor(
+    @Inject(PAYMENT_REPOSITORY)
+    private readonly repository: IPaymentRepository,
+  ) {}
+
+  async execute(payment: Payment): Promise<Payment> {
+    return this.repository.update(payment);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/302.png)
+#### 16.14 src/features/business/payments/application/use-cases/delete-payment.usecase.ts
+```bash
+cat > src/features/business/payments/application/use-cases/delete-payment.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable } from '@nestjs/common';
+import { IPaymentRepository, PAYMENT_REPOSITORY } from '../../domain/interfaces/payment-repository.interface.js';
+import { Inject } from '@nestjs/common';
+
+@Injectable()
+export class DeletePaymentUseCase {
+  constructor(
+    @Inject(PAYMENT_REPOSITORY)
+    private readonly repository: IPaymentRepository,
+  ) {}
+
+  async execute(id: number): Promise<void> {
+    await this.repository.delete(id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/303.png)
+#### 16.15 src/features/business/payments/application/use-cases/find-payment.usecase.ts
+```bash
+cat > src/features/business/payments/application/use-cases/find-payment.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable } from '@nestjs/common';
+import { Payment } from '../../domain/entities/payment.entity.js';
+import { IPaymentRepository, PAYMENT_REPOSITORY } from '../../domain/interfaces/payment-repository.interface.js';
+import { Inject } from '@nestjs/common';
+
+@Injectable()
+export class FindPaymentUseCase {
+  constructor(
+    @Inject(PAYMENT_REPOSITORY)
+    private readonly repository: IPaymentRepository,
+  ) {}
+
+  async execute(id: number): Promise<Payment | null> {
+    return this.repository.findById(id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/304.png)
+#### 16.16 src/features/business/payments/application/use-cases/list-payments.usecase.ts
+```bash
+cat > src/features/business/payments/application/use-cases/list-payments.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable } from '@nestjs/common';
+import { IPaymentRepository, PAYMENT_REPOSITORY, PaymentFindAllParams } from '../../domain/interfaces/payment-repository.interface.js';
+import { Inject } from '@nestjs/common';
+
+@Injectable()
+export class ListPaymentsUseCase {
+  constructor(
+    @Inject(PAYMENT_REPOSITORY)
+    private readonly repository: IPaymentRepository,
+  ) {}
+
+  async execute(params: PaymentFindAllParams) {
+    return this.repository.findAll(params);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/305.png)
+#### 16.17 src/features/business/payments/presentation/http/controllers/payments.controller.ts
+```bash
+mkdir -p src/features/business/payments/presentation/http/controllers
+cat > src/features/business/payments/presentation/http/controllers/payments.controller.ts <<'EOF_BACKEND_MANUAL'
+import { Controller, Post, Get, Patch, Delete, Param, Body } from '@nestjs/common';
+import { CreatePaymentUseCase } from '../../../application/use-cases/create-payment.usecase.js';
+import { UpdatePaymentUseCase } from '../../../application/use-cases/update-payment.usecase.js';
+import { DeletePaymentUseCase } from '../../../application/use-cases/delete-payment.usecase.js';
+import { FindPaymentUseCase } from '../../../application/use-cases/find-payment.usecase.js';
+import { ListPaymentsUseCase } from '../../../application/use-cases/list-payments.usecase.js';
+import { CreatePaymentDto } from '../../../application/dto/create-payment.dto.js';
+import { UpdatePaymentDto } from '../../../application/dto/update-payment.dto.js';
+
+@Controller('payments')
+export class PaymentsController {
+  constructor(
+    private readonly createPayment: CreatePaymentUseCase,
+    private readonly updatePayment: UpdatePaymentUseCase,
+    private readonly deletePayment: DeletePaymentUseCase,
+    private readonly findPayment: FindPaymentUseCase,
+    private readonly listPayments: ListPaymentsUseCase,
+  ) {}
+
+  @Post()
+  async create(@Body() dto: CreatePaymentDto) {
+    return this.createPayment.execute(dto);
+  }
+
+  @Get()
+  async list() {
+    return this.listPayments.execute({});
+  }
+
+  @Get(':id')
+  async find(@Param('id') id: number) {
+    return this.findPayment.execute(id);
+  }
+
+  @Patch(':id')
+  async update(@Param('id') id: number, @Body() dto: UpdatePaymentDto) {
+    const payment = { id, ...dto } as any;
+    return this.updatePayment.execute(payment);
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: number) {
+    return this.deletePayment.execute(id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/306.png)
+#### 16.18 src/features/business/payments/payments.module.ts
+```bash
+cat > src/features/business/payments/payments.module.ts <<'EOF_BACKEND_MANUAL'
+import { Module } from '@nestjs/common';
+import { PaymentsController } from './presentation/http/controllers/payments.controller.js';
+import { PaymentRepository } from './infrastructure/persistence/repositories/payment.repository.js';
+import { CreatePaymentUseCase } from './application/use-cases/create-payment.usecase.js';
+import { UpdatePaymentUseCase } from './application/use-cases/update-payment.usecase.js';
+import { DeletePaymentUseCase } from './application/use-cases/delete-payment.usecase.js';
+import { FindPaymentUseCase } from './application/use-cases/find-payment.usecase.js';
+import { ListPaymentsUseCase } from './application/use-cases/list-payments.usecase.js';
+import { PAYMENT_REPOSITORY } from './domain/interfaces/payment-repository.interface.js';
+
+@Module({
+  controllers: [PaymentsController],
+  providers: [
+    { provide: PAYMENT_REPOSITORY, useClass: PaymentRepository },
+    CreatePaymentUseCase,
+    UpdatePaymentUseCase,
+    DeletePaymentUseCase,
+    FindPaymentUseCase,
+    ListPaymentsUseCase,
+  ],
+})
+export class PaymentsModule {}
+EOF_BACKEND_MANUAL
+```
+![](img/307.png)
+#### 16.19 src/features/business/payments/application/services/payment.service.ts
+```bash
+mkdir -p src/features/business/payments/application/services
+cat > src/features/business/payments/application/services/payment.service.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable } from '@nestjs/common';
+import { Payment } from '../../domain/entities/payment.entity.js';
+import { IPaymentRepository, PAYMENT_REPOSITORY } from '../../domain/interfaces/payment-repository.interface.js';
+import { Inject } from '@nestjs/common';
+
+@Injectable()
+export class PaymentService {
+  constructor(
+    @Inject(PAYMENT_REPOSITORY)
+    private readonly repository: IPaymentRepository,
+  ) {}
+
+  async processPayment(payment: Payment): Promise<Payment> {
+    // Aquí podrías integrar lógica adicional (ej: integración con pasarela de pagos)
+    return this.repository.create(payment);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/308.png)
+#### 16.20 src/features/business/payments/application/events/payment-created.event.ts
+```bash
+mkdir -p src/features/business/payments/application/events
+cat > src/features/business/payments/application/events/payment-created.event.ts <<'EOF_BACKEND_MANUAL'
+export class PaymentCreatedEvent {
+  constructor(
+    public readonly id: number,
+    public readonly orderId: number,
+    public readonly method: string,
+    public readonly amount: number,
+    public readonly status: string,
+    public readonly createdAt: Date,
+  ) {}
+}
+EOF_BACKEND_MANUAL
+```
+![](img/309.png)
+
+#### 16.21 src/features/business/payments/application/events/payment-updated.event.ts
+```bash
+mkdir -p src/features/business/payments/application/events
+cat > src/features/business/payments/application/events/payment-updated.event.ts <<'EOF_BACKEND_MANUAL'
+export class PaymentUpdatedEvent {
+  constructor(
+    public readonly id: number,
+    public readonly orderId: number,
+    public readonly method: string,
+    public readonly amount: number,
+    public readonly status: string,
+    public readonly updatedAt: Date,
+  ) {}
+}
+EOF_BACKEND_MANUAL
+```
+![](img/310.png)
+#### 16.22 src/features/business/payments/application/events/payment-deleted.event.ts
+```bash
+cat > src/features/business/payments/application/events/payment-deleted.event.ts <<'EOF_BACKEND_MANUAL'
+export class PaymentDeletedEvent {
+  constructor(
+    public readonly id: number,
+    public readonly orderId: number,
+  ) {}
+}
+EOF_BACKEND_MANUAL
+```
+![](img/310.png)
+#### 16.23 src/features/business/payments/application/subscribers/payment.subscriber.ts
+```bash
+mkdir -p src/features/business/payments/application/subscribers
+cat > src/features/business/payments/application/subscribers/payment.subscriber.ts <<'EOF_BACKEND_MANUAL'
+import { PaymentCreatedEvent } from '../events/payment-created.event.js';
+import { PaymentUpdatedEvent } from '../events/payment-updated.event.js';
+import { PaymentDeletedEvent } from '../events/payment-deleted.event.js';
+
+export class PaymentSubscriber {
+  handlePaymentCreated(event: PaymentCreatedEvent) {
+    console.log('Evento: Pago creado', event);
+  }
+
+  handlePaymentUpdated(event: PaymentUpdatedEvent) {
+    console.log('Evento: Pago actualizado', event);
+  }
+
+  handlePaymentDeleted(event: PaymentDeletedEvent) {
+    console.log('Evento: Pago eliminado', event);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/312.png)
+#### 16.24 src/features/business/payments/docs/payments.openapi.ts
+```bash
+mkdir -p src/features/business/payments/docs
+cat > src/features/business/payments/docs/payments.openapi.ts <<'EOF_BACKEND_MANUAL'
+export const paymentsOpenApi = {
+  '/payments': {
+    post: {
+      summary: 'Crear pago',
+      responses: { 201: { description: 'Pago creado' } },
+    },
+    get: {
+      summary: 'Listar pagos',
+      responses: { 200: { description: 'Lista de pagos' } },
+    },
+  },
+  '/payments/{id}': {
+    get: {
+      summary: 'Obtener pago por ID',
+      responses: { 200: { description: 'Pago encontrado' } },
+    },
+    patch: {
+      summary: 'Actualizar pago',
+      responses: { 200: { description: 'Pago actualizado' } },
+    },
+    delete: {
+      summary: 'Eliminar pago',
+      responses: { 204: { description: 'Pago eliminado' } },
+    },
+  },
+};
+EOF_BACKEND_MANUAL
+```
+![](img/313.png)
+#### 16.25 src/features/business/payments/index.ts
+```bash
+cat > src/features/business/payments/index.ts <<'EOF_BACKEND_MANUAL'
+export * from './payments.module.js';
+export * from './domain/entities/payment.entity.js';
+export * from './domain/interfaces/payment-repository.interface.js';
+export * from './application/dto/create-payment.dto.js';
+export * from './application/dto/update-payment.dto.js';
+export * from './application/dto/payment-response.dto.js';
+EOF_BACKEND_MANUAL
+```
+![](img/314.png)
+
+#### Verificar tablas
+
+```bash
+npm run start:dev
+``` 
+![](img/315.png)
+
+## Creacion de tabla Returns
+
+#### 17.1 src/features/business/returns/domain/entities/return.entity.ts
+```bash
+mkdir -p src/features/business/returns/domain/entities
+cat > src/features/business/returns/domain/entities/return.entity.ts <<'EOF_BACKEND_MANUAL'
+export interface ReturnProps {
+  id?: number;
+  orderId: number;
+  date: Date;
+  reason: string;
+  total: number;
+  status: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export class Return {
+  id?: number;
+  orderId: number;
+  date: Date;
+  reason: string;
+  total: number;
+  status: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+
+  private constructor(props: ReturnProps) {
+    this.id = props.id;
+    this.orderId = props.orderId;
+    this.date = props.date;
+    this.reason = props.reason;
+    this.total = props.total;
+    this.status = props.status;
+    this.createdAt = props.createdAt;
+    this.updatedAt = props.updatedAt;
+  }
+
+  static create(props: Omit<ReturnProps, 'id' | 'createdAt' | 'updatedAt'>): Return {
+    if (props.total < 0) throw new Error('El total no puede ser negativo');
+    return new Return(props);
+  }
+
+  static reconstitute(props: ReturnProps): Return {
+    return new Return(props);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/316.png)
+#### 17.2 src/features/business/returns/domain/exceptions/return-not-found.exception.ts
+```bash
+mkdir -p src/features/business/returns/domain/exceptions
+cat > src/features/business/returns/domain/exceptions/return-not-found.exception.ts <<'EOF_BACKEND_MANUAL'
+import { EntityNotFoundException } from '../../../../../common/exceptions/entity-not-found.exception.js';
+
+export class ReturnNotFoundException extends EntityNotFoundException {
+  constructor(id: number) {
+    super('Devolución', id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/317.png)
+#### 17.3 src/features/business/returns/domain/interfaces/return-repository.interface.ts
+```bash
+mkdir -p src/features/business/returns/domain/interfaces
+cat > src/features/business/returns/domain/interfaces/return-repository.interface.ts <<'EOF_BACKEND_MANUAL'
+import { PaginatedResult } from '../../../../../common/interfaces/pagination.interface.js';
+import { Return } from '../entities/return.entity.js';
+
+export const RETURN_REPOSITORY = 'RETURN_REPOSITORY';
+
+export interface ReturnFindAllParams {
+  page?: number;
+  limit?: number;
+  orderId?: number;
+  status?: string;
+}
+
+export interface IReturnRepository {
+  create(returnEntity: Return): Promise<Return>;
+  update(returnEntity: Return): Promise<Return>;
+  delete(id: number): Promise<void>;
+  findById(id: number): Promise<Return | null>;
+  findAll(params: ReturnFindAllParams): Promise<PaginatedResult<Return>>;
+}
+EOF_BACKEND_MANUAL
+```
+#### 17.4 src/features/business/returns/infrastructure/persistence/models/return.model.ts
+```bash
+mkdir -p src/features/business/returns/infrastructure/persistence/models
+cat > src/features/business/returns/infrastructure/persistence/models/return.model.ts <<'EOF_BACKEND_MANUAL'
+import {
+  AutoIncrement,
+  Column,
+  CreatedAt,
+  DataType,
+  ForeignKey,
+  Model,
+  PrimaryKey,
+  Table,
+  UpdatedAt,
+} from 'sequelize-typescript';
+import { OrderModel } from '../../../orders/infrastructure/persistence/models/order.model.js';
+
+@Table({ tableName: 'returns' })
+export class ReturnModel extends Model {
+  @PrimaryKey
+  @AutoIncrement
+  @Column(DataType.INTEGER)
+  declare id: number;
+
+  @ForeignKey(() => OrderModel)
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  declare orderId: number;
+
+  @Column({ type: DataType.DATE, allowNull: false })
+  declare date: Date;
+
+  @Column({ type: DataType.STRING, allowNull: false })
+  declare reason: string;
+
+  @Column({ type: DataType.FLOAT, allowNull: false })
+  declare total: number;
+
+  @Column({ type: DataType.STRING, allowNull: false, defaultValue: 'pending' })
+  declare status: string;
+
+  @CreatedAt
+  declare createdAt: Date;
+
+  @UpdatedAt
+  declare updatedAt: Date;
+}
+EOF_BACKEND_MANUAL
+```
+#### 17.5 src/features/business/returns/infrastructure/persistence/repositories/return.repository.ts
+```bash
+mkdir -p src/features/business/returns/infrastructure/persistence/repositories
+cat > src/features/business/returns/infrastructure/persistence/repositories/return.repository.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable } from '@nestjs/common';
+import {
+  buildPaginatedResult,
+  normalizePagination,
+} from '../../../../../../common/utils/pagination.util.js';
+import { Return } from '../../../domain/entities/return.entity.js';
+import type { IReturnRepository, ReturnFindAllParams } from '../../../domain/interfaces/return-repository.interface.js';
+import { ReturnMapper } from '../../../application/mappers/return.mapper.js';
+import { ReturnModel } from '../models/return.model.js';
+
+@Injectable()
+export class ReturnRepository implements IReturnRepository {
+  async create(returnEntity: Return): Promise<Return> {
+    const model = await ReturnModel.create(ReturnMapper.toPersistence(returnEntity));
+    return ReturnMapper.toDomain(model);
+  }
+
+  async update(returnEntity: Return): Promise<Return> {
+    await ReturnModel.update(ReturnMapper.toPersistence(returnEntity), { where: { id: returnEntity.id } });
+    const updated = await ReturnModel.findByPk(returnEntity.id!);
+    return ReturnMapper.toDomain(updated!);
+  }
+
+  async delete(id: number): Promise<void> {
+    await ReturnModel.destroy({ where: { id } });
+  }
+
+  async findById(id: number): Promise<Return | null> {
+    const model = await ReturnModel.findByPk(id);
+    return model ? ReturnMapper.toDomain(model) : null;
+  }
+
+  async findAll(params: ReturnFindAllParams) {
+    const { page, limit, offset } = normalizePagination(params.page, params.limit);
+    const where: any = {};
+    if (params.orderId) where.orderId = params.orderId;
+    if (params.status) where.status = params.status;
+
+    const { rows, count } = await ReturnModel.findAndCountAll({
+      where,
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']],
+    });
+
+    return buildPaginatedResult(
+      rows.map((row: ReturnModel) => ReturnMapper.toDomain(row)),
+      count,
+      page,
+      limit,
+    );
+  }
+}
+EOF_BACKEND_MANUAL
+```
+#### 17.6 src/features/business/returns/infrastructure/persistence/migrations/create-returns-table.migration.ts
+```bash
+mkdir -p src/features/business/returns/infrastructure/persistence/migrations
+cat > src/features/business/returns/infrastructure/persistence/migrations/create-returns-table.migration.ts <<'EOF_BACKEND_MANUAL'
+export const createReturnsTableMigration = {
+  name: 'create-returns-table',
+  async up(): Promise<void> {
+    // Sequelize sync handles table creation in development.
+    // Production: CREATE TABLE returns (id, orderId, date, reason, total, status, createdAt, updatedAt)
+  },
+  async down(): Promise<void> {
+    // Production: DROP TABLE returns
+  },
+};
+EOF_BACKEND_MANUAL
+```
+#### 17.7 src/features/business/returns/infrastructure/persistence/seeders/returns.seeder.ts
+```bash
+mkdir -p src/features/business/returns/infrastructure/persistence/seeders
+cat > src/features/business/returns/infrastructure/persistence/seeders/returns.seeder.ts <<'EOF_BACKEND_MANUAL'
+import { ReturnModel } from '../models/return.model.js';
+
+export async function seedReturns(): Promise<void> {
+  await ReturnModel.bulkCreate([
+    { orderId: 1, date: new Date(), reason: 'Producto defectuoso', total: 50.0, status: 'completed' },
+    { orderId: 2, date: new Date(), reason: 'Cambio de talla', total: 120.5, status: 'pending' },
+  ]);
+}
+EOF_BACKEND_MANUAL
+```
+#### 17.8 src/features/business/returns/application/dto/create-return.dto.ts
+```bash
+mkdir -p src/features/business/returns/application/dto
+cat > src/features/business/returns/application/dto/create-return.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsInt, IsNumber, Min, IsString, IsDateString } from 'class-validator';
+
+export class CreateReturnDto {
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  orderId: number;
+
+  @ApiProperty({ example: '2026-09-16' })
+  @IsDateString()
+  date: Date;
+
+  @ApiProperty({ example: 'Producto defectuoso' })
+  @IsString()
+  reason: string;
+
+  @ApiProperty({ example: 50.0 })
+  @IsNumber()
+  @Min(0)
+  total: number;
+
+  @ApiProperty({ example: 'pending' })
+  @IsString()
+  status: string;
+}
+EOF_BACKEND_MANUAL
+```

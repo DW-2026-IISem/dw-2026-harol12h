@@ -13,6 +13,7 @@ import { OrderDetailsModule } from './order-details/order-details.module.js';
 import { VariantsModule } from './variants/variants.module.js';
 import { BranchesModule } from './branches/branches.module.js';
 import { InventoryModule } from './inventory/inventory.module.js';
+import { PaymentsModule } from './payments/payments.module.js';
 let BusinessModule = class BusinessModule {
 };
 BusinessModule = __decorate([
@@ -26,6 +27,7 @@ BusinessModule = __decorate([
             VariantsModule,
             BranchesModule,
             InventoryModule,
+            PaymentsModule,
         ],
         exports: [
             ClientsModule,
@@ -36,6 +38,7 @@ BusinessModule = __decorate([
             VariantsModule,
             BranchesModule,
             InventoryModule,
+            PaymentsModule,
         ],
     })
 ], BusinessModule);
