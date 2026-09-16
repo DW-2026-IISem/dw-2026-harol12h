@@ -8089,3 +8089,16 @@ export class CreateVariantDto {
 EOF_BACKEND_MANUAL
 ```
 ![](img/214.png)
+
+#### 10.3.09 src/features/business/variants/application/dto/update-variant.dto.ts
+DTO para actualizar variantes.
+
+```bash
+cat > src/features/business/variants/application/dto/update-variant.dto.ts <<'EOF_BACKEND_MANUAL'
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateVariantDto } from './create-variant.dto.js';
+
+export class UpdateVariantDto extends PartialType(CreateVariantDto) {}
+EOF_BACKEND_MANUAL
+```
+![](img/215.png)
