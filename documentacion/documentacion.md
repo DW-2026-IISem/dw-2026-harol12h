@@ -8029,3 +8029,26 @@ export class VariantRepository implements IVariantRepository {
 EOF_BACKEND_MANUAL
 ```
 ![](img/212.png)
+
+#### 10.3.06 src/features/business/variants/infrastructure/persistence/migrations/create-variants-table.migration.ts
+
+Migración documental de la tabla variants.
+
+**ruta** `src/features/business/variants/infrastructure/persistence/migrations/create-variants-table.migration.ts`
+
+```bash
+mkdir -p src/features/business/variants/infrastructure/persistence/migrations
+cat > src/features/business/variants/infrastructure/persistence/migrations/create-variants-table.migration.ts <<'EOF_BACKEND_MANUAL'
+export const createVariantsTableMigration = {
+  name: 'create-variants-table',
+  async up(): Promise<void> {
+    // Sequelize sync handles table creation in development.
+    // Production: CREATE TABLE variants (id, productId, name, description, isActive, createdAt, updatedAt)
+  },
+  async down(): Promise<void> {
+    // Production: DROP TABLE variants
+  },
+};
+EOF_BACKEND_MANUAL
+```
+![](img/213.png)
