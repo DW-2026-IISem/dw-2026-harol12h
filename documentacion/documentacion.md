@@ -8102,3 +8102,74 @@ export class UpdateVariantDto extends PartialType(CreateVariantDto) {}
 EOF_BACKEND_MANUAL
 ```
 ![](img/215.png)
+
+#### 10.3.10 src/features/business/variants/application/dto/variant-filter.dto.ts
+DTO para filtros de búsqueda y paginación de variantes.
+
+```bash
+cat > src/features/business/variants/application/dto/variant-filter.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+
+export class VariantFilterDto {
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @ApiPropertyOptional({ example: 10 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  limit?: number;
+
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  productId?: number;
+
+  @ApiPropertyOptional({ example: 'Talla' })
+  @IsOptional()
+  @IsString()
+  search?: string;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/216.png)
+
+#### 10.3.11 src/features/business/variants/application/dto/variant-response.dto.ts
+DTO de salida para respuestas HTTP de variantes.
+
+```bash
+cat > src/features/business/variants/application/dto/variant-response.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export class VariantResponseDto {
+  @ApiProperty({ example: 1 })
+  id: number;
+
+  @ApiProperty({ example: 1 })
+  productId: number;
+
+  @ApiProperty({ example: 'Talla M' })
+  name: string;
+
+  @ApiPropertyOptional({ example: 'Variante de talla mediana' })
+  description?: string;
+
+  @ApiProperty({ example: true })
+  isActive: boolean;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/217.png)
