@@ -11363,6 +11363,7 @@ export interface IReturnRepository {
 }
 EOF_BACKEND_MANUAL
 ```
+![](img/318.png)
 #### 17.4 src/features/business/returns/infrastructure/persistence/models/return.model.ts
 ```bash
 mkdir -p src/features/business/returns/infrastructure/persistence/models
@@ -11411,6 +11412,7 @@ export class ReturnModel extends Model {
 }
 EOF_BACKEND_MANUAL
 ```
+![](img/319.png)
 #### 17.5 src/features/business/returns/infrastructure/persistence/repositories/return.repository.ts
 ```bash
 mkdir -p src/features/business/returns/infrastructure/persistence/repositories
@@ -11470,6 +11472,7 @@ export class ReturnRepository implements IReturnRepository {
 }
 EOF_BACKEND_MANUAL
 ```
+![](img/320.png)
 #### 17.6 src/features/business/returns/infrastructure/persistence/migrations/create-returns-table.migration.ts
 ```bash
 mkdir -p src/features/business/returns/infrastructure/persistence/migrations
@@ -11486,6 +11489,7 @@ export const createReturnsTableMigration = {
 };
 EOF_BACKEND_MANUAL
 ```
+![](img/321.png)
 #### 17.7 src/features/business/returns/infrastructure/persistence/seeders/returns.seeder.ts
 ```bash
 mkdir -p src/features/business/returns/infrastructure/persistence/seeders
@@ -11500,6 +11504,7 @@ export async function seedReturns(): Promise<void> {
 }
 EOF_BACKEND_MANUAL
 ```
+![](img/322.png)
 #### 17.8 src/features/business/returns/application/dto/create-return.dto.ts
 ```bash
 mkdir -p src/features/business/returns/application/dto
@@ -11531,3 +11536,4 @@ export class CreateReturnDto {
 }
 EOF_BACKEND_MANUAL
 ```
+![](img/323.png)
