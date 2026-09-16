@@ -11569,3 +11569,37 @@ export class UpdateReturnDto {
 EOF_BACKEND_MANUAL
 ```
 ![](img/324.png)
+
+#### 17.10 src/features/business/returns/application/dto/return-response.dto.ts
+```bash
+cat > src/features/business/returns/application/dto/return-response.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty } from '@nestjs/swagger';
+
+export class ReturnResponseDto {
+  @ApiProperty()
+  id: number;
+
+  @ApiProperty()
+  orderId: number;
+
+  @ApiProperty()
+  date: Date;
+
+  @ApiProperty()
+  reason: string;
+
+  @ApiProperty()
+  total: number;
+
+  @ApiProperty()
+  status: string;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/325.png)
