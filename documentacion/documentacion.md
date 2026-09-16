@@ -10138,3 +10138,32 @@ export class DeleteInventoryUseCase {
 EOF_BACKEND_MANUAL
 ```
 ![](img/277.png)
+
+#### 12.16 src/features/business/inventory/application/use-cases/get-inventory.use-case.ts
+Caso de uso para obtener inventario por ID.
+
+```bash
+cat > src/features/business/inventory/application/use-cases/get-inventory.use-case.ts <<'EOF_BACKEND_MANUAL'
+import { Inject, Injectable } from '@nestjs/common';
+import { InventoryNotFoundException } from '../../domain/exceptions/inventory-not-found.exception.js';
+import type { IInventoryRepository } from '../../domain/interfaces/inventory-repository.interface.js';
+import { INVENTORY_REPOSITORY } from '../../domain/interfaces/inventory-repository.interface.js';
+import { InventoryMapper } from '../mappers/inventory.mapper.js';
+
+@Injectable()
+export class GetInventoryUseCase {
+  constructor(
+    @Inject(INVENTORY_REPOSITORY)
+    private readonly inventoryRepository: IInventoryRepository,
+  ) {}
+
+  async execute(id: number) {
+    const inventory = await this.inventoryRepository.findById(id);
+    if (!inventory) throw new InventoryNotFoundException(id);
+    return InventoryMapper.toResponse(inventory);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/278.png)
+
