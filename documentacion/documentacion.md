@@ -8666,3 +8666,34 @@ describe('Variant Entity', () => {
 });
 EOF_BACKEND_MANUAL
 ```
+![](img/231.png)
+
+#### 10.3.26 src/features/business/variants/infrastructure/persistence/repositories/variant.repository.spec.ts
+Prueba unitaria del repositorio de Variants.
+
+```bash
+mkdir -p src/features/business/variants/infrastructure/persistence/repositories
+cat > src/features/business/variants/infrastructure/persistence/repositories/variant.repository.spec.ts <<'EOF_BACKEND_MANUAL'
+import { VariantRepository } from './variant.repository.js';
+import { Variant } from '../../../domain/entities/variant.entity.js';
+
+describe('VariantRepository', () => {
+  let repository: VariantRepository;
+
+  beforeEach(() => {
+    repository = new VariantRepository();
+  });
+
+  it('should create a variant', async () => {
+    const variant = Variant.create({
+      productId: 1,
+      name: 'Talla M',
+    });
+    const created = await repository.create(variant);
+    expect(created.productId).toBe(1);
+    expect(created.name).toBe('Talla M');
+  });
+});
+EOF_BACKEND_MANUAL
+```
+![](img/231.png)
