@@ -12552,4 +12552,51 @@ EOF_BACKEND_MANUAL
 
 ```bash
 npm run start:dev
-``` 
+```
+
+## creacion de tabla Promotions
+#### 19.1 src/features/business/promotions/domain/entities/promotion.entity.ts
+```bash
+mkdir -p src/features/business/promotions/domain/entities
+cat > src/features/business/promotions/domain/entities/promotion.entity.ts <<'EOF_BACKEND_MANUAL'
+export interface PromotionProps {
+  id?: number;
+  name: string;
+  description: string;
+  discountPercentage: number;
+  startDate: Date;
+  endDate: Date;
+  active: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export class Promotion {
+  id?: number;
+  name: string;
+  description: string;
+  discountPercentage: number;
+  startDate: Date;
+  endDate: Date;
+  active: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+
+  private constructor(props: PromotionProps) {
+    Object.assign(this, props);
+  }
+
+  static create(props: Omit<PromotionProps, 'id' | 'createdAt' | 'updatedAt'>): Promotion {
+    if (props.discountPercentage <= 0 || props.discountPercentage > 100) {
+      throw new Error('El porcentaje de descuento debe estar entre 1 y 100');
+    }
+    return new Promotion(props);
+  }
+
+  static reconstitute(props: PromotionProps): Promotion {
+    return new Promotion(props);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/364.png)
