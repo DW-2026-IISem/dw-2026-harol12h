@@ -12600,3 +12600,18 @@ export class Promotion {
 EOF_BACKEND_MANUAL
 ```
 ![](img/364.png)
+
+#### 19.2 src/features/business/promotions/domain/exceptions/promotion-not-found.exception.ts
+```bash
+mkdir -p src/features/business/promotions/domain/exceptions
+cat > src/features/business/promotions/domain/exceptions/promotion-not-found.exception.ts <<'EOF_BACKEND_MANUAL'
+import { EntityNotFoundException } from '../../../../../common/exceptions/entity-not-found.exception.js';
+
+export class PromotionNotFoundException extends EntityNotFoundException {
+  constructor(id: number) {
+    super('Promoción', id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/365.png)
