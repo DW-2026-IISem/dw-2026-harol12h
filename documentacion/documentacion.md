@@ -12750,3 +12750,22 @@ export class PromotionRepository implements IPromotionRepository {
 }
 EOF_BACKEND_MANUAL
 ```
+![](img/368.png)
+
+#### 19.6 src/features/business/promotions/infrastructure/persistence/migrations/create-promotions-table.migration.ts
+```bash
+mkdir -p src/features/business/promotions/infrastructure/persistence/migrations
+cat > src/features/business/promotions/infrastructure/persistence/migrations/create-promotions-table.migration.ts <<'EOF_BACKEND_MANUAL'
+export const createPromotionsTableMigration = {
+  name: 'create-promotions-table',
+  async up(): Promise<void> {
+    // Sequelize sync handles table creation in development.
+    // Production: CREATE TABLE promotions (id, name, description, discountPercentage, startDate, endDate, active, createdAt, updatedAt)
+  },
+  async down(): Promise<void> {
+    // Production: DROP TABLE promotions
+  },
+};
+EOF_BACKEND_MANUAL
+```
+![](img/369.png)
