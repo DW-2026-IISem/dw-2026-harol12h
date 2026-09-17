@@ -12769,3 +12769,33 @@ export const createPromotionsTableMigration = {
 EOF_BACKEND_MANUAL
 ```
 ![](img/369.png)
+
+#### 19.7 src/features/business/promotions/infrastructure/persistence/seeders/promotions.seeder.ts
+```bash
+mkdir -p src/features/business/promotions/infrastructure/persistence/seeders
+cat > src/features/business/promotions/infrastructure/persistence/seeders/promotions.seeder.ts <<'EOF_BACKEND_MANUAL'
+import { PromotionModel } from '../models/promotion.model.js';
+
+export async function seedPromotions(): Promise<void> {
+  await PromotionModel.bulkCreate([
+    {
+      name: 'Descuento de verano',
+      description: '20% en toda la tienda',
+      discountPercentage: 20,
+      startDate: new Date(),
+      endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+      active: true,
+    },
+    {
+      name: 'Black Friday',
+      description: '50% en productos seleccionados',
+      discountPercentage: 50,
+      startDate: new Date(),
+      endDate: new Date(new Date().setDate(new Date().getDate() + 7)),
+      active: true,
+    },
+  ]);
+}
+EOF_BACKEND_MANUAL
+```
+![](img/370.png)
