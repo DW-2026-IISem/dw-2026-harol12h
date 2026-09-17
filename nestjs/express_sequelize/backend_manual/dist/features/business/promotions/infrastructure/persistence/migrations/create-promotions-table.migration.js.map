@@ -1,0 +1,1 @@
+{"version":3,"file":"create-promotions-table.migration.js","sourceRoot":"","sources":["../../../../../../../src/features/business/promotions/infrastructure/persistence/migrations/create-promotions-table.migration.ts"],"names":[],"mappings":"AAAA,MAAM,CAAC,MAAM,8BAA8B,GAAG;IAC5C,IAAI,EAAE,yBAAyB;IAC/B,KAAK,CAAC,EAAE;IAGR,CAAC;IACD,KAAK,CAAC,IAAI;IAEV,CAAC;CACF,CAAC"}

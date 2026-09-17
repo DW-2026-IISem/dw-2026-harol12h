@@ -12915,3 +12915,378 @@ export class PromotionResponseDto {
 EOF_BACKEND_MANUAL
 ```
 ![](img/373.png)
+
+#### 19.11 src/features/business/promotions/application/mappers/promotion.mapper.ts
+```bash
+mkdir -p src/features/business/promotions/application/mappers
+cat > src/features/business/promotions/application/mappers/promotion.mapper.ts <<'EOF_BACKEND_MANUAL'
+import { Promotion } from '../../domain/entities/promotion.entity.js';
+import { PromotionModel } from '../../infrastructure/persistence/models/promotion.model.js';
+
+export class PromotionMapper {
+  static toDomain(model: PromotionModel): Promotion {
+    return Promotion.reconstitute({
+      id: model.id,
+      name: model.name,
+      description: model.description,
+      discountPercentage: model.discountPercentage,
+      startDate: model.startDate,
+      endDate: model.endDate,
+      active: model.active,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+    });
+  }
+
+  static toPersistence(entity: Promotion): any {
+    return {
+      id: entity.id,
+      name: entity.name,
+      description: entity.description,
+      discountPercentage: entity.discountPercentage,
+      startDate: entity.startDate,
+      endDate: entity.endDate,
+      active: entity.active,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+    };
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/374.png)
+#### 19.12 src/features/business/promotions/application/use-cases/create-promotion.usecase.ts
+```bash
+mkdir -p src/features/business/promotions/application/use-cases
+cat > src/features/business/promotions/application/use-cases/create-promotion.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { Promotion } from '../../domain/entities/promotion.entity.js';
+import { IPromotionRepository, PROMOTION_REPOSITORY } from '../../domain/interfaces/promotion-repository.interface.js';
+
+@Injectable()
+export class CreatePromotionUseCase {
+  constructor(
+    @Inject(PROMOTION_REPOSITORY)
+    private readonly repository: IPromotionRepository,
+  ) {}
+
+  async execute(props: Omit<Promotion, 'id' | 'createdAt' | 'updatedAt'>): Promise<Promotion> {
+    const promotion = Promotion.create(props);
+    return this.repository.create(promotion);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/375.png)
+#### 19.13 src/features/business/promotions/application/use-cases/update-promotion.usecase.ts
+```bash
+cat > src/features/business/promotions/application/use-cases/update-promotion.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { Promotion } from '../../domain/entities/promotion.entity.js';
+import { IPromotionRepository, PROMOTION_REPOSITORY } from '../../domain/interfaces/promotion-repository.interface.js';
+
+@Injectable()
+export class UpdatePromotionUseCase {
+  constructor(
+    @Inject(PROMOTION_REPOSITORY)
+    private readonly repository: IPromotionRepository,
+  ) {}
+
+  async execute(promotion: Promotion): Promise<Promotion> {
+    return this.repository.update(promotion);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/376.png)
+#### 19.14 src/features/business/promotions/application/use-cases/delete-promotion.usecase.ts
+```bash
+cat > src/features/business/promotions/application/use-cases/delete-promotion.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { IPromotionRepository, PROMOTION_REPOSITORY } from '../../domain/interfaces/promotion-repository.interface.js';
+
+@Injectable()
+export class DeletePromotionUseCase {
+  constructor(
+    @Inject(PROMOTION_REPOSITORY)
+    private readonly repository: IPromotionRepository,
+  ) {}
+
+  async execute(id: number): Promise<void> {
+    await this.repository.delete(id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/377.png)
+#### 19.15 src/features/business/promotions/application/use-cases/find-promotion.usecase.ts
+```bash
+cat > src/features/business/promotions/application/use-cases/find-promotion.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { Promotion } from '../../domain/entities/promotion.entity.js';
+import { IPromotionRepository, PROMOTION_REPOSITORY } from '../../domain/interfaces/promotion-repository.interface.js';
+
+@Injectable()
+export class FindPromotionUseCase {
+  constructor(
+    @Inject(PROMOTION_REPOSITORY)
+    private readonly repository: IPromotionRepository,
+  ) {}
+
+  async execute(id: number): Promise<Promotion | null> {
+    return this.repository.findById(id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/379.png)
+#### 19.16 src/features/business/promotions/application/use-cases/list-promotions.usecase.ts
+```bash
+cat > src/features/business/promotions/application/use-cases/list-promotions.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { IPromotionRepository, PROMOTION_REPOSITORY, PromotionFindAllParams } from '../../domain/interfaces/promotion-repository.interface.js';
+
+@Injectable()
+export class ListPromotionsUseCase {
+  constructor(
+    @Inject(PROMOTION_REPOSITORY)
+    private readonly repository: IPromotionRepository,
+  ) {}
+
+  async execute(params: PromotionFindAllParams) {
+    return this.repository.findAll(params);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/380.png)
+#### 19.17 src/features/business/promotions/presentation/http/controllers/promotions.controller.ts
+```bash
+mkdir -p src/features/business/promotions/presentation/http/controllers
+cat > src/features/business/promotions/presentation/http/controllers/promotions.controller.ts <<'EOF_BACKEND_MANUAL'
+import { Controller, Post, Get, Patch, Delete, Param, Body } from '@nestjs/common';
+import { CreatePromotionUseCase } from '../../../application/use-cases/create-promotion.usecase.js';
+import { UpdatePromotionUseCase } from '../../../application/use-cases/update-promotion.usecase.js';
+import { DeletePromotionUseCase } from '../../../application/use-cases/delete-promotion.usecase.js';
+import { FindPromotionUseCase } from '../../../application/use-cases/find-promotion.usecase.js';
+import { ListPromotionsUseCase } from '../../../application/use-cases/list-promotions.usecase.js';
+import { CreatePromotionDto } from '../../../application/dto/create-promotion.dto.js';
+import { UpdatePromotionDto } from '../../../application/dto/update-promotion.dto.js';
+
+@Controller('promotions')
+export class PromotionsController {
+  constructor(
+    private readonly createPromotion: CreatePromotionUseCase,
+    private readonly updatePromotion: UpdatePromotionUseCase,
+    private readonly deletePromotion: DeletePromotionUseCase,
+    private readonly findPromotion: FindPromotionUseCase,
+    private readonly listPromotions: ListPromotionsUseCase,
+  ) {}
+
+  @Post()
+  async create(@Body() dto: CreatePromotionDto) {
+    return this.createPromotion.execute(dto);
+  }
+
+  @Get()
+  async list() {
+    return this.listPromotions.execute({});
+  }
+
+  @Get(':id')
+  async find(@Param('id') id: number) {
+    return this.findPromotion.execute(id);
+  }
+
+  @Patch(':id')
+  async update(@Param('id') id: number, @Body() dto: UpdatePromotionDto) {
+    const promotion = { id, ...dto } as any;
+    return this.updatePromotion.execute(promotion);
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: number) {
+    return this.deletePromotion.execute(id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/381.png)
+#### 19.18 src/features/business/promotions/promotions.module.ts
+```bash
+cat > src/features/business/promotions/promotions.module.ts <<'EOF_BACKEND_MANUAL'
+import { Module } from '@nestjs/common';
+import { PromotionsController } from './presentation/http/controllers/promotions.controller.js';
+import { PromotionRepository } from './infrastructure/persistence/repositories/promotion.repository.js';
+import { CreatePromotionUseCase } from './application/use-cases/create-promotion.usecase.js';
+import { UpdatePromotionUseCase } from './application/use-cases/update-promotion.usecase.js';
+import { DeletePromotionUseCase } from './application/use-cases/delete-promotion.usecase.js';
+import { FindPromotionUseCase } from './application/use-cases/find-promotion.usecase.js';
+import { ListPromotionsUseCase } from './application/use-cases/list-promotions.usecase.js';
+import { PROMOTION_REPOSITORY } from './domain/interfaces/promotion-repository.interface.js';
+
+@Module({
+  controllers: [PromotionsController],
+  providers: [
+    { provide: PROMOTION_REPOSITORY, useClass: PromotionRepository },
+    CreatePromotionUseCase,
+    UpdatePromotionUseCase,
+    DeletePromotionUseCase,
+    FindPromotionUseCase,
+    ListPromotionsUseCase,
+  ],
+})
+export class PromotionsModule {}
+EOF_BACKEND_MANUAL
+```
+![](img/382.png)
+#### 19.19 src/features/business/promotions/application/services/promotion.service.ts
+```bash
+mkdir -p src/features/business/promotions/application/services
+cat > src/features/business/promotions/application/services/promotion.service.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { Promotion } from '../../domain/entities/promotion.entity.js';
+import { IPromotionRepository, PROMOTION_REPOSITORY } from '../../domain/interfaces/promotion-repository.interface.js';
+
+@Injectable()
+export class PromotionService {
+  constructor(
+    @Inject(PROMOTION_REPOSITORY)
+    private readonly repository: IPromotionRepository,
+  ) {}
+
+  async activatePromotion(promotion: Promotion): Promise<Promotion> {
+    promotion.active = true;
+    return this.repository.update(promotion);
+  }
+
+  async deactivatePromotion(promotion: Promotion): Promise<Promotion> {
+    promotion.active = false;
+    return this.repository.update(promotion);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/383.png)
+#### 19.20 src/features/business/promotions/application/events/promotion-created.event.ts
+```bash
+mkdir -p src/features/business/promotions/application/events
+cat > src/features/business/promotions/application/events/promotion-created.event.ts <<'EOF_BACKEND_MANUAL'
+export class PromotionCreatedEvent {
+  constructor(
+    public readonly id: number,
+    public readonly name: string,
+    public readonly discountPercentage: number,
+    public readonly startDate: Date,
+    public readonly endDate: Date,
+    public readonly active: boolean,
+    public readonly createdAt: Date,
+  ) {}
+}
+EOF_BACKEND_MANUAL
+```
+![](img/384.png)
+#### 19.21 src/features/business/promotions/application/events/promotion-updated.event.ts
+```bash
+cat > src/features/business/promotions/application/events/promotion-updated.event.ts <<'EOF_BACKEND_MANUAL'
+export class PromotionUpdatedEvent {
+  constructor(
+    public readonly id: number,
+    public readonly name: string,
+    public readonly discountPercentage: number,
+    public readonly startDate: Date,
+    public readonly endDate: Date,
+    public readonly active: boolean,
+    public readonly updatedAt: Date,
+  ) {}
+}
+EOF_BACKEND_MANUAL
+```
+![](img/385.png)
+#### 19.22 src/features/business/promotions/application/events/promotion-deleted.event.ts
+```bash
+cat > src/features/business/promotions/application/events/promotion-deleted.event.ts <<'EOF_BACKEND_MANUAL'
+export class PromotionDeletedEvent {
+  constructor(
+    public readonly id: number,
+    public readonly name: string,
+  ) {}
+}
+EOF_BACKEND_MANUAL
+```
+![](img/386.png)
+#### 19.23 src/features/business/promotions/application/subscribers/promotion.subscriber.ts
+```bash
+mkdir -p src/features/business/promotions/application/subscribers
+cat > src/features/business/promotions/application/subscribers/promotion.subscriber.ts <<'EOF_BACKEND_MANUAL'
+import { PromotionCreatedEvent } from '../events/promotion-created.event.js';
+import { PromotionUpdatedEvent } from '../events/promotion-updated.event.js';
+import { PromotionDeletedEvent } from '../events/promotion-deleted.event.js';
+
+export class PromotionSubscriber {
+  handleCreated(event: PromotionCreatedEvent) {
+    console.log('Evento: Promoción creada', event);
+  }
+
+  handleUpdated(event: PromotionUpdatedEvent) {
+    console.log('Evento: Promoción actualizada', event);
+  }
+
+  handleDeleted(event: PromotionDeletedEvent) {
+    console.log('Evento: Promoción eliminada', event);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/387.png)
+#### 19.24 src/features/business/promotions/docs/promotions.openapi.ts
+```bash
+mkdir -p src/features/business/promotions/docs
+cat > src/features/business/promotions/docs/promotions.openapi.ts <<'EOF_BACKEND_MANUAL'
+export const promotionsOpenApi = {
+  '/promotions': {
+    post: {
+      summary: 'Crear promoción',
+      responses: { 201: { description: 'Promoción creada' } },
+    },
+    get: {
+      summary: 'Listar promociones',
+      responses: { 200: { description: 'Lista de promociones' } },
+    },
+  },
+  '/promotions/{id}': {
+    get: {
+      summary: 'Obtener promoción por ID',
+      responses: { 200: { description: 'Promoción encontrada' } },
+    },
+    patch: {
+      summary: 'Actualizar promoción',
+      responses: { 200: { description: 'Promoción actualizada' } },
+    },
+    delete: {
+      summary: 'Eliminar promoción',
+      responses: { 204: { description: 'Promoción eliminada' } },
+    },
+  },
+};
+EOF_BACKEND_MANUAL
+```
+![](img/388.png)
+#### 19.25 src/features/business/promotions/index.ts
+```bash
+cat > src/features/business/promotions/index.ts <<'EOF_BACKEND_MANUAL'
+export * from './promotions.module.js';
+export * from './domain/entities/promotion.entity.js';
+export * from './domain/interfaces/promotion-repository.interface.js';
+export * from './application/dto/create-promotion.dto.js';
+export * from './application/dto/update-promotion.dto.js';
+export * from './application/dto/promotion-response.dto.js';
+EOF_BACKEND_MANUAL
+```
+![](img/389.png)
+
+#### Verificar tablas
+
+```bash
+npm run start:dev
+```
