@@ -11874,3 +11874,682 @@ EOF_BACKEND_MANUAL
 ```bash
 npm run start:dev
 ``` 
+![](img/336.png)
+
+## creacion de tabla return-Detail 
+#### 18.1 src/features/business/return-details/domain/entities/return-detail.entity.ts
+```bash
+mkdir -p src/features/business/return-details/domain/entities
+cat > src/features/business/return-details/domain/entities/return-detail.entity.ts <<'EOF_BACKEND_MANUAL'
+export interface ReturnDetailProps {
+  id?: number;
+  returnId: number;
+  productId: number;
+  quantity: number;
+  reason: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export class ReturnDetail {
+  id?: number;
+  returnId: number;
+  productId: number;
+  quantity: number;
+  reason: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+
+  private constructor(props: ReturnDetailProps) {
+    this.id = props.id;
+    this.returnId = props.returnId;
+    this.productId = props.productId;
+    this.quantity = props.quantity;
+    this.reason = props.reason;
+    this.createdAt = props.createdAt;
+    this.updatedAt = props.updatedAt;
+  }
+
+  static create(props: Omit<ReturnDetailProps, 'id' | 'createdAt' | 'updatedAt'>): ReturnDetail {
+    if (props.quantity <= 0) throw new Error('La cantidad debe ser mayor a cero');
+    return new ReturnDetail(props);
+  }
+
+  static reconstitute(props: ReturnDetailProps): ReturnDetail {
+    return new ReturnDetail(props);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/337.png)
+#### 18.2 src/features/business/return-details/domain/exceptions/return-detail-not-found.exception.ts
+```bash
+mkdir -p src/features/business/return-details/domain/exceptions
+cat > src/features/business/return-details/domain/exceptions/return-detail-not-found.exception.ts <<'EOF_BACKEND_MANUAL'
+import { EntityNotFoundException } from '../../../../../common/exceptions/entity-not-found.exception.js';
+
+export class ReturnDetailNotFoundException extends EntityNotFoundException {
+  constructor(id: number) {
+    super('Detalle de devolución', id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/338.png)
+#### 18.3 src/features/business/return-details/domain/interfaces/return-detail-repository.interface.ts
+```bash
+mkdir -p src/features/business/return-details/domain/interfaces
+cat > src/features/business/return-details/domain/interfaces/return-detail-repository.interface.ts <<'EOF_BACKEND_MANUAL'
+import { PaginatedResult } from '../../../../../common/interfaces/pagination.interface.js';
+import { ReturnDetail } from '../entities/return-detail.entity.js';
+
+export const RETURN_DETAIL_REPOSITORY = 'RETURN_DETAIL_REPOSITORY';
+
+export interface ReturnDetailFindAllParams {
+  page?: number;
+  limit?: number;
+  returnId?: number;
+  productId?: number;
+}
+
+export interface IReturnDetailRepository {
+  create(detail: ReturnDetail): Promise<ReturnDetail>;
+  update(detail: ReturnDetail): Promise<ReturnDetail>;
+  delete(id: number): Promise<void>;
+  findById(id: number): Promise<ReturnDetail | null>;
+  findAll(params: ReturnDetailFindAllParams): Promise<PaginatedResult<ReturnDetail>>;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/339.png)
+#### 18.4 src/features/business/return-details/infrastructure/persistence/models/return-detail.model.ts
+```bash
+mkdir -p src/features/business/return-details/infrastructure/persistence/models
+cat > src/features/business/return-details/infrastructure/persistence/models/return-detail.model.ts <<'EOF_BACKEND_MANUAL'
+import {
+  AutoIncrement,
+  Column,
+  CreatedAt,
+  DataType,
+  ForeignKey,
+  Model,
+  PrimaryKey,
+  Table,
+  UpdatedAt,
+} from 'sequelize-typescript';
+import { ReturnModel } from '../../../returns/infrastructure/persistence/models/return.model.js';
+import { ProductModel } from '../../../products/infrastructure/persistence/models/product.model.js';
+
+@Table({ tableName: 'return_details' })
+export class ReturnDetailModel extends Model {
+  @PrimaryKey
+  @AutoIncrement
+  @Column(DataType.INTEGER)
+  declare id: number;
+
+  @ForeignKey(() => ReturnModel)
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  declare returnId: number;
+
+  @ForeignKey(() => ProductModel)
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  declare productId: number;
+
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  declare quantity: number;
+
+  @Column({ type: DataType.STRING, allowNull: false })
+  declare reason: string;
+
+  @CreatedAt
+  declare createdAt: Date;
+
+  @UpdatedAt
+  declare updatedAt: Date;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/340.png)
+#### 18.5 src/features/business/return-details/infrastructure/persistence/repositories/return-detail.repository.ts
+```bash
+mkdir -p src/features/business/return-details/infrastructure/persistence/repositories
+cat > src/features/business/return-details/infrastructure/persistence/repositories/return-detail.repository.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable } from '@nestjs/common';
+import {
+  buildPaginatedResult,
+  normalizePagination,
+} from '../../../../../../common/utils/pagination.util.js';
+import { ReturnDetail } from '../../../domain/entities/return-detail.entity.js';
+import type { IReturnDetailRepository, ReturnDetailFindAllParams } from '../../../domain/interfaces/return-detail-repository.interface.js';
+import { ReturnDetailMapper } from '../../../application/mappers/return-detail.mapper.js';
+import { ReturnDetailModel } from '../models/return-detail.model.js';
+
+@Injectable()
+export class ReturnDetailRepository implements IReturnDetailRepository {
+  async create(detail: ReturnDetail): Promise<ReturnDetail> {
+    const model = await ReturnDetailModel.create(ReturnDetailMapper.toPersistence(detail));
+    return ReturnDetailMapper.toDomain(model);
+  }
+
+  async update(detail: ReturnDetail): Promise<ReturnDetail> {
+    await ReturnDetailModel.update(ReturnDetailMapper.toPersistence(detail), { where: { id: detail.id } });
+    const updated = await ReturnDetailModel.findByPk(detail.id!);
+    return ReturnDetailMapper.toDomain(updated!);
+  }
+
+  async delete(id: number): Promise<void> {
+    await ReturnDetailModel.destroy({ where: { id } });
+  }
+
+  async findById(id: number): Promise<ReturnDetail | null> {
+    const model = await ReturnDetailModel.findByPk(id);
+    return model ? ReturnDetailMapper.toDomain(model) : null;
+  }
+
+  async findAll(params: ReturnDetailFindAllParams) {
+    const { page, limit, offset } = normalizePagination(params.page, params.limit);
+    const where: any = {};
+    if (params.returnId) where.returnId = params.returnId;
+    if (params.productId) where.productId = params.productId;
+
+    const { rows, count } = await ReturnDetailModel.findAndCountAll({
+      where,
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']],
+    });
+
+    return buildPaginatedResult(
+      rows.map((row: ReturnDetailModel) => ReturnDetailMapper.toDomain(row)),
+      count,
+      page,
+      limit,
+    );
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/341.png)
+#### 18.6 src/features/business/return-details/infrastructure/persistence/migrations/create-return-details-table.migration.ts
+```bash
+mkdir -p src/features/business/return-details/infrastructure/persistence/migrations
+cat > src/features/business/return-details/infrastructure/persistence/migrations/create-return-details-table.migration.ts <<'EOF_BACKEND_MANUAL'
+export const createReturnDetailsTableMigration = {
+  name: 'create-return-details-table',
+  async up(): Promise<void> {
+    // Sequelize sync handles table creation in development.
+    // Production: CREATE TABLE return_details (id, returnId, productId, quantity, reason, createdAt, updatedAt)
+  },
+  async down(): Promise<void> {
+    // Production: DROP TABLE return_details
+  },
+};
+EOF_BACKEND_MANUAL
+```
+![](img/342.png)
+#### 18.7 src/features/business/return-details/infrastructure/persistence/seeders/return-details.seeder.ts
+```bash
+mkdir -p src/features/business/return-details/infrastructure/persistence/seeders
+cat > src/features/business/return-details/infrastructure/persistence/seeders/return-details.seeder.ts <<'EOF_BACKEND_MANUAL'
+import { ReturnDetailModel } from '../models/return-detail.model.js';
+
+export async function seedReturnDetails(): Promise<void> {
+  await ReturnDetailModel.bulkCreate([
+    { returnId: 1, productId: 2, quantity: 1, reason: 'Producto defectuoso' },
+    { returnId: 2, productId: 3, quantity: 2, reason: 'Cambio de talla' },
+  ]);
+}
+EOF_BACKEND_MANUAL
+```
+![](img/343.png)
+#### 18.8 src/features/business/return-details/application/dto/create-return-detail.dto.ts
+```bash
+mkdir -p src/features/business/return-details/application/dto
+cat > src/features/business/return-details/application/dto/create-return-detail.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsInt, IsString, Min } from 'class-validator';
+
+export class CreateReturnDetailDto {
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  returnId: number;
+
+  @ApiProperty({ example: 2 })
+  @IsInt()
+  productId: number;
+
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  @Min(1)
+  quantity: number;
+
+  @ApiProperty({ example: 'Producto defectuoso' })
+  @IsString()
+  reason: string;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/345.png)
+#### 18.9 src/features/business/return-details/application/dto/update-return-detail.dto.ts
+```bash
+cat > src/features/business/return-details/application/dto/update-return-detail.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsInt, IsString, Min, IsOptional } from 'class-validator';
+
+export class UpdateReturnDetailDto {
+  @ApiPropertyOptional({ example: 2 })
+  @IsOptional()
+  @IsInt()
+  productId?: number;
+
+  @ApiPropertyOptional({ example: 2 })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  quantity?: number;
+
+  @ApiPropertyOptional({ example: 'Cambio de talla' })
+  @IsOptional()
+  @IsString()
+  reason?: string;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/346.png)
+#### 18.10 src/features/business/return-details/application/dto/return-detail-response.dto.ts
+```bash
+cat > src/features/business/return-details/application/dto/return-detail-response.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty } from '@nestjs/swagger';
+
+export class ReturnDetailResponseDto {
+  @ApiProperty()
+  id: number;
+
+  @ApiProperty()
+  returnId: number;
+
+  @ApiProperty()
+  productId: number;
+
+  @ApiProperty()
+  quantity: number;
+
+  @ApiProperty()
+  reason: string;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/347.png)
+
+#### 18.11 src/features/business/return-details/application/mappers/return-detail.mapper.ts
+```bash
+mkdir -p src/features/business/return-details/application/mappers
+cat > src/features/business/return-details/application/mappers/return-detail.mapper.ts <<'EOF_BACKEND_MANUAL'
+import { ReturnDetail } from '../../domain/entities/return-detail.entity.js';
+import { ReturnDetailModel } from '../infrastructure/persistence/models/return-detail.model.js';
+
+export class ReturnDetailMapper {
+  static toDomain(model: ReturnDetailModel): ReturnDetail {
+    return ReturnDetail.reconstitute({
+      id: model.id,
+      returnId: model.returnId,
+      productId: model.productId,
+      quantity: model.quantity,
+      reason: model.reason,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+    });
+  }
+
+  static toPersistence(entity: ReturnDetail): any {
+    return {
+      id: entity.id,
+      returnId: entity.returnId,
+      productId: entity.productId,
+      quantity: entity.quantity,
+      reason: entity.reason,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+    };
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/348.png)
+#### 18.12 src/features/business/return-details/application/use-cases/create-return-detail.usecase.ts
+```bash
+mkdir -p src/features/business/return-details/application/use-cases
+cat > src/features/business/return-details/application/use-cases/create-return-detail.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { ReturnDetail } from '../../domain/entities/return-detail.entity.js';
+import { IReturnDetailRepository, RETURN_DETAIL_REPOSITORY } from '../../domain/interfaces/return-detail-repository.interface.js';
+
+@Injectable()
+export class CreateReturnDetailUseCase {
+  constructor(
+    @Inject(RETURN_DETAIL_REPOSITORY)
+    private readonly repository: IReturnDetailRepository,
+  ) {}
+
+  async execute(props: Omit<ReturnDetail, 'id' | 'createdAt' | 'updatedAt'>): Promise<ReturnDetail> {
+    const detail = ReturnDetail.create(props);
+    return this.repository.create(detail);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/349.png)
+#### 18.13 src/features/business/return-details/application/use-cases/update-return-detail.usecase.ts
+```bash
+cat > src/features/business/return-details/application/use-cases/update-return-detail.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { ReturnDetail } from '../../domain/entities/return-detail.entity.js';
+import { IReturnDetailRepository, RETURN_DETAIL_REPOSITORY } from '../../domain/interfaces/return-detail-repository.interface.js';
+
+@Injectable()
+export class UpdateReturnDetailUseCase {
+  constructor(
+    @Inject(RETURN_DETAIL_REPOSITORY)
+    private readonly repository: IReturnDetailRepository,
+  ) {}
+
+  async execute(detail: ReturnDetail): Promise<ReturnDetail> {
+    return this.repository.update(detail);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/350.png)
+#### 18.14 src/features/business/return-details/application/use-cases/delete-return-detail.usecase.ts
+```bash
+cat > src/features/business/return-details/application/use-cases/delete-return-detail.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { IReturnDetailRepository, RETURN_DETAIL_REPOSITORY } from '../../domain/interfaces/return-detail-repository.interface.js';
+
+@Injectable()
+export class DeleteReturnDetailUseCase {
+  constructor(
+    @Inject(RETURN_DETAIL_REPOSITORY)
+    private readonly repository: IReturnDetailRepository,
+  ) {}
+
+  async execute(id: number): Promise<void> {
+    await this.repository.delete(id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/351.png)
+#### 18.15 src/features/business/return-details/application/use-cases/find-return-detail.usecase.ts
+```bash
+cat > src/features/business/return-details/application/use-cases/find-return-detail.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { ReturnDetail } from '../../domain/entities/return-detail.entity.js';
+import { IReturnDetailRepository, RETURN_DETAIL_REPOSITORY } from '../../domain/interfaces/return-detail-repository.interface.js';
+
+@Injectable()
+export class FindReturnDetailUseCase {
+  constructor(
+    @Inject(RETURN_DETAIL_REPOSITORY)
+    private readonly repository: IReturnDetailRepository,
+  ) {}
+
+  async execute(id: number): Promise<ReturnDetail | null> {
+    return this.repository.findById(id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/352.png)
+#### 18.16 src/features/business/return-details/application/use-cases/list-return-details.usecase.ts
+```bash
+cat > src/features/business/return-details/application/use-cases/list-return-details.usecase.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { IReturnDetailRepository, RETURN_DETAIL_REPOSITORY, ReturnDetailFindAllParams } from '../../domain/interfaces/return-detail-repository.interface.js';
+
+@Injectable()
+export class ListReturnDetailsUseCase {
+  constructor(
+    @Inject(RETURN_DETAIL_REPOSITORY)
+    private readonly repository: IReturnDetailRepository,
+  ) {}
+
+  async execute(params: ReturnDetailFindAllParams) {
+    return this.repository.findAll(params);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/353.png)
+#### 18.17 src/features/business/return-details/presentation/http/controllers/return-details.controller.ts
+```bash
+mkdir -p src/features/business/return-details/presentation/http/controllers
+cat > src/features/business/return-details/presentation/http/controllers/return-details.controller.ts <<'EOF_BACKEND_MANUAL'
+import { Controller, Post, Get, Patch, Delete, Param, Body } from '@nestjs/common';
+import { CreateReturnDetailUseCase } from '../../../application/use-cases/create-return-detail.usecase.js';
+import { UpdateReturnDetailUseCase } from '../../../application/use-cases/update-return-detail.usecase.js';
+import { DeleteReturnDetailUseCase } from '../../../application/use-cases/delete-return-detail.usecase.js';
+import { FindReturnDetailUseCase } from '../../../application/use-cases/find-return-detail.usecase.js';
+import { ListReturnDetailsUseCase } from '../../../application/use-cases/list-return-details.usecase.js';
+import { CreateReturnDetailDto } from '../../../application/dto/create-return-detail.dto.js';
+import { UpdateReturnDetailDto } from '../../../application/dto/update-return-detail.dto.js';
+
+@Controller('return-details')
+export class ReturnDetailsController {
+  constructor(
+    private readonly createDetail: CreateReturnDetailUseCase,
+    private readonly updateDetail: UpdateReturnDetailUseCase,
+    private readonly deleteDetail: DeleteReturnDetailUseCase,
+    private readonly findDetail: FindReturnDetailUseCase,
+    private readonly listDetails: ListReturnDetailsUseCase,
+  ) {}
+
+  @Post()
+  async create(@Body() dto: CreateReturnDetailDto) {
+    return this.createDetail.execute(dto);
+  }
+
+  @Get()
+  async list() {
+    return this.listDetails.execute({});
+  }
+
+  @Get(':id')
+  async find(@Param('id') id: number) {
+    return this.findDetail.execute(id);
+  }
+
+  @Patch(':id')
+  async update(@Param('id') id: number, @Body() dto: UpdateReturnDetailDto) {
+    const detail = { id, ...dto } as any;
+    return this.updateDetail.execute(detail);
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: number) {
+    return this.deleteDetail.execute(id);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/354.png)
+#### 18.18 src/features/business/return-details/return-details.module.ts
+```bash
+cat > src/features/business/return-details/return-details.module.ts <<'EOF_BACKEND_MANUAL'
+import { Module } from '@nestjs/common';
+import { ReturnDetailsController } from './presentation/http/controllers/return-details.controller.js';
+import { ReturnDetailRepository } from './infrastructure/persistence/repositories/return-detail.repository.js';
+import { CreateReturnDetailUseCase } from './application/use-cases/create-return-detail.usecase.js';
+import { UpdateReturnDetailUseCase } from './application/use-cases/update-return-detail.usecase.js';
+import { DeleteReturnDetailUseCase } from './application/use-cases/delete-return-detail.usecase.js';
+import { FindReturnDetailUseCase } from './application/use-cases/find-return-detail.usecase.js';
+import { ListReturnDetailsUseCase } from './application/use-cases/list-return-details.usecase.js';
+import { RETURN_DETAIL_REPOSITORY } from './domain/interfaces/return-detail-repository.interface.js';
+
+@Module({
+  controllers: [ReturnDetailsController],
+  providers: [
+    { provide: RETURN_DETAIL_REPOSITORY, useClass: ReturnDetailRepository },
+    CreateReturnDetailUseCase,
+    UpdateReturnDetailUseCase,
+    DeleteReturnDetailUseCase,
+    FindReturnDetailUseCase,
+    ListReturnDetailsUseCase,
+  ],
+})
+export class ReturnDetailsModule {}
+EOF_BACKEND_MANUAL
+```
+![](img/355.png)
+
+#### 18.19 src/features/business/return-details/application/services/return-detail.service.ts
+```bash
+mkdir -p src/features/business/return-details/application/services
+cat > src/features/business/return-details/application/services/return-detail.service.ts <<'EOF_BACKEND_MANUAL'
+import { Injectable, Inject } from '@nestjs/common';
+import { ReturnDetail } from '../../domain/entities/return-detail.entity.js';
+import { IReturnDetailRepository, RETURN_DETAIL_REPOSITORY } from '../../domain/interfaces/return-detail-repository.interface.js';
+
+@Injectable()
+export class ReturnDetailService {
+  constructor(
+    @Inject(RETURN_DETAIL_REPOSITORY)
+    private readonly repository: IReturnDetailRepository,
+  ) {}
+
+  async processDetail(detail: ReturnDetail): Promise<ReturnDetail> {
+    // Aquí podrías integrar lógica adicional (ej: validaciones de inventario)
+    return this.repository.create(detail);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/356.png)
+#### 18.20 src/features/business/return-details/application/events/return-detail-created.event.ts
+```bash
+mkdir -p src/features/business/return-details/application/events
+cat > src/features/business/return-details/application/events/return-detail-created.event.ts <<'EOF_BACKEND_MANUAL'
+export class ReturnDetailCreatedEvent {
+  constructor(
+    public readonly id: number,
+    public readonly returnId: number,
+    public readonly productId: number,
+    public readonly quantity: number,
+    public readonly reason: string,
+    public readonly createdAt: Date,
+  ) {}
+}
+EOF_BACKEND_MANUAL
+```
+![](img/358.png)
+
+#### 18.21 src/features/business/return-details/application/events/return-detail-updated.event.ts
+```bash
+mkdir -p src/features/business/return-details/application/events
+cat > src/features/business/return-details/application/events/return-detail-updated.event.ts <<'EOF_BACKEND_MANUAL'
+export class ReturnDetailUpdatedEvent {
+  constructor(
+    public readonly id: number,
+    public readonly returnId: number,
+    public readonly productId: number,
+    public readonly quantity: number,
+    public readonly reason: string,
+    public readonly updatedAt: Date,
+  ) {}
+}
+EOF_BACKEND_MANUAL
+```
+![](img/359.png)
+#### 18.22 src/features/business/return-details/application/events/return-detail-deleted.event.ts
+```bash
+cat > src/features/business/return-details/application/events/return-detail-deleted.event.ts <<'EOF_BACKEND_MANUAL'
+export class ReturnDetailDeletedEvent {
+  constructor(
+    public readonly id: number,
+    public readonly returnId: number,
+  ) {}
+}
+EOF_BACKEND_MANUAL
+```
+![](img/360.png)
+#### 18.23 src/features/business/return-details/application/subscribers/return-detail.subscriber.ts
+```bash
+mkdir -p src/features/business/return-details/application/subscribers
+cat > src/features/business/return-details/application/subscribers/return-detail.subscriber.ts <<'EOF_BACKEND_MANUAL'
+import { ReturnDetailCreatedEvent } from '../events/return-detail-created.event.js';
+import { ReturnDetailUpdatedEvent } from '../events/return-detail-updated.event.js';
+import { ReturnDetailDeletedEvent } from '../events/return-detail-deleted.event.js';
+
+export class ReturnDetailSubscriber {
+  handleCreated(event: ReturnDetailCreatedEvent) {
+    console.log('Evento: Detalle de devolución creado', event);
+  }
+
+  handleUpdated(event: ReturnDetailUpdatedEvent) {
+    console.log('Evento: Detalle de devolución actualizado', event);
+  }
+
+  handleDeleted(event: ReturnDetailDeletedEvent) {
+    console.log('Evento: Detalle de devolución eliminado', event);
+  }
+}
+EOF_BACKEND_MANUAL
+```
+![](img/361.png)
+#### 18.24 src/features/business/return-details/docs/return-details.openapi.ts
+```bash
+mkdir -p src/features/business/return-details/docs
+cat > src/features/business/return-details/docs/return-details.openapi.ts <<'EOF_BACKEND_MANUAL'
+export const returnDetailsOpenApi = {
+  '/return-details': {
+    post: {
+      summary: 'Crear detalle de devolución',
+      responses: { 201: { description: 'Detalle creado' } },
+    },
+    get: {
+      summary: 'Listar detalles de devolución',
+      responses: { 200: { description: 'Lista de detalles' } },
+    },
+  },
+  '/return-details/{id}': {
+    get: {
+      summary: 'Obtener detalle por ID',
+      responses: { 200: { description: 'Detalle encontrado' } },
+    },
+    patch: {
+      summary: 'Actualizar detalle de devolución',
+      responses: { 200: { description: 'Detalle actualizado' } },
+    },
+    delete: {
+      summary: 'Eliminar detalle de devolución',
+      responses: { 204: { description: 'Detalle eliminado' } },
+    },
+  },
+};
+EOF_BACKEND_MANUAL
+```
+![](img/362.png)
+#### 18.25 src/features/business/return-details/index.ts
+```bash
+cat > src/features/business/return-details/index.ts <<'EOF_BACKEND_MANUAL'
+export * from './return-details.module.js';
+export * from './domain/entities/return-detail.entity.js';
+export * from './domain/interfaces/return-detail-repository.interface.js';
+export * from './application/dto/create-return-detail.dto.js';
+export * from './application/dto/update-return-detail.dto.js';
+export * from './application/dto/return-detail-response.dto.js';
+EOF_BACKEND_MANUAL
+```
+![](img/363.png)
+
+#### Verificar tablas
+
+```bash
+npm run start:dev
+``` 

@@ -6,5 +6,6 @@ import { InventoryModel } from '../../../features/business/inventory/infrastruct
 import { ProductTypeModel } from '../../../features/business/product-types/infrastructure/persistence/models/product-type.model.js';
 import { PaymentModel } from '../../../features/business/payments/infrastructure/persistence/models/payment.model.js';
 import { ReturnModel } from '../../../features/business/returns/infrastructure/persistence/models/return.model.js';
-export declare const ALL_MODELS: (typeof ProductTypeModel | typeof ProductModel | typeof OrderModel | typeof OrderDetailModel | typeof InventoryModel | typeof PaymentModel | typeof ReturnModel)[];
+import { ReturnDetailModel } from '../../../features/business/return-details/infrastructure/persistence/models/return-detail.model.js';
+export declare const ALL_MODELS: (typeof ProductTypeModel | typeof ProductModel | typeof OrderModel | typeof OrderDetailModel | typeof InventoryModel | typeof PaymentModel | typeof ReturnModel | typeof ReturnDetailModel)[];
 export declare function createSequelizeInstance(options: any): Promise<Sequelize>;

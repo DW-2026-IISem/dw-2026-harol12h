@@ -10,6 +10,7 @@ import { InventoryModel } from '../../../features/business/inventory/infrastruct
 import { ProductTypeModel } from '../../../features/business/product-types/infrastructure/persistence/models/product-type.model.js';
 import { PaymentModel } from '../../../features/business/payments/infrastructure/persistence/models/payment.model.js';
 import { ReturnModel } from '../../../features/business/returns/infrastructure/persistence/models/return.model.js';
+import { ReturnDetailModel } from '../../../features/business/return-details/infrastructure/persistence/models/return-detail.model.js';
 
 export const ALL_MODELS = [
   ClientModel,
@@ -23,6 +24,7 @@ export const ALL_MODELS = [
   InventoryModel,
   PaymentModel,
   ReturnModel,
+  ReturnDetailModel,
 ];
 
 export async function createSequelizeInstance(options: any): Promise<Sequelize> {
@@ -35,12 +37,16 @@ export async function createSequelizeInstance(options: any): Promise<Sequelize> 
   PaymentModel.belongsTo(OrderModel, { foreignKey: 'orderId' });
   OrderModel.hasMany(ReturnModel, { foreignKey: 'orderId' });
   ReturnModel.belongsTo(OrderModel, { foreignKey: 'orderId' });
+  ReturnModel.hasMany(ReturnDetailModel, { foreignKey: 'returnId' });
+  ReturnDetailModel.belongsTo(ReturnModel, { foreignKey: 'returnId' });
 
   CollectionModel.hasMany(ProductModel, { foreignKey: 'collectionId' });
   ProductModel.belongsTo(CollectionModel, { foreignKey: 'collectionId' });
 
   ProductModel.hasMany(VariantModel, { foreignKey: 'productId' });
   VariantModel.belongsTo(ProductModel, { foreignKey: 'productId' });
+  ProductModel.hasMany(ReturnDetailModel, { foreignKey: 'productId' });
+  ReturnDetailModel.belongsTo(ProductModel, { foreignKey: 'productId' });
 
   OrderModel.hasMany(OrderDetailModel, { foreignKey: 'orderId' });
   OrderDetailModel.belongsTo(OrderModel, { foreignKey: 'orderId' });

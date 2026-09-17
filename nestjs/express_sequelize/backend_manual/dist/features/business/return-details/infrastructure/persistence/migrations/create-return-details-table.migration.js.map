@@ -1,0 +1,1 @@
+{"version":3,"file":"create-return-details-table.migration.js","sourceRoot":"","sources":["../../../../../../../src/features/business/return-details/infrastructure/persistence/migrations/create-return-details-table.migration.ts"],"names":[],"mappings":"AAAA,MAAM,CAAC,MAAM,iCAAiC,GAAG;IAC/C,IAAI,EAAE,6BAA6B;IACnC,KAAK,CAAC,EAAE;IAGR,CAAC;IACD,KAAK,CAAC,IAAI;IAEV,CAAC;CACF,CAAC"}

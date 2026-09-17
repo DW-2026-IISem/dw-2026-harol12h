@@ -9,6 +9,7 @@ import { BranchesModule } from './branches/branches.module.js';
 import { InventoryModule } from './inventory/inventory.module.js';
 import { PaymentsModule } from './payments/payments.module.js';
 import { ReturnsModule } from './returns/returns.module.js';
+import { ReturnDetailsModule } from './return-details/return-details.module.js';
 
 
 @Module({
@@ -23,6 +24,7 @@ import { ReturnsModule } from './returns/returns.module.js';
     InventoryModule,
     PaymentsModule,
     ReturnsModule,
+    ReturnDetailsModule,
   ],
   exports: [
     ClientsModule,
@@ -35,6 +37,7 @@ import { ReturnsModule } from './returns/returns.module.js';
     InventoryModule,
     PaymentsModule,
     ReturnsModule,
+    ReturnDetailsModule,
   ],
 })
 export class BusinessModule {}
