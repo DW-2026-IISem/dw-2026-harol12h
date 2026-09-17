@@ -12799,3 +12799,119 @@ export async function seedPromotions(): Promise<void> {
 EOF_BACKEND_MANUAL
 ```
 ![](img/370.png)
+
+#### 19.8 src/features/business/promotions/application/dto/create-promotion.dto.ts
+```bash
+mkdir -p src/features/business/promotions/application/dto
+cat > src/features/business/promotions/application/dto/create-promotion.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNumber, Min, Max, IsDateString, IsBoolean } from 'class-validator';
+
+export class CreatePromotionDto {
+  @ApiProperty({ example: 'Descuento de verano' })
+  @IsString()
+  name: string;
+
+  @ApiProperty({ example: '20% en toda la tienda' })
+  @IsString()
+  description: string;
+
+  @ApiProperty({ example: 20 })
+  @IsNumber()
+  @Min(1)
+  @Max(100)
+  discountPercentage: number;
+
+  @ApiProperty({ example: '2026-09-16' })
+  @IsDateString()
+  startDate: Date;
+
+  @ApiProperty({ example: '2026-10-16' })
+  @IsDateString()
+  endDate: Date;
+
+  @ApiProperty({ example: true })
+  @IsBoolean()
+  active: boolean;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/371.png)
+#### 19.9 src/features/business/promotions/application/dto/update-promotion.dto.ts
+```bash
+cat > src/features/business/promotions/application/dto/update-promotion.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsNumber, Min, Max, IsDateString, IsBoolean, IsOptional } from 'class-validator';
+
+export class UpdatePromotionDto {
+  @ApiPropertyOptional({ example: 'Descuento de verano' })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiPropertyOptional({ example: '20% en toda la tienda' })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiPropertyOptional({ example: 20 })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(100)
+  discountPercentage?: number;
+
+  @ApiPropertyOptional({ example: '2026-09-16' })
+  @IsOptional()
+  @IsDateString()
+  startDate?: Date;
+
+  @ApiPropertyOptional({ example: '2026-10-16' })
+  @IsOptional()
+  @IsDateString()
+  endDate?: Date;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  active?: boolean;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/372.png)
+#### 19.10 src/features/business/promotions/application/dto/promotion-response.dto.ts
+```bash
+cat > src/features/business/promotions/application/dto/promotion-response.dto.ts <<'EOF_BACKEND_MANUAL'
+import { ApiProperty } from '@nestjs/swagger';
+
+export class PromotionResponseDto {
+  @ApiProperty()
+  id: number;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  description: string;
+
+  @ApiProperty()
+  discountPercentage: number;
+
+  @ApiProperty()
+  startDate: Date;
+
+  @ApiProperty()
+  endDate: Date;
+
+  @ApiProperty()
+  active: boolean;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+EOF_BACKEND_MANUAL
+```
+![](img/373.png)
