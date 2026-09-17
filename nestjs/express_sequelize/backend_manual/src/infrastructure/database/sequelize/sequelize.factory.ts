@@ -11,6 +11,7 @@ import { ProductTypeModel } from '../../../features/business/product-types/infra
 import { PaymentModel } from '../../../features/business/payments/infrastructure/persistence/models/payment.model.js';
 import { ReturnModel } from '../../../features/business/returns/infrastructure/persistence/models/return.model.js';
 import { ReturnDetailModel } from '../../../features/business/return-details/infrastructure/persistence/models/return-detail.model.js';
+import { PromotionModel } from '../../../features/business/promotions/infrastructure/persistence/models/promotion.model.js';
 
 export const ALL_MODELS = [
   ClientModel,
@@ -25,6 +26,7 @@ export const ALL_MODELS = [
   PaymentModel,
   ReturnModel,
   ReturnDetailModel,
+  PromotionModel,
 ];
 
 export async function createSequelizeInstance(options: any): Promise<Sequelize> {
