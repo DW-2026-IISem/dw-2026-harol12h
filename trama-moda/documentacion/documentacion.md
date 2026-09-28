@@ -445,3 +445,31 @@ npm run dev
 > El servidor debe arrancar sin error. Detenerlo con Ctrl+C antes de continuar.
 ![](a/13.png)
 ---
+# 4. ISS-03-A — Feature Client — fundación (modelo, esqueleto, HTTP, cableado)
+
+**Nombre recomendado:** *Feature Client — fundación*  
+**Objetivo:** dejar el feature listo para CRUD: modelo con columnas obligatorias, esqueleto controller/routes, carpeta `http/`, agregador y sync.  
+**Bloqueado por:** ISS-02.
+
+### Criterios de aceptación (ISS-03-A)
+
+- [ ] **4.1** Modelo `client.model.ts` con `status` + `timestamps: true` + bcrypt
+- [ ] **4.2** Controller/routes esqueleto (sin CRUD aún en este sub-ítem pedagógico; el repo ya puede tener CRUD de ISS-03-B…E)
+- [ ] **4.3** Carpeta `features/business/client/http/` creada
+- [ ] **4.4** `routes/index.ts` + `config` importan modelo, conectan BD y hacen `sync`
+- [ ] Con BD: `npm run dev` → conexión OK + sync OK + tabla `clients`
+
+---
+
+## 4.1 Modelo Client
+
+**Criterios**
+
+- [ ] `src/features/business/client/client.model.ts`
+- [ ] Enum `active`/`inactive`, default `inactive`; `timestamps: true`
+
+```bash
+npm install bcryptjs@^3.0.3
+npm install -D @types/bcryptjs@^3.0.0
+```
+![](a/14.png)
