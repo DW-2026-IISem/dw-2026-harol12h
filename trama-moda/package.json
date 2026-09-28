@@ -10,6 +10,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "dependencies": {
+    "mysql2": "^3.24.4",
+    "sequelize": "^6.37.8"
+  }
 }
-

@@ -235,3 +235,32 @@ find src -type f | sort
 npm run dev
 ```
 ![](a/5.png)
+---
+
+# 3. ISS-02 — Infraestructura de base de datos
+
+**Objetivo:** drivers + `.env` + módulo Sequelize + carpeta `seeders/`.  
+**Bloqueado por:** ISS-01.
+
+### Criterios de aceptación (ISS-02) — consolidados
+
+- [ ] **3.1** Paquetes Sequelize/drivers instalados; existe `.env` con `DB_ENGINE` y bloques de motores
+- [ ] **3.2** Existe `src/database/db.ts` exportando `sequelize`, `getDatabaseInfo`, `testConnection`
+- [ ] **3.3** Existe carpeta `src/database/seeders/` **sin** lógica implementada aún
+- [ ] `npx tsc --noEmit` OK
+
+---
+
+## 3.1 Drivers Sequelize y `.env`
+
+**Criterios de este sub-ítem**
+
+- [ ] `sequelize`, `mysql2`, `pg`, `pg-hstore`, `tedious`, `oracledb` instalados
+- [ ] `.env` con `PORT`, `DB_ENGINE`, MySQL/Postgres/MSSQL/Oracle
+
+```bash
+npm install sequelize@^6.37.8 mysql2@^3.24.4 pg@^8.23.0 pg-hstore@^2.3.4 \
+  tedious@^20.0.0 oracledb@^7.0.1
+npm install -D @types/sequelize@^6.12.0
+```
+![](a/6.png)
