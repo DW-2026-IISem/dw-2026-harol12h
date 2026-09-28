@@ -428,3 +428,20 @@ mkdir -p src/database/seeders
 test -d src/database/seeders && echo OK
 ```
 ![](a/11.png)
+
+### Verificación del ISS-02
+
+```bash
+npx tsc --noEmit
+test -f src/database/db.ts && test -f .env && test -d src/database/seeders
+```
+![](a/12.png)
+
+### Cierre del ISS
+
+```bash
+npm run dev
+```
+> El servidor debe arrancar sin error. Detenerlo con Ctrl+C antes de continuar.
+![](a/13.png)
+---
