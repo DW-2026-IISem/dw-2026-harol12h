@@ -405,3 +405,9 @@ export const testConnection = async (): Promise<boolean> => {
 EOF
 ```
 ![](a/9.png)
+
+```bash
+test -f src/database/db.ts && npx tsc --noEmit
+```
+![](a/10.png)
+---
