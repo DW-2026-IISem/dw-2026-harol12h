@@ -411,3 +411,20 @@ test -f src/database/db.ts && npx tsc --noEmit
 ```
 ![](a/10.png)
 ---
+
+## 3.3 Carpeta seeders (reservada)
+
+**Criterios de este sub-ítem**
+
+- [ ] `src/database/seeders/` existe (la lógica llega en ISS-04)
+- [ ] `src/database/seeders/` existe **sin** `*.seeder.ts` ni runner
+
+```bash
+mkdir -p src/database/seeders
+# opcional: touch src/database/seeders/.gitkeep
+```
+
+```bash
+test -d src/database/seeders && echo OK
+```
+![](a/11.png)
