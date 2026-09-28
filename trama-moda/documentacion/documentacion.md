@@ -734,3 +734,86 @@ EOF
 ```
 ![](a/19.png)
 
+```bash
+: > src/features/business/client/http/clients.create.http
+cat >> src/features/business/client/http/clients.create.http << 'EOF'
+### Feature Client — CREATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name createClient
+POST {{baseUrl}}/api/clientes
+Content-Type: application/json
+
+{
+  "tipo_documento": "CC",
+  "numero_documento": "1098765432",
+  "nombre": "Carlos Mendoza",
+  "telefono": "3001234567",
+  "email": "carlos.mendoza@example.com",
+  "status": "active"
+}
+EOF
+```
+
+```bash
+: > src/features/business/client/http/clients.update.http
+cat >> src/features/business/client/http/clients.update.http << 'EOF'
+### Feature Client — UPDATE (PUT / PATCH)
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+@id = 1
+
+# @name updateClientPut
+PUT {{baseUrl}}/api/clientes/{{id}}
+Content-Type: application/json
+
+{
+  "tipo_documento": "CC",
+  "numero_documento": "1098765432",
+  "nombre": "Carlos Mendoza Actualizado",
+  "telefono": "3009876543",
+  "email": "carlos.mendoza@example.com",
+  "status": "active"
+}
+
+###
+
+# @name updateClientPatch
+PATCH {{baseUrl}}/api/clientes/{{id}}
+Content-Type: application/json
+
+{
+  "telefono": "3011112233"
+}
+EOF
+```
+
+```bash
+: > src/features/business/client/http/clients.delete.http
+cat >> src/features/business/client/http/clients.delete.http << 'EOF'
+### Feature Client — DELETE físico / DELETE lógico
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+@id = 1
+
+# @name deleteClientLogical
+PATCH {{baseUrl}}/api/clientes/{{id}}/deactivate
+
+###
+
+# @name deleteClientPhysical
+DELETE {{baseUrl}}/api/clientes/{{id}}
+EOF
+```
+
+```bash
+: > src/routes/index.ts
+cat >> src/routes/index.ts << 'EOF'
+import { ClientRoutes } from "../features/business/client/client.routes";
+
+export class Routes {
+  public clientRoutes: ClientRoutes = new ClientRoutes();
+}
+EOF
+```
