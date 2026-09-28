@@ -473,3 +473,53 @@ npm install bcryptjs@^3.0.3
 npm install -D @types/bcryptjs@^3.0.0
 ```
 ![](a/14.png)
+
+## 4.1 Modelo Client
+
+```bash
+: > src/features/business/client/client.model.ts
+cat >> src/features/business/client/client.model.ts << 'EOF'
+Client.init(
+{
+  tipo_documento: {
+    type: DataTypes.STRING,
+    allowNull:false
+  },
+
+  numero_documento:{
+    type: DataTypes.STRING,
+    allowNull:false,
+    unique:true
+  },
+
+  nombre:{
+    type: DataTypes.STRING,
+    allowNull:false
+  },
+
+  telefono:{
+    type: DataTypes.STRING
+  },
+
+  email:{
+    type: DataTypes.STRING,
+    unique:true
+  },
+
+  status:{
+    type: DataTypes.ENUM(
+      "active",
+      "inactive"
+    ),
+    defaultValue:"active"
+  }
+},
+{
+  sequelize,
+  tableName:"clients",
+  timestamps:true
+}
+);
+EOF
+```
+![](a/15.png)
