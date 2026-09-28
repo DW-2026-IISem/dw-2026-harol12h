@@ -713,3 +713,23 @@ export class ClientRoutes {
 EOF
 ```
 ![](a/18.png)
+
+### Crear Archivos de Pruebas HTTP
+```bash
+: > src/features/business/client/http/clients.get.http
+cat >> src/features/business/client/http/clients.get.http << 'EOF'
+### Feature Client — GET ALL / GET ONE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+@id = 1
+
+# @name getAllClients
+GET {{baseUrl}}/api/clientes
+
+###
+
+# @name getOneClient
+GET {{baseUrl}}/api/clientes/{{id}}
+EOF
+```
+![](a/19.png)
