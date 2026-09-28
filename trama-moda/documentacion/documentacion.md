@@ -150,3 +150,19 @@ test -f tsconfig.json && npx tsc --showConfig | head -20
 
 - [ ] Existen `src/server.ts` y `src/config/index.ts`
 - [ ] `App` define `settings`, `middlewares`, `routes`, `dbConnection`, `listen` (placeholders OK)
+### 2.5.1 `src/server.ts`
+
+```bash
+: > src/server.ts
+cat >> src/server.ts << 'EOF'
+import { App } from './config/index';
+
+async function main() {
+    const app = new App();
+    await app.listen();
+}
+
+main();
+EOF
+```
+![](a/3.png)
