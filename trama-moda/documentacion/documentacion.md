@@ -221,3 +221,17 @@ export class App {
 EOF
 ```
 ![](a/4.png)
+
+### Verificación del ISS-01
+
+```bash
+npx tsc --noEmit
+find src -type f | sort
+```
+
+### Cierre del ISS
+
+```bash
+npm run dev
+```
+![](a/5.png)
