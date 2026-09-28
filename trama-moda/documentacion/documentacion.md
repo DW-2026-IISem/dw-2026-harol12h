@@ -48,6 +48,7 @@ mkdir -p \
   src/routes \
   src/features/business/client
 ```
+![](a/image.png)
 
 ```text
 src/
@@ -79,7 +80,6 @@ src/
 ```bash
 find src -type d | sort
 ```
-
 ---
 
 ## 2.3 Dependencias base (Express + TypeScript)
@@ -96,6 +96,7 @@ npm install -D typescript@~5.9.2 ts-node@^10.9.2 nodemon@^3.1.14 \
   @types/node@^22.20.3 @types/express@^5.0.6 \
   @types/cors@^2.8.19 @types/morgan@^1.9.10
 ```
+![](a/1.png)
 
 > TypeScript en **5.9.x** por compatibilidad con `ts-node`.
 
