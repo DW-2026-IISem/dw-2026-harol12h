@@ -137,7 +137,7 @@ cat >> tsconfig.json << 'EOF'
 }
 EOF
 ```
-
+![](a/2.png)
 ```bash
 test -f tsconfig.json && npx tsc --showConfig | head -20
 ```
