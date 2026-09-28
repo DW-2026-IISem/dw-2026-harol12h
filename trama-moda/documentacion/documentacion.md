@@ -264,3 +264,43 @@ npm install sequelize@^6.37.8 mysql2@^3.24.4 pg@^8.23.0 pg-hstore@^2.3.4 \
 npm install -D @types/sequelize@^6.12.0
 ```
 ![](a/6.png)
+
+```bash
+: > .env
+cat >> .env << 'EOF'
+PORT=4000
+
+# Variable para seleccionar el motor de base de datos
+DB_ENGINE=mysql
+
+# Configuración para MySQL
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=root
+MYSQL_NAME=trama_moda
+
+
+# Configuración para PostgreSQL
+POSTGRES_HOST=localhost
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=password
+POSTGRES_NAME=almacen_2025_iisem_node
+POSTGRES_PORT=5432
+
+# Configuración para SQL Server
+MSSQL_HOST=localhost
+MSSQL_USER=sa
+MSSQL_PASSWORD=password
+MSSQL_NAME=almacen_2025_iisem_node
+MSSQL_PORT=1433
+
+# Configuración para Oracle
+ORACLE_HOST=localhost
+ORACLE_USER=ALMACENDB_ADMIN
+ORACLE_PASSWORD=password
+ORACLE_NAME=xe
+ORACLE_PORT=1521
+
+EOF
+```
