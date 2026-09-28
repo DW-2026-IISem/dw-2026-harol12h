@@ -304,3 +304,10 @@ ORACLE_PORT=1521
 
 EOF
 ```
+![](a/7.png)
+
+```bash
+test -f .env && grep DB_ENGINE .env
+npm ls sequelize mysql2 --depth=0
+```
+![](a/8.png)
