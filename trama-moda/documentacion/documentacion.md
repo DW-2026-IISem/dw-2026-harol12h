@@ -1046,6 +1046,7 @@ EOF
 ![](a/22.png)
 
 ### HTTP — archivo nuevo
+#### Obtener Productos
 
 ```bash
 : > src/features/business/product/http/products.get.http
@@ -1065,3 +1066,61 @@ GET {{baseUrl}}/api/productos/{{id}}
 EOF
 ```
 ![](a/23.png)
+
+#### Crear productos
+```bash
+: > src/features/business/product/http/products.create.http
+cat >> src/features/business/product/http/products.create.http << 'EOF'
+### Feature Product — CREATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name createProduct
+POST {{baseUrl}}/api/productos
+Content-Type: application/json
+
+{
+  "nombre": "Camiseta Algodón Talla M",
+  "precio": 45000.00,
+  "stock": 20,
+  "status": "active"
+}
+EOF
+```
+![](a/24.png)
+
+#### Actualizar Producto
+
+```bash
+: > src/features/business/product/http/products.update.http
+cat >> src/features/business/product/http/products.update.http << 'EOF'
+### Feature Product — UPDATE (PUT / PATCH)
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+@id = 1
+
+# @name updateProductPut
+PUT {{baseUrl}}/api/productos/{{id}}
+Content-Type: application/json
+
+{
+  "nombre": "Camiseta Algodón Talla L",
+  "precio": 48000.00,
+  "stock": 15,
+  "status": "active"
+}
+
+###
+
+# @name updateProductPatch
+PATCH {{baseUrl}}/api/productos/{{id}}
+Content-Type: application/json
+
+{
+  "precio": 50000.00,
+  "stock": 30
+}
+EOF
+```
+![](a/25.png)
+

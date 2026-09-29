@@ -1,0 +1,26 @@
+### Feature Product — UPDATE (PUT / PATCH)
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+@id = 1
+
+# @name updateProductPut
+PUT {{baseUrl}}/api/productos/{{id}}
+Content-Type: application/json
+
+{
+  "nombre": "Camiseta Algodón Talla L",
+  "precio": 48000.00,
+  "stock": 15,
+  "status": "active"
+}
+
+###
+
+# @name updateProductPatch
+PATCH {{baseUrl}}/api/productos/{{id}}
+Content-Type: application/json
+
+{
+  "precio": 50000.00,
+  "stock": 30
+}
