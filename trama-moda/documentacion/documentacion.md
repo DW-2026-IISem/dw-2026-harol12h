@@ -878,3 +878,190 @@ Product.init(
 EOF
 ```
 ![](a/20.png)
+
+### Crear Controlador
+
+```bash
+: > src/features/business/product/product.controller.ts
+cat >> src/features/business/product/product.controller.ts << 'EOF'
+import { Request, Response } from "express";
+import { Product, ProductI } from "./product.model";
+
+function paramId(req: Request): number {
+  const raw = req.params.id;
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  return Number(value);
+}
+
+export class ProductController {
+  // ================== READ ==================
+  public async getAll(req: Request, res: Response) {
+    try {
+      const products = await Product.findAll({
+        where: { status: "active" }
+      });
+      res.status(200).json({ products });
+    } catch (error) {
+      res.status(500).json({ error: "Error fetching products", detail: String(error) });
+    }
+  }
+
+  public async getOne(req: Request, res: Response) {
+    try {
+      const id = paramId(req);
+      const product = await Product.findByPk(id);
+      if (!product) {
+        res.status(404).json({ error: "Product not found" });
+        return;
+      }
+      res.status(200).json({ product });
+    } catch (error) {
+      res.status(500).json({ error: "Error fetching product", detail: String(error) });
+    }
+  }
+
+  // ================== CREATE ==================
+  public async create(req: Request, res: Response) {
+    try {
+      const body = req.body as ProductI;
+      const product = await Product.create({
+        nombre: body.nombre,
+        precio: body.precio,
+        stock: body.stock,
+        status: body.status ?? "active"
+      });
+      res.status(201).json({ product });
+    } catch (error) {
+      res.status(500).json({ error: "Error creating product", detail: String(error) });
+    }
+  }
+
+  // ================== UPDATE ==================
+  public async updatePut(req: Request, res: Response) {
+    try {
+      const id = paramId(req);
+      const body = req.body as ProductI;
+      const product = await Product.findByPk(id);
+      if (!product) {
+        res.status(404).json({ error: "Product not found" });
+        return;
+      }
+
+      await product.update({
+        nombre: body.nombre,
+        precio: body.precio,
+        stock: body.stock,
+        status: body.status ?? product.status
+      });
+
+      res.status(200).json({ product });
+    } catch (error) {
+      res.status(500).json({ error: "Error updating product (PUT)", detail: String(error) });
+    }
+  }
+
+  public async updatePatch(req: Request, res: Response) {
+    try {
+      const id = paramId(req);
+      const body = req.body as Partial<ProductI>;
+      const product = await Product.findByPk(id);
+      if (!product) {
+        res.status(404).json({ error: "Product not found" });
+        return;
+      }
+
+      await product.update(body);
+      res.status(200).json({ product });
+    } catch (error) {
+      res.status(500).json({ error: "Error updating product (PATCH)", detail: String(error) });
+    }
+  }
+
+  // ================== DELETE ==================
+  public async deletePhysical(req: Request, res: Response) {
+    try {
+      const id = paramId(req);
+      const product = await Product.findByPk(id);
+      if (!product) {
+        res.status(404).json({ error: "Product not found" });
+        return;
+      }
+      await product.destroy();
+      res.status(200).json({ message: "Product permanently deleted", id });
+    } catch (error) {
+      res.status(500).json({ error: "Error deleting product", detail: String(error) });
+    }
+  }
+
+  public async deleteLogical(req: Request, res: Response) {
+    try {
+      const id = paramId(req);
+      const product = await Product.findByPk(id);
+      if (!product) {
+        res.status(404).json({ error: "Product not found" });
+        return;
+      }
+      await product.update({ status: "inactive" });
+      res.status(200).json({ message: "Product deactivated (logical delete)", product });
+    } catch (error) {
+      res.status(500).json({ error: "Error deactivating product", detail: String(error) });
+    }
+  }
+}
+EOF
+```
+![](a/21.png)
+
+### Crear Rutas (product.routes.ts)
+
+```bash
+: > src/features/business/product/product.routes.ts
+cat >> src/features/business/product/product.routes.ts << 'EOF'
+import { Application } from "express";
+import { ProductController } from "./product.controller";
+
+export class ProductRoutes {
+  public productController: ProductController = new ProductController();
+
+  public routes(app: Application): void {
+    app
+      .route("/api/productos")
+      .get(this.productController.getAll.bind(this.productController))
+      .post(this.productController.create.bind(this.productController));
+
+    app
+      .route("/api/productos/:id")
+      .get(this.productController.getOne.bind(this.productController))
+      .put(this.productController.updatePut.bind(this.productController))
+      .patch(this.productController.updatePatch.bind(this.productController))
+      .delete(this.productController.deletePhysical.bind(this.productController));
+
+    app
+      .route("/api/productos/:id/deactivate")
+      .patch(this.productController.deleteLogical.bind(this.productController));
+  }
+}
+EOF
+```
+![](a/22.png)
+
+### HTTP — archivo nuevo
+
+```bash
+: > src/features/business/product/http/products.get.http
+cat >> src/features/business/product/http/products.get.http << 'EOF'
+### Feature Product — GET ALL / GET ONE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+@id = 1
+
+# @name getAllProducts
+GET {{baseUrl}}/api/productos
+
+###
+
+# @name getOneProduct
+GET {{baseUrl}}/api/productos/{{id}}
+EOF
+```
+![](a/23.png)

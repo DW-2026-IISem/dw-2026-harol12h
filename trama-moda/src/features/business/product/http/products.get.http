@@ -1,0 +1,12 @@
+### Feature Product — GET ALL / GET ONE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+@id = 1
+
+# @name getAllProducts
+GET {{baseUrl}}/api/productos
+
+###
+
+# @name getOneProduct
+GET {{baseUrl}}/api/productos/{{id}}
