@@ -1,0 +1,12 @@
+### Feature Product — DELETE físico / DELETE lógico
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+@id = 1
+
+# @name deleteProductLogical
+PATCH {{baseUrl}}/api/productos/{{id}}/deactivate
+
+###
+
+# @name deleteProductPhysical
+DELETE {{baseUrl}}/api/productos/{{id}}

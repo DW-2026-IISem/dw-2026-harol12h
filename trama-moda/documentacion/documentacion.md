@@ -1124,3 +1124,22 @@ EOF
 ```
 ![](a/25.png)
 
+#### Eliminar Producto
+```bash
+: > src/features/business/product/http/products.delete.http
+cat >> src/features/business/product/http/products.delete.http << 'EOF'
+### Feature Product — DELETE físico / DELETE lógico
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+@id = 1
+
+# @name deleteProductLogical
+PATCH {{baseUrl}}/api/productos/{{id}}/deactivate
+
+###
+
+# @name deleteProductPhysical
+DELETE {{baseUrl}}/api/productos/{{id}}
+EOF
+```
+![](a/26.png)
