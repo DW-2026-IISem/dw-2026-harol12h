@@ -59,9 +59,10 @@ export const syncDatabase = async (): Promise<void> => {
     require("../features/business/client/client.model");
     require("../features/business/product/product.model");
     require("../features/business/sale/sale.model");
+    require("../features/business/sale/sale-detail.model");
 
     await sequelize.sync({ alter: true });
-    console.log("✅ Tablas sincronizadas correctamente en MySQL");
+    console.log("✅ Tablas y relaciones sincronizadas correctamente en MySQL");
   } catch (error) {
     console.error("❌ Error al sincronizar las tablas:", error);
   }
