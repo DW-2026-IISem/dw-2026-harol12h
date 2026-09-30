@@ -1538,7 +1538,7 @@ EOF
 
 -------------------------------------------
 
-### crear modelo sale-detali `sale-detali.model`
+# crear modelo sale-detali `sale-detali.model`
 Este modelo define la tabla sale_details y sus relaciones con sales y products.
 
 ```bash 
@@ -2008,4 +2008,62 @@ export class App {
 EOF
 ```
 ![](a/44.png)
+### Verificcion
 ![](a/45.png)
+
+-----------------------------------------------
+
+# coleccion 
+
+### creacion de modelo `src/features/business/catalog/collection.model.ts` 
+
+```bash
+mkdir -p src/features/business/catalog
+: > src/features/business/catalog/collection.model.ts
+cat >> src/features/business/catalog/collection.model.ts << 'EOF'
+import { DataTypes, Model } from "sequelize";
+import { sequelize } from "../../../database/db";
+
+export interface CollectionI {
+  id?: number;
+  nombre: string;
+  descripcion?: string;
+  is_active: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export class Collection extends Model implements CollectionI {
+  public id!: number;
+  public nombre!: string;
+  public descripcion!: string;
+  public is_active!: boolean;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
+
+Collection.init(
+  {
+    nombre: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    descripcion: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    }
+  },
+  {
+    sequelize,
+    tableName: "collections",
+    timestamps: true
+  }
+);
+EOF
+```
+![](a/46.png)
+
