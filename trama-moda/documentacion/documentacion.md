@@ -1499,3 +1499,15 @@ EOF
 ```
 ![](a/33.png)
 
+#### 2. GET ONE SALE
+```bash
+: > src/features/business/sale/http/sales.get-one.http
+cat >> src/features/business/sale/http/sales.get-one.http << 'EOF'
+### Feature Sale — GET ONE BY ID
+@baseUrl = http://localhost:4000
+@id = 1
+
+GET {{baseUrl}}/api/ventas/{{id}}
+EOF
+```
+![](a/34.png)

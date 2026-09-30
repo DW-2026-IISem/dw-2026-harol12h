@@ -1,0 +1,5 @@
+### Feature Sale — GET ONE BY ID
+@baseUrl = http://localhost:4000
+@id = 1
+
+GET {{baseUrl}}/api/ventas/{{id}}
