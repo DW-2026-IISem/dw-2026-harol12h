@@ -30,12 +30,12 @@ export class App {
       res.json({ project: "TramaModa", status: "running" });
     });
 
-    // Ruta interactiva para la documentación Swagger Web UI
     this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
     this.routePrv.clientRoutes.routes(this.app);
     this.routePrv.productRoutes.routes(this.app);
     this.routePrv.saleRoutes.routes(this.app);
+    this.routePrv.saleDetailRoutes.routes(this.app);
   }
 
   public async listen(): Promise<void> {
