@@ -1434,3 +1434,53 @@ export class Routes {
 EOF
 ```
 ![](a/31.png)
+
+### # 3. Registrar en src/config/index.ts
+```bash
+: > src/config/index.ts
+cat >> src/config/index.ts << 'EOF'
+import express, { Application, Request, Response } from "express";
+import cors from "cors";
+import { Routes } from "../routes";
+
+export class App {
+  public app: Application;
+  public routePrv: Routes = new Routes();
+
+  constructor(private port?: number | string) {
+    this.app = express();
+    this.settings();
+    this.middlewares();
+    this.routes();
+  }
+
+  private settings(): void {
+    this.app.set("port", this.port || process.env.PORT || 4000);
+  }
+
+  private middlewares(): void {
+    this.app.use(cors());
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: false }));
+  }
+
+  private routes(): void {
+    this.app.get("/", (req: Request, res: Response) => {
+      res.json({ project: "TramaModa", status: "running" });
+    });
+
+    this.routePrv.clientRoutes.routes(this.app);
+    this.routePrv.productRoutes.routes(this.app);
+    this.routePrv.saleRoutes.routes(this.app);
+  }
+
+  public async listen(): Promise<void> {
+    const port = this.app.get("port");
+    this.app.listen(port, () => {
+      console.log(`🚀 Servidor ejecutándose en puerto ${port}`);
+    });
+  }
+}
+EOF
+```
+![](a/32.png)

@@ -24,14 +24,13 @@ export class App {
   }
 
   private routes(): void {
-    // Health Check
     this.app.get("/", (req: Request, res: Response) => {
       res.json({ project: "TramaModa", status: "running" });
     });
 
-    // Rutas registradas
     this.routePrv.clientRoutes.routes(this.app);
     this.routePrv.productRoutes.routes(this.app);
+    this.routePrv.saleRoutes.routes(this.app);
   }
 
   public async listen(): Promise<void> {
