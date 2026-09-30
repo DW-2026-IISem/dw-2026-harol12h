@@ -1,5 +1,7 @@
 import express, { Application, Request, Response } from "express";
 import cors from "cors";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./swagger";
 import { Routes } from "../routes";
 
 export class App {
@@ -28,6 +30,9 @@ export class App {
       res.json({ project: "TramaModa", status: "running" });
     });
 
+    // Ruta interactiva para la documentación Swagger Web UI
+    this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
     this.routePrv.clientRoutes.routes(this.app);
     this.routePrv.productRoutes.routes(this.app);
     this.routePrv.saleRoutes.routes(this.app);
@@ -37,6 +42,7 @@ export class App {
     const port = this.app.get("port");
     this.app.listen(port, () => {
       console.log(`🚀 Servidor ejecutándose en puerto ${port}`);
+      console.log(`📑 Documentación Swagger disponible en: http://localhost:${port}/api-docs`);
     });
   }
 }

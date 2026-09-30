@@ -1441,6 +1441,8 @@ EOF
 cat >> src/config/index.ts << 'EOF'
 import express, { Application, Request, Response } from "express";
 import cors from "cors";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./swagger";
 import { Routes } from "../routes";
 
 export class App {
@@ -1469,6 +1471,9 @@ export class App {
       res.json({ project: "TramaModa", status: "running" });
     });
 
+    // Ruta interactiva para la documentación Swagger Web UI
+    this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
     this.routePrv.clientRoutes.routes(this.app);
     this.routePrv.productRoutes.routes(this.app);
     this.routePrv.saleRoutes.routes(this.app);
@@ -1478,6 +1483,7 @@ export class App {
     const port = this.app.get("port");
     this.app.listen(port, () => {
       console.log(`🚀 Servidor ejecutándose en puerto ${port}`);
+      console.log(`📑 Documentación Swagger disponible en: http://localhost:${port}/api-docs`);
     });
   }
 }
@@ -1511,3 +1517,19 @@ GET {{baseUrl}}/api/ventas/{{id}}
 EOF
 ```
 ![](a/34.png)
+
+#### 3. DEACTIVATE (LOGICAL DELETE) SALE
+```bash
+: > src/features/business/sale/http/sales.delete.http
+cat >> src/features/business/sale/http/sales.delete.http << 'EOF'
+### Feature Sale — DEACTIVATE (LOGICAL DELETE)
+@baseUrl = http://localhost:4000
+@id = 1
+
+PATCH {{baseUrl}}/api/ventas/{{id}}/deactivate
+EOF
+```
+![](a/35.png)
+
+### evidencia 
+![](a/36.png)
