@@ -1144,3 +1144,149 @@ EOF
 ```
 ![](a/26.png)
 
+-------------------------------------------------------------
+# 6. ISS-03-c — sales — GetAll y GetOne
+
+### Creacion de modelos `sale.model.ts`
+
+```bash
+: > src/features/business/sale/sale.model.ts
+cat >> src/features/business/sale/sale.model.ts << 'EOF'
+import { DataTypes, Model } from "sequelize";
+import { sequelize } from "../../../database/db";
+import { Client } from "../client/client.model";
+
+export interface SaleI {
+  id?: number;
+  client_id: number;
+  fecha?: Date;
+  monto_total: number;
+  status?: "active" | "inactive";
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export class Sale extends Model {
+  public id!: number;
+  public client_id!: number;
+  public fecha!: Date;
+  public monto_total!: number;
+  public status!: "active" | "inactive";
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
+
+Sale.init(
+  {
+    client_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "clients",
+        key: "id"
+      }
+    },
+    fecha: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW
+    },
+    monto_total: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0.0
+    },
+    status: {
+      type: DataTypes.ENUM("active", "inactive"),
+      defaultValue: "active"
+    }
+  },
+  {
+    sequelize,
+    tableName: "sales",
+    timestamps: true
+  }
+);
+
+// Relación entre Venta y Cliente
+Client.hasMany(Sale, { foreignKey: "client_id", as: "sales" });
+Sale.belongsTo(Client, { foreignKey: "client_id", as: "client" });
+EOF
+```
+![](a/27.png)
+
+### src/database/db.ts
+
+```bash
+: > src/database/db.ts
+cat >> src/database/db.ts << 'EOF'
+import { Sequelize } from "sequelize";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+interface DatabaseConfig {
+  dialect: string;
+  host: string;
+  username: string;
+  password: string;
+  database: string;
+  port: number;
+}
+
+const dbConfigurations: Record<string, DatabaseConfig> = {
+  mysql: {
+    dialect: "mysql",
+    host: process.env.MYSQL_HOST || process.env.DB_HOST || "localhost",
+    username: process.env.MYSQL_USER || process.env.DB_USER || "root",
+    password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD || "",
+    database: process.env.MYSQL_NAME || process.env.DB_NAME || "trama-moda",
+    port: parseInt(process.env.MYSQL_PORT || process.env.DB_PORT || "3306")
+  }
+};
+
+const selectedEngine = process.env.DB_ENGINE || "mysql";
+const selectedConfig = dbConfigurations[selectedEngine];
+
+if (!selectedConfig) {
+  throw new Error(`Motor de base de datos no soportado: ${selectedEngine}`);
+}
+
+export const sequelize = new Sequelize(
+  selectedConfig.database,
+  selectedConfig.username,
+  selectedConfig.password,
+  {
+    host: selectedConfig.host,
+    port: selectedConfig.port,
+    dialect: selectedConfig.dialect as any,
+    logging: process.env.NODE_ENV === 'development' ? console.log : false,
+    pool: { max: 5, min: 0, acquire: 30000, idle: 10000 }
+  }
+);
+
+export const testConnection = async (): Promise<boolean> => {
+  try {
+    await sequelize.authenticate();
+    console.log(`✅ Conexión exitosa a ${selectedEngine.toUpperCase()}`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Error de conexión:`, error);
+    return false;
+  }
+};
+
+export const syncDatabase = async (): Promise<void> => {
+  try {
+    require("../features/business/client/client.model");
+    require("../features/business/product/product.model");
+    require("../features/business/sale/sale.model");
+
+    await sequelize.sync({ alter: true });
+    console.log("✅ Tablas sincronizadas correctamente en MySQL");
+  } catch (error) {
+    console.error("❌ Error al sincronizar las tablas:", error);
+  }
+};
+EOF
+```
+![](a/28.png)
