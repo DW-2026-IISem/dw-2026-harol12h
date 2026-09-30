@@ -1,0 +1,5 @@
+### Feature Sale — DEACTIVATE (LOGICAL DELETE)
+@baseUrl = http://localhost:4000
+@id = 1
+
+PATCH {{baseUrl}}/api/ventas/{{id}}/deactivate
