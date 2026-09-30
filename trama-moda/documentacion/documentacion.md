@@ -817,6 +817,7 @@ export class Routes {
 }
 EOF
 ```
+![](a/38.png)
 -------------------------------------------------------------------
 
 # 5. ISS-03-B — product — GetAll y GetOne
@@ -1143,6 +1144,8 @@ DELETE {{baseUrl}}/api/productos/{{id}}
 EOF
 ```
 ![](a/26.png)
+
+![](a/37.png)
 
 -------------------------------------------------------------
 # 6. ISS-03-c — sales — GetAll y GetOne
@@ -1531,5 +1534,5 @@ EOF
 ```
 ![](a/35.png)
 
-### evidencia 
 ![](a/36.png)
+

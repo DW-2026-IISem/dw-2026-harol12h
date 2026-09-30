@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Client, ClientI } from "./client.model";
+import { Client } from "./client.model";
 
 function paramId(req: Request): number {
   const raw = req.params.id;
@@ -8,12 +8,9 @@ function paramId(req: Request): number {
 }
 
 export class ClientController {
-  // ================== READ ==================
   public async getAll(req: Request, res: Response) {
     try {
-      const clients = await Client.findAll({
-        where: { status: "active" }
-      });
+      const clients = await Client.findAll({ where: { status: "active" } });
       res.status(200).json({ clients });
     } catch (error) {
       res.status(500).json({ error: "Error fetching clients", detail: String(error) });
@@ -34,17 +31,15 @@ export class ClientController {
     }
   }
 
-  // ================== CREATE ==================
   public async create(req: Request, res: Response) {
     try {
-      const body = req.body as ClientI;
+      const { nombre, numero_documento, email, telefono } = req.body;
       const client = await Client.create({
-        tipo_documento: body.tipo_documento,
-        numero_documento: body.numero_documento,
-        nombre: body.nombre,
-        telefono: body.telefono,
-        email: body.email,
-        status: body.status ?? "active"
+        nombre,
+        numero_documento,
+        email,
+        telefono,
+        status: "active"
       });
       res.status(201).json({ client });
     } catch (error) {
@@ -52,52 +47,7 @@ export class ClientController {
     }
   }
 
-  // ================== UPDATE ==================
-  public async updatePut(req: Request, res: Response) {
-    try {
-      const id = paramId(req);
-      const body = req.body as ClientI;
-      const client = await Client.findByPk(id);
-      if (!client) {
-        res.status(404).json({ error: "Client not found" });
-        return;
-      }
-
-      await client.update({
-        tipo_documento: body.tipo_documento,
-        numero_documento: body.numero_documento,
-        nombre: body.nombre,
-        telefono: body.telefono,
-        email: body.email,
-        status: body.status ?? client.status
-      });
-
-      res.status(200).json({ client });
-    } catch (error) {
-      res.status(500).json({ error: "Error updating client (PUT)", detail: String(error) });
-    }
-  }
-
-  public async updatePatch(req: Request, res: Response) {
-    try {
-      const id = paramId(req);
-      const body = req.body as Partial<ClientI>;
-      const client = await Client.findByPk(id);
-      if (!client) {
-        res.status(404).json({ error: "Client not found" });
-        return;
-      }
-
-      await client.update(body);
-      res.status(200).json({ client });
-    } catch (error) {
-      res.status(500).json({ error: "Error updating client (PATCH)", detail: String(error) });
-    }
-  }
-
-  // ================== DELETE ==================
-  /** Eliminación física */
-  public async deletePhysical(req: Request, res: Response) {
+  public async update(req: Request, res: Response) {
     try {
       const id = paramId(req);
       const client = await Client.findByPk(id);
@@ -105,14 +55,13 @@ export class ClientController {
         res.status(404).json({ error: "Client not found" });
         return;
       }
-      await client.destroy();
-      res.status(200).json({ message: "Client permanently deleted", id });
+      await client.update(req.body);
+      res.status(200).json({ message: "Client updated successfully", client });
     } catch (error) {
-      res.status(500).json({ error: "Error deleting client", detail: String(error) });
+      res.status(500).json({ error: "Error updating client", detail: String(error) });
     }
   }
 
-  /** Eliminación lógica → status = inactive */
   public async deleteLogical(req: Request, res: Response) {
     try {
       const id = paramId(req);
@@ -122,7 +71,7 @@ export class ClientController {
         return;
       }
       await client.update({ status: "inactive" });
-      res.status(200).json({ message: "Client deactivated (logical delete)", client });
+      res.status(200).json({ message: "Client deactivated", client });
     } catch (error) {
       res.status(500).json({ error: "Error deactivating client", detail: String(error) });
     }
