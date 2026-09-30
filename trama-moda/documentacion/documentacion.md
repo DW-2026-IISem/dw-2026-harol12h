@@ -1435,7 +1435,7 @@ EOF
 ```
 ![](a/31.png)
 
-### # 3. Registrar en src/config/index.ts
+### Registrar en src/config/index.ts
 ```bash
 : > src/config/index.ts
 cat >> src/config/index.ts << 'EOF'
@@ -1484,3 +1484,18 @@ export class App {
 EOF
 ```
 ![](a/32.png)
+
+### Archivos http de purebas 
+#### 1. CREATE SALE
+
+```bash
+> src/features/business/sale/http/sales.get.http
+cat >> src/features/business/sale/http/sales.get.http << 'EOF'
+### Feature Sale — GET ALL
+@baseUrl = http://localhost:4000
+
+GET {{baseUrl}}/api/ventas
+EOF
+```
+![](a/33.png)
+
