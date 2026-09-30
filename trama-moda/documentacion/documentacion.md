@@ -1143,3 +1143,4 @@ DELETE {{baseUrl}}/api/productos/{{id}}
 EOF
 ```
 ![](a/26.png)
+

@@ -1,77 +1,43 @@
-import dotenv from "dotenv";
-import express, { Application } from "express";
-import morgan from "morgan";
-
-const cors = require("cors");
-
-dotenv.config();
+import express, { Application, Request, Response } from "express";
+import cors from "cors";
+import { Routes } from "../routes";
 
 export class App {
-
   public app: Application;
+  public routePrv: Routes = new Routes();
 
-  constructor(
-    private port?: number | string
-  ) {
-
+  constructor(private port?: number | string) {
     this.app = express();
-
     this.settings();
     this.middlewares();
     this.routes();
-
   }
 
   private settings(): void {
-
-    this.app.set(
-      "port",
-      this.port ||
-      process.env.PORT ||
-      4000
-    );
-
+    this.app.set("port", this.port || process.env.PORT || 4000);
   }
 
   private middlewares(): void {
-
-    this.app.use(morgan("dev"));
-
     this.app.use(cors());
-
     this.app.use(express.json());
-
-    this.app.use(
-      express.urlencoded({
-        extended: false
-      })
-    );
-
+    this.app.use(express.urlencoded({ extended: false }));
   }
 
   private routes(): void {
-
-    this.app.get("/", (_req, res) => {
-
-      res.json({
-        project: "TramaModa",
-        status: "running"
-      });
-
+    // Health Check
+    this.app.get("/", (req: Request, res: Response) => {
+      res.json({ project: "TramaModa", status: "running" });
     });
 
+    // Rutas registradas
+    this.routePrv.clientRoutes.routes(this.app);
+    this.routePrv.productRoutes.routes(this.app);
   }
 
-  async listen() {
-
-    await this.app.listen(
-      this.app.get("port")
-    );
-
-    console.log(
-      `Servidor ejecutándose en puerto ${this.app.get("port")}`
-    );
-
+  public async listen(): Promise<void> {
+    const port = this.app.get("port");
+    this.app.listen(port, () => {
+      console.log(`🚀 Servidor ejecutándose en puerto ${port}`);
+    });
   }
-
 }
