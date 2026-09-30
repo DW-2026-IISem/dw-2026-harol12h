@@ -20,14 +20,6 @@ const dbConfigurations: Record<string, DatabaseConfig> = {
     password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD || "",
     database: process.env.MYSQL_NAME || process.env.DB_NAME || "trama-moda",
     port: parseInt(process.env.MYSQL_PORT || process.env.DB_PORT || "3306")
-  },
-  postgres: {
-    dialect: "postgres",
-    host: process.env.POSTGRES_HOST || "localhost",
-    username: process.env.POSTGRES_USER || "postgres",
-    password: process.env.POSTGRES_PASSWORD || "",
-    database: process.env.POSTGRES_NAME || "test",
-    port: parseInt(process.env.POSTGRES_PORT || "5432")
   }
 };
 
@@ -38,8 +30,6 @@ if (!selectedConfig) {
   throw new Error(`Motor de base de datos no soportado: ${selectedEngine}`);
 }
 
-console.log(`🔌 Conectando a base de datos: ${selectedEngine.toUpperCase()} (${selectedConfig.database})`);
-
 export const sequelize = new Sequelize(
   selectedConfig.database,
   selectedConfig.username,
@@ -49,12 +39,7 @@ export const sequelize = new Sequelize(
     port: selectedConfig.port,
     dialect: selectedConfig.dialect as any,
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000
-    }
+    pool: { max: 5, min: 0, acquire: 30000, idle: 10000 }
   }
 );
 
@@ -64,20 +49,20 @@ export const testConnection = async (): Promise<boolean> => {
     console.log(`✅ Conexión exitosa a ${selectedEngine.toUpperCase()}`);
     return true;
   } catch (error) {
-    console.error(`❌ Error de conexión a ${selectedEngine.toUpperCase()}:`, error);
+    console.error(`❌ Error de conexión:`, error);
     return false;
   }
 };
 
 export const syncDatabase = async (): Promise<void> => {
   try {
-    // Importar explícitamente los modelos para que Sequelize los reconozca antes de sincronizar
     require("../features/business/client/client.model");
     require("../features/business/product/product.model");
+    require("../features/business/sale/sale.model");
 
     await sequelize.sync({ alter: true });
     console.log("✅ Tablas sincronizadas correctamente en MySQL");
   } catch (error) {
-    console.error("❌ Error al sincronizar las tablas con la base de datos:", error);
+    console.error("❌ Error al sincronizar las tablas:", error);
   }
 };
