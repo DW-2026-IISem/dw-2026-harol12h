@@ -3358,3 +3358,23 @@ EOF
 ```
 ![](a/73.png)
 
+#### branch/branch.update.http
+```bash
+: > src/features/business/branch/branch.update.http
+cat >> src/features/business/branch/branch.update.http << 'EOF'
+### Feature Branch — UPDATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name updateBranch
+PUT {{baseUrl}}/api/sucursales/1
+Content-Type: application/json
+
+{
+  "nombre": "Sucursal Centro - Flagship Store",
+  "direccion": "Calle Principal # 45 - 12, Local 101",
+  "telefono": "3009876543"
+}
+EOF
+```
+![](a/74.png)
