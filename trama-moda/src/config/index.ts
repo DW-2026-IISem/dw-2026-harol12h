@@ -36,6 +36,7 @@ export class App {
     this.routePrv.productRoutes.routes(this.app);
     this.routePrv.saleRoutes.routes(this.app);
     this.routePrv.saleDetailRoutes.routes(this.app);
+    this.routePrv.collectionRoutes.routes(this.app);
   }
 
   public async listen(): Promise<void> {
