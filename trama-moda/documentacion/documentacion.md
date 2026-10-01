@@ -2290,7 +2290,7 @@ EOF
 
 ### Actualizar db.ts
 ```bash
-: > src/database/db.ts
+ : > src/database/db.ts
 cat >> src/database/db.ts << 'EOF'
 import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
@@ -2337,20 +2337,12 @@ export const sequelize = new Sequelize(
   }
 );
 
-export const syncDatabase = async (): Promise<void> => {
+export const testConnection = async (): Promise<boolean> => {
   try {
-    require("../features/business/client/client.model");
-    require("../features/business/product/product.model");
-    require("../features/business/sale/sale.model");
-    require("../features/business/sale/sale-detail.model");
-    require("../features/business/catalog/collection.model");
-
-    await sequelize.sync({ alter: true });
-    console.log("✅ Tablas sincronizadas correctamente en MySQL");
-  } catch (error) {
-    console.error("❌ Error al sincronizar las tablas:", error);
+    await sequelize.authenticate();
+    console.log(`✅ Conexión exitosa a ${selectedEngine.toUpperCase()}`);
+    return true;
   }
-};
 EOF
 ```
 ![](a/50.png)
@@ -2432,3 +2424,23 @@ export class App {
 EOF
 ```
 ![](a/52.png)
+
+### Creacion de los http de prubeas
+```bash
+: > http/collections.create.http
+cat >> http/collections.create.http << 'EOF'
+### Feature Collection — CREATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name createCollection
+POST {{baseUrl}}/api/colecciones
+Content-Type: application/json
+
+{
+  "nombre": "Primavera - Verano 2026",
+  "descripcion": "Colección de prendas ligeras, linos y tonos pasteles"
+}
+EOF
+```
+![](a/53.png)
