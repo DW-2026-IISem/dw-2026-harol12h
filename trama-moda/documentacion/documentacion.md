@@ -2489,3 +2489,17 @@ Content-Type: application/json
 EOF
 ```
 ![](a/55.png)
+
+#### http/collections.delete.http
+: > http/collections.delete.http
+cat >> http/collections.delete.http << 'EOF'
+### Feature Collection — DELETE LOGICAL (Desactivar)
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name deactivateCollection
+PATCH {{baseUrl}}/api/colecciones/1/deactivate
+Content-Type: application/json
+EOF
+```
+![](a/56.png)

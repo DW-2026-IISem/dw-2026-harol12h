@@ -1,0 +1,7 @@
+### Feature Collection — DELETE LOGICAL (Desactivar)
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name deactivateCollection
+PATCH {{baseUrl}}/api/colecciones/1/deactivate
+Content-Type: application/json
