@@ -38,6 +38,7 @@ export class App {
     this.routePrv.saleDetailRoutes.routes(this.app);
     this.routePrv.collectionRoutes.routes(this.app);
     this.routePrv.variantRoutes.routes(this.app);
+    this.routePrv.branchRoutes.routes(this.app);
   }
 
   public async listen(): Promise<void> {
