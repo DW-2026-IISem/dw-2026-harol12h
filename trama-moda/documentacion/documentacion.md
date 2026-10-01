@@ -2847,3 +2847,17 @@ EOF
 ```
 ![](a/63.png)
 
+#### variants/variants.delete.http
+```bash 
+: > src/features/business/variants/variants.delete.http
+cat >> src/features/business/variants/variants.delete.http << 'EOF'
+### Feature Variant — DELETE LOGICAL (Desactivar)
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name deactivateVariant
+PATCH {{baseUrl}}/api/variantes/1/deactivate
+Content-Type: application/json
+EOF
+```
+![](a/64.png)
