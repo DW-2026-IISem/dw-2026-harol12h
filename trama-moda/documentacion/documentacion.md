@@ -3378,3 +3378,18 @@ Content-Type: application/json
 EOF
 ```
 ![](a/74.png)
+
+#### branch/branch.delete.http
+```bash
+: > src/features/business/branch/branch.delete.http
+cat >> src/features/business/branch/branch.delete.http << 'EOF'
+### Feature Branch — DELETE LOGICAL (Desactivar)
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name deactivateBranch
+PATCH {{baseUrl}}/api/sucursales/1/deactivate
+Content-Type: application/json
+EOF
+```
+![](a/75.png)
