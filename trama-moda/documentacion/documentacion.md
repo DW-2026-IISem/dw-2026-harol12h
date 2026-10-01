@@ -3334,3 +3334,27 @@ EOF`
 ![](a/72.png)
 
 
+#### branch/branch.get.http
+```bash
+: > src/features/business/branch/branch.get.http
+cat >> src/features/business/branch/branch.get.http << 'EOF'
+### Feature Branch — READ ALL
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name getAllBranches
+GET {{baseUrl}}/api/sucursales
+Content-Type: application/json
+
+###
+
+### Feature Branch — READ ONE
+### Leyenda: SIN AUTH
+
+# @name getOneBranch
+GET {{baseUrl}}/api/sucursales/1
+Content-Type: application/json
+EOF
+```
+![](a/73.png)
+
