@@ -48,4 +48,23 @@ export const testConnection = async (): Promise<boolean> => {
     await sequelize.authenticate();
     console.log(`✅ Conexión exitosa a ${selectedEngine.toUpperCase()}`);
     return true;
+  } catch (error) {
+    console.error(`❌ Error de conexión:`, error);
+    return false;
   }
+};
+
+export const syncDatabase = async (): Promise<void> => {
+  try {
+    require("../features/business/client/client.model");
+    require("../features/business/product/product.model");
+    require("../features/business/sale/sale.model");
+    require("../features/business/sale/sale-detail.model");
+    require("../features/business/catalog/collection.model");
+
+    await sequelize.sync({ alter: true });
+    console.log("✅ Tablas sincronizadas correctamente en MySQL");
+  } catch (error) {
+    console.error("❌ Error al sincronizar las tablas:", error);
+  }
+};

@@ -2013,7 +2013,7 @@ EOF
 
 -----------------------------------------------
 
-# coleccion 
+# collecction
 
 ### creacion de modelo `src/features/business/catalog/collection.model.ts` 
 
@@ -2491,6 +2491,7 @@ EOF
 ![](a/55.png)
 
 #### http/collections.delete.http
+```bash
 : > http/collections.delete.http
 cat >> http/collections.delete.http << 'EOF'
 ### Feature Collection — DELETE LOGICAL (Desactivar)
@@ -2503,3 +2504,6 @@ Content-Type: application/json
 EOF
 ```
 ![](a/56.png)
+
+### Verificacion 
+![](a/57.png)
