@@ -2827,3 +2827,23 @@ EOF
 ```
 ![](a/62.png)
 
+#### variants/variants.update.http
+```bash
+: > src/features/business/variants/variants.update.http
+cat >> src/features/business/variants/variants.update.http << 'EOF'
+### Feature Variant — UPDATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name updateVariant
+PUT {{baseUrl}}/api/variantes/1
+Content-Type: application/json
+
+{
+  "nombre": "Talla L - Color Azul Marino",
+  "descripcion": "Variante física actualizada a Talla L"
+}
+EOF
+```
+![](a/63.png)
+
