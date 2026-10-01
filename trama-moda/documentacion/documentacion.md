@@ -2469,3 +2469,23 @@ Content-Type: application/json
 EOF
 ```
 ![](a/54.png)
+
+#### http/collections.update.http
+```bash
+: > http/collections.update.http
+cat >> http/collections.update.http << 'EOF'
+### Feature Collection — UPDATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name updateCollection
+PUT {{baseUrl}}/api/colecciones/1
+Content-Type: application/json
+
+{
+  "nombre": "Primavera - Verano 2026 (Edición Limitada)",
+  "descripcion": "Colección renovada con telas sostenibles y linos importados"
+}
+EOF
+```
+![](a/55.png)
