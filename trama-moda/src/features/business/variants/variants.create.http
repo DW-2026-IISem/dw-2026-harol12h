@@ -1,0 +1,12 @@
+### Feature Variant — CREATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name createVariant
+POST {{baseUrl}}/api/variantes
+Content-Type: application/json
+
+{
+  "nombre": "Talla M - Color Azul Marino",
+  "descripcion": "Variante física de prenda talla M en tono azul"
+}

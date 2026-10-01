@@ -2781,3 +2781,24 @@ export class VariantRoutes {
 EOF
 ```
 ![](a/60.png)
+
+### http de prueba con crud
+#### : > src/features/business/variants/variants.create.http
+cat >> src/features/business/variants/variants.create.http << 'EOF'
+### Feature Variant — CREATE
+### variants/variants.create.http
+```bash
+Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name createVariant
+POST {{baseUrl}}/api/variantes
+Content-Type: application/json
+
+{
+  "nombre": "Talla M - Color Azul Marino",
+  "descripcion": "Variante física de prenda talla M en tono azul"
+}
+EOF
+```
+![](a/61.png)
