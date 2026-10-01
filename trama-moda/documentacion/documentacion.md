@@ -2802,3 +2802,28 @@ Content-Type: application/json
 EOF
 ```
 ![](a/61.png)
+
+#### variants/variants.get.http
+```bash 
+: > src/features/business/variants/variants.get.http
+cat >> src/features/business/variants/variants.get.http << 'EOF'
+### Feature Variant — READ ALL
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name getAllVariants
+GET {{baseUrl}}/api/variantes
+Content-Type: application/json
+
+###
+
+### Feature Variant — READ ONE
+### Leyenda: SIN AUTH
+
+# @name getOneVariant
+GET {{baseUrl}}/api/variantes/1
+Content-Type: application/json
+EOF
+```
+![](a/62.png)
+
