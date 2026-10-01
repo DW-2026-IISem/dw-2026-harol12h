@@ -1,0 +1,13 @@
+### Feature Branch — CREATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name createBranch
+POST {{baseUrl}}/api/sucursales
+Content-Type: application/json
+
+{
+  "nombre": "Sucursal Centro Principal",
+  "direccion": "Calle Principal # 45 - 12",
+  "telefono": "3001234567"
+}

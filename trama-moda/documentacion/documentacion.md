@@ -3311,3 +3311,26 @@ EOF
 ```
 ![](a/71.png)
 
+### creacion de los http de pruebas 
+#### branch/branch.create.http
+``` bash
+: > src/features/business/branch/branch.create.http
+cat >> src/features/business/branch/branch.create.http << 'EOF'
+### Feature Branch — CREATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name createBranch
+POST {{baseUrl}}/api/sucursales
+Content-Type: application/json
+
+{
+  "nombre": "Sucursal Centro Principal",
+  "direccion": "Calle Principal # 45 - 12",
+  "telefono": "3001234567"
+}
+EOF`
+```
+![](a/72.png)
+
+
