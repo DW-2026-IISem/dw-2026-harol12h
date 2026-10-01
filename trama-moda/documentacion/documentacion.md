@@ -3022,3 +3022,5 @@ EOF
 ```
 ![](a/67.png)
 
+### Verificacion 
+![alt text](a/68.png)
