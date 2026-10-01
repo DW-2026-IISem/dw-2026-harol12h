@@ -2426,6 +2426,7 @@ EOF
 ![](a/52.png)
 
 ### Creacion de los http de prubeas
+#### http/collections.create.http
 ```bash
 : > http/collections.create.http
 cat >> http/collections.create.http << 'EOF'
@@ -2444,3 +2445,27 @@ Content-Type: application/json
 EOF
 ```
 ![](a/53.png)
+
+#### http/collections.get.http
+```bash
+: > http/collections.get.http
+cat >> http/collections.get.http << 'EOF'
+### Feature Collection — READ ALL
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name getAllCollections
+GET {{baseUrl}}/api/colecciones
+Content-Type: application/json
+
+###
+
+### Feature Collection — READ ONE
+### Leyenda: SIN AUTH
+
+# @name getOneCollection
+GET {{baseUrl}}/api/colecciones/1
+Content-Type: application/json
+EOF
+```
+![](a/54.png)
