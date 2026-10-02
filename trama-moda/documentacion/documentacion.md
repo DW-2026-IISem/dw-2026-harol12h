@@ -3895,3 +3895,23 @@ EOF
 ```
 ![](a/85.png)
 
+### inventory/inventory.update.http
+```bash
+: > src/features/business/inventory/inventory.update.http
+cat >> src/features/business/inventory/inventory.update.http << 'EOF'
+### Feature Inventory — UPDATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name updateInventory
+PUT {{baseUrl}}/api/inventarios/1
+Content-Type: application/json
+
+{
+  "branchId": 1,
+  "variantId": 1,
+  "stock": 75
+}
+EOF
+```
+![](a/86.png)
