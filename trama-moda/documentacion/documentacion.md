@@ -5015,3 +5015,17 @@ EOF
 ```
 ![](a/108.png)
 
+#### supplier/supplier.delete.http
+```bash
+: > src/features/business/supplier/supplier.delete.http
+cat >> src/features/business/supplier/supplier.delete.http << 'EOF'
+### Feature Supplier — DELETE LOGICAL (Desactivar)
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name deactivateSupplier
+PATCH {{baseUrl}}/api/proveedores/1/deactivate
+Content-Type: application/json
+EOF
+```
+![](a/109.png)
