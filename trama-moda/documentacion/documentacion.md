@@ -4441,3 +4441,18 @@ EOF
 ```
 ![](a/97.png)
 
+#### category/category.delete.http
+```bash
+: > src/features/business/category/category.delete.http
+cat >> src/features/business/category/category.delete.http << 'EOF'
+### Feature Category — DELETE LOGICAL (Desactivar)
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name deactivateCategory
+PATCH {{baseUrl}}/api/categorias/1/deactivate
+Content-Type: application/json
+EOF
+```
+![](a/98.png)
+
