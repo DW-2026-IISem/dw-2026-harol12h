@@ -4011,3 +4011,30 @@ export const syncDatabase = async (): Promise<void> => {
 EOF
 ```
 ![](a/88.png)
+
+### Actualizar routes/index.ts
+```bash
+: > src/routes/index.ts
+cat >> src/routes/index.ts << 'EOF'
+import { ClientRoutes } from "../features/business/client/client.routes";
+import { ProductRoutes } from "../features/business/product/product.routes";
+import { SaleRoutes } from "../features/business/sale/sale.routes";
+import { SaleDetailRoutes } from "../features/business/sale/sale-detail.routes";
+import { CollectionRoutes } from "../features/business/catalog/collection.routes";
+import { VariantRoutes } from "../features/business/variants/variant.routes";
+import { BranchRoutes } from "../features/business/branch/branch.routes";
+import { InventoryRoutes } from "../features/business/inventory/inventory.routes";
+
+export class Routes {
+  public clientRoutes: ClientRoutes = new ClientRoutes();
+  public productRoutes: ProductRoutes = new ProductRoutes();
+  public saleRoutes: SaleRoutes = new SaleRoutes();
+  public saleDetailRoutes: SaleDetailRoutes = new SaleDetailRoutes();
+  public collectionRoutes: CollectionRoutes = new CollectionRoutes();
+  public variantRoutes: VariantRoutes = new VariantRoutes();
+  public branchRoutes: BranchRoutes = new BranchRoutes();
+  public inventoryRoutes: InventoryRoutes = new InventoryRoutes();
+}
+EOF
+```
+![](a/89.png)
