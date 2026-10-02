@@ -3915,3 +3915,19 @@ Content-Type: application/json
 EOF
 ```
 ![](a/86.png)
+
+### inventory/inventory.delete.http
+```bash
+: > src/features/business/inventory/inventory.delete.http
+cat >> src/features/business/inventory/inventory.delete.http << 'EOF'
+### Feature Inventory — DELETE LOGICAL (Desactivar)
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name deactivateInventory
+PATCH {{baseUrl}}/api/inventarios/1/deactivate
+Content-Type: application/json
+EOF
+```
+![](a/87.png)
+
