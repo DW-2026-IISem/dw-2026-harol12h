@@ -7,6 +7,7 @@ import { VariantRoutes } from "../features/business/variants/variant.routes";
 import { BranchRoutes } from "../features/business/branch/branch.routes";
 import { InventoryRoutes } from "../features/business/inventory/inventory.routes";
 import { CategoryRoutes } from "../features/business/category/category.routes";
+import { SupplierRoutes } from "../features/business/supplier/supplier.routes";
 
 export class Routes {
   public clientRoutes: ClientRoutes = new ClientRoutes();
@@ -18,4 +19,5 @@ export class Routes {
   public branchRoutes: BranchRoutes = new BranchRoutes();
   public inventoryRoutes: InventoryRoutes = new InventoryRoutes();
   public categoryRoutes: CategoryRoutes = new CategoryRoutes();
+  public supplierRoutes: SupplierRoutes = new SupplierRoutes();
 }
