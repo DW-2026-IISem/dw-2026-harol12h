@@ -4420,3 +4420,24 @@ Content-Type: application/json
 EOF
 ```
 ![](a/96.png)
+
+#### category/category.update.http
+```bash
+: > src/features/business/category/category.update.http
+cat >> src/features/business/category/category.update.http << 'EOF'
+### Feature Category — UPDATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name updateCategory
+PUT {{baseUrl}}/api/categorias/1
+Content-Type: application/json
+
+{
+  "name": "Ropa Formal y Elegante",
+  "description": "Colección renovada para eventos especiales"
+}
+EOF
+```
+![](a/97.png)
+

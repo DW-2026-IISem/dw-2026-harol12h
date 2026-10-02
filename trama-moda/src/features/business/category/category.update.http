@@ -1,0 +1,12 @@
+### Feature Category — UPDATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name updateCategory
+PUT {{baseUrl}}/api/categorias/1
+Content-Type: application/json
+
+{
+  "name": "Ropa Formal y Elegante",
+  "description": "Colección renovada para eventos especiales"
+}
