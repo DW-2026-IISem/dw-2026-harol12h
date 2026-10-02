@@ -5703,6 +5703,7 @@ export const syncDatabase = async (): Promise<void> => {
 };
 EOF
 ```
+![](a/122.png)
 
 ### Actualizar routes/index.ts
 ```bash
@@ -5735,6 +5736,7 @@ export class Routes {
 }
 EOF
 ```
+![](a/123.png)
 
 ### Actualizar config/index.ts
 ```bash
@@ -5797,3 +5799,7 @@ export class App {
 }
 EOF
 ```
+![](a/124.png)
+
+### Verificacion 
+![](a/121.png)
