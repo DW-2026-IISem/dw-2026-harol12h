@@ -4945,7 +4945,7 @@ EOF
 ![](a/105.png)
 
 ### Archivos HTTP por cada operación CRUD
-#### 
+#### supplier/supplier.create.http
 ```bash
 : > src/features/business/supplier/supplier.create.http
 cat >> src/features/business/supplier/supplier.create.http << 'EOF'
@@ -4967,3 +4967,28 @@ Content-Type: application/json
 EOF
 ```
 ![](a/106.png)
+
+#### supplier/supplier.get.http
+```bash
+: > src/features/business/supplier/supplier.get.http
+cat >> src/features/business/supplier/supplier.get.http << 'EOF'
+### Feature Supplier — READ ALL
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name getAllSuppliers
+GET {{baseUrl}}/api/proveedores
+Content-Type: application/json
+
+###
+
+### Feature Supplier — READ ONE
+### Leyenda: SIN AUTH
+
+# @name getOneSupplier
+GET {{baseUrl}}/api/proveedores/1
+Content-Type: application/json
+EOF
+``` 
+![](a/107.png)
+
