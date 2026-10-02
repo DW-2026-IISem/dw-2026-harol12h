@@ -4791,7 +4791,7 @@ EOF
 ```
 ![](a/104.png)
 
-### 
+### supplier/supplier.routes.ts
 ```bash
 : > src/features/business/supplier/supplier.routes.ts
 cat >> src/features/business/supplier/supplier.routes.ts << 'EOF'
@@ -4944,3 +4944,26 @@ EOF
 ```
 ![](a/105.png)
 
+### Archivos HTTP por cada operación CRUD
+#### 
+```bash
+: > src/features/business/supplier/supplier.create.http
+cat >> src/features/business/supplier/supplier.create.http << 'EOF'
+### Feature Supplier — CREATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name createSupplier
+POST {{baseUrl}}/api/proveedores
+Content-Type: application/json
+
+{
+  "name": "Textiles del Norte S.A.",
+  "contact_name": "Carlos Gómez",
+  "email": "contacto@textilesnorte.com",
+  "phone": "+573001234567",
+  "address": "Calle 45 # 12-34, Medellín"
+}
+EOF
+```
+![](a/106.png)
