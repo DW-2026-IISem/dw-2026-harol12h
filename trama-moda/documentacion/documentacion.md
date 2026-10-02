@@ -3871,3 +3871,27 @@ EOF
 ```
 ![](a/84.png)
 
+### inventory.get.http
+```bash
+: > src/features/business/inventory/inventory.get.http
+cat >> src/features/business/inventory/inventory.get.http << 'EOF'
+### Feature Inventory — READ ALL
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name getAllInventories
+GET {{baseUrl}}/api/inventarios
+Content-Type: application/json
+
+###
+
+### Feature Inventory — READ ONE
+### Leyenda: SIN AUTH
+
+# @name getOneInventory
+GET {{baseUrl}}/api/inventarios/1
+Content-Type: application/json
+EOF
+```
+![](a/85.png)
+
