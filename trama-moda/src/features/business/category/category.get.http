@@ -1,0 +1,16 @@
+### Feature Category — READ ALL
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name getAllCategories
+GET {{baseUrl}}/api/categorias
+Content-Type: application/json
+
+###
+
+### Feature Category — READ ONE
+### Leyenda: SIN AUTH
+
+# @name getOneCategory
+GET {{baseUrl}}/api/categorias/1
+Content-Type: application/json

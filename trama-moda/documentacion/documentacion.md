@@ -4378,6 +4378,7 @@ EOF
 
 ### Archivos de http para CRUD
 #### category/category.create.http
+```bash
 : > src/features/business/category/category.create.http
 cat >> src/features/business/category/category.create.http << 'EOF'
 ### Feature Category — CREATE
@@ -4395,3 +4396,27 @@ Content-Type: application/json
 EOF
 ```
 ![](a/95.png)
+
+#### category/category.get.http
+```bash
+: > src/features/business/category/category.get.http
+cat >> src/features/business/category/category.get.http << 'EOF'
+### Feature Category — READ ALL
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name getAllCategories
+GET {{baseUrl}}/api/categorias
+Content-Type: application/json
+
+###
+
+### Feature Category — READ ONE
+### Leyenda: SIN AUTH
+
+# @name getOneCategory
+GET {{baseUrl}}/api/categorias/1
+Content-Type: application/json
+EOF
+```
+![](a/96.png)
