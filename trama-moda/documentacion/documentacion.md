@@ -5539,7 +5539,7 @@ EOF
 ```
 ![](a/116.png)
 
-### user/user.create.http
+#### user/user.create.http
 ```bash
 : > src/features/business/user/user.create.http
 cat >> src/features/business/user/user.create.http << 'EOF'
@@ -5562,7 +5562,7 @@ EOF
 ```
 ![](a/117.png)
 
-### user/user.get.http
+#### user/user.get.http
 ```bash
 : > src/features/business/user/user.get.http
 cat >> src/features/business/user/user.get.http << 'EOF'
@@ -5586,7 +5586,7 @@ EOF
 ```
 ![](a/118.png)
 
-### user/user.update.http
+#### user/user.update.http
 ```bash
 : > src/features/business/user/user.update.http
 cat >> src/features/business/user/user.update.http << 'EOF'
@@ -5606,7 +5606,7 @@ EOF
 ```
 ![](a/119.png)
 
-### user/user.delete.http
+#### user/user.delete.http
 ```bash
 : > src/features/business/user/user.delete.http
 cat >> src/features/business/user/user.delete.http << 'EOF'
@@ -5622,6 +5622,7 @@ EOF
 ![](a/120.png)
 
 ### Actualizar db.ts
+```bash
 : > src/database/db.ts
 cat >> src/database/db.ts << 'EOF'
 import { Sequelize } from "sequelize";
