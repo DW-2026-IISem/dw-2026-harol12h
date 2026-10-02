@@ -4992,3 +4992,26 @@ EOF
 ``` 
 ![](a/107.png)
 
+#### supplier/supplier.update.http
+```bash
+: > src/features/business/supplier/supplier.update.http
+cat >> src/features/business/supplier/supplier.update.http << 'EOF'
+### Feature Supplier — UPDATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name updateSupplier
+PUT {{baseUrl}}/api/proveedores/1
+Content-Type: application/json
+
+{
+  "name": "Textiles del Norte SAS",
+  "contact_name": "Carlos Gómez R.",
+  "email": "ventas@textilesnorte.com",
+  "phone": "+573001234567",
+  "address": "Calle 45 # 12-34 Int 201, Medellín"
+}
+EOF
+```
+![](a/108.png)
+
