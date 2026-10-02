@@ -3849,3 +3849,25 @@ export class InventoryRoutes {
 EOF
 ```
 ![](a/83.png)
+
+### Archivos HTTP por cada operación CRUD
+```bash
+: > src/features/business/inventory/inventory.create.http
+cat >> src/features/business/inventory/inventory.create.http << 'EOF'
+### Feature Inventory — CREATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name createInventory
+POST {{baseUrl}}/api/inventarios
+Content-Type: application/json
+
+{
+  "branchId": 1,
+  "variantId": 1,
+  "stock": 50
+}
+EOF
+```
+![](a/84.png)
+
