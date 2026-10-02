@@ -4376,4 +4376,22 @@ EOF
 ```
 ![](a/94.png)
 
-### 
+### Archivos de http para CRUD
+#### category/category.create.http
+: > src/features/business/category/category.create.http
+cat >> src/features/business/category/category.create.http << 'EOF'
+### Feature Category — CREATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name createCategory
+POST {{baseUrl}}/api/categorias
+Content-Type: application/json
+
+{
+  "name": "Ropa Formal",
+  "description": "Trajes, blazers y vestidos de gala"
+}
+EOF
+```
+![](a/95.png)

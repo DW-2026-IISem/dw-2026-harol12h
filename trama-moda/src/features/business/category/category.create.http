@@ -1,0 +1,12 @@
+### Feature Category — CREATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name createCategory
+POST {{baseUrl}}/api/categorias
+Content-Type: application/json
+
+{
+  "name": "Ropa Formal",
+  "description": "Trajes, blazers y vestidos de gala"
+}
