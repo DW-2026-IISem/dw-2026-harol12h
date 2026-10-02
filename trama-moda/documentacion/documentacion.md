@@ -5282,3 +5282,517 @@ EOF
 ```
 ![](a/114.png)
 
+### user/user.controller.ts
+```bash
+: > src/features/business/user/user.controller.ts
+cat >> src/features/business/user/user.controller.ts << 'EOF'
+import { Request, Response } from "express";
+import { User } from "./user.model";
+
+function paramId(req: Request): number {
+  const raw = req.params.id;
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  return Number(value);
+}
+
+export class UserController {
+  public async getAll(req: Request, res: Response) {
+    try {
+      const users = await User.findAll({
+        where: { is_active: true },
+        attributes: { exclude: ["password"] }
+      });
+      res.status(200).json({ users });
+    } catch (error) {
+      res.status(500).json({ error: "Error fetching users", detail: String(error) });
+    }
+  }
+
+  public async getOne(req: Request, res: Response) {
+    try {
+      const id = paramId(req);
+      const user = await User.findByPk(id, {
+        attributes: { exclude: ["password"] }
+      });
+      if (!user) {
+        res.status(404).json({ error: "User record not found" });
+        return;
+      }
+      res.status(200).json({ user });
+    } catch (error) {
+      res.status(500).json({ error: "Error fetching user record", detail: String(error) });
+    }
+  }
+
+  public async create(req: Request, res: Response) {
+    try {
+      const { name, email, password, role, branchId } = req.body;
+      const user = await User.create({
+        name,
+        email,
+        password,
+        role: role || "seller",
+        branchId,
+        is_active: true
+      });
+
+      const userResponse = user.toJSON();
+      delete userResponse.password;
+
+      res.status(201).json({ user: userResponse });
+    } catch (error) {
+      res.status(500).json({ error: "Error creating user record", detail: String(error) });
+    }
+  }
+
+  public async update(req: Request, res: Response) {
+    try {
+      const id = paramId(req);
+      const user = await User.findByPk(id);
+      if (!user) {
+        res.status(404).json({ error: "User record not found" });
+        return;
+      }
+      await user.update(req.body);
+      
+      const userResponse = user.toJSON();
+      delete userResponse.password;
+
+      res.status(200).json({ message: "User updated successfully", user: userResponse });
+    } catch (error) {
+      res.status(500).json({ error: "Error updating user", detail: String(error) });
+    }
+  }
+
+  public async deleteLogical(req: Request, res: Response) {
+    try {
+      const id = paramId(req);
+      const user = await User.findByPk(id);
+      if (!user) {
+        res.status(404).json({ error: "User record not found" });
+        return;
+      }
+      await user.update({ is_active: false });
+      
+      const userResponse = user.toJSON();
+      delete userResponse.password;
+
+      res.status(200).json({ message: "User record deactivated", user: userResponse });
+    } catch (error) {
+      res.status(500).json({ error: "Error deactivating user record", detail: String(error) });
+    }
+  }
+}
+EOF
+```
+![](a/115.png)
+
+### user/user.routes.ts
+```bash
+: > src/features/business/user/user.routes.ts
+cat >> src/features/business/user/user.routes.ts << 'EOF'
+import { Application } from "express";
+import { UserController } from "./user.controller";
+
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         name:
+ *           type: string
+ *           example: "Laura Martínez"
+ *         email:
+ *           type: string
+ *           example: "laura.martinez@tramamoda.com"
+ *         role:
+ *           type: string
+ *           example: "admin"
+ *         branchId:
+ *           type: integer
+ *           example: 1
+ *         is_active:
+ *           type: boolean
+ *           example: true
+ *     UserInput:
+ *       type: object
+ *       required:
+ *         - name
+ *         - email
+ *         - password
+ *       properties:
+ *         name:
+ *           type: string
+ *           example: "Laura Martínez"
+ *         email:
+ *           type: string
+ *           example: "laura.martinez@tramamoda.com"
+ *         password:
+ *           type: string
+ *           example: "SecurePass123!"
+ *         role:
+ *           type: string
+ *           example: "admin"
+ *         branchId:
+ *           type: integer
+ *           example: 1
+ */
+export class UserRoutes {
+  public userController: UserController = new UserController();
+
+  public routes(app: Application): void {
+    /**
+     * @openapi
+     * /api/usuarios:
+     *   get:
+     *     summary: Obtener todos los usuarios activos
+     *     tags: [Users]
+     *     responses:
+     *       200:
+     *         description: Lista de usuarios
+     *   post:
+     *     summary: Registrar un nuevo usuario
+     *     tags: [Users]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/UserInput'
+     *     responses:
+     *       201:
+     *         description: Usuario creado exitosamente
+     */
+    app
+      .route("/api/usuarios")
+      .get(this.userController.getAll.bind(this.userController))
+      .post(this.userController.create.bind(this.userController));
+
+    /**
+     * @openapi
+     * /api/usuarios/{id}:
+     *   get:
+     *     summary: Obtener usuario por ID
+     *     tags: [Users]
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: integer
+     *     responses:
+     *       200:
+     *         description: Usuario encontrado
+     *       404:
+     *         description: No encontrado
+     *   put:
+     *     summary: Actualizar información de usuario
+     *     tags: [Users]
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: integer
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/UserInput'
+     *     responses:
+     *       200:
+     *         description: Usuario actualizado
+     */
+    app
+      .route("/api/usuarios/:id")
+      .get(this.userController.getOne.bind(this.userController))
+      .put(this.userController.update.bind(this.userController));
+
+    /**
+     * @openapi
+     * /api/usuarios/{id}/deactivate:
+     *   patch:
+     *     summary: Desactivar usuario (borrado lógico)
+     *     tags: [Users]
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: integer
+     *     responses:
+     *       200:
+     *         description: Usuario desactivado
+     */
+    app
+      .route("/api/usuarios/:id/deactivate")
+      .patch(this.userController.deleteLogical.bind(this.userController));
+  }
+}
+EOF
+```
+![](a/116.png)
+
+### user/user.create.http
+```bash
+: > src/features/business/user/user.create.http
+cat >> src/features/business/user/user.create.http << 'EOF'
+### Feature User — CREATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name createUser
+POST {{baseUrl}}/api/usuarios
+Content-Type: application/json
+
+{
+  "name": "Laura Martínez",
+  "email": "laura.martinez@tramamoda.com",
+  "password": "SecurePassword123!",
+  "role": "admin",
+  "branchId": 1
+}
+EOF
+```
+![](a/117.png)
+
+### user/user.get.http
+```bash
+: > src/features/business/user/user.get.http
+cat >> src/features/business/user/user.get.http << 'EOF'
+### Feature User — READ ALL
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name getAllUsers
+GET {{baseUrl}}/api/usuarios
+Content-Type: application/json
+
+###
+
+### Feature User — READ ONE
+### Leyenda: SIN AUTH
+
+# @name getOneUser
+GET {{baseUrl}}/api/usuarios/1
+Content-Type: application/json
+EOF
+```
+![](a/118.png)
+
+### user/user.update.http
+```bash
+: > src/features/business/user/user.update.http
+cat >> src/features/business/user/user.update.http << 'EOF'
+### Feature User — UPDATE
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name updateUser
+PUT {{baseUrl}}/api/usuarios/1
+Content-Type: application/json
+
+{
+  "name": "Laura Martínez R.",
+  "role": "super_admin"
+}
+EOF
+```
+![](a/119.png)
+
+### user/user.delete.http
+```bash
+: > src/features/business/user/user.delete.http
+cat >> src/features/business/user/user.delete.http << 'EOF'
+### Feature User — DELETE LOGICAL (Desactivar)
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name deactivateUser
+PATCH {{baseUrl}}/api/usuarios/1/deactivate
+Content-Type: application/json
+EOF
+```
+![](a/120.png)
+
+### Actualizar db.ts
+: > src/database/db.ts
+cat >> src/database/db.ts << 'EOF'
+import { Sequelize } from "sequelize";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+interface DatabaseConfig {
+  dialect: string;
+  host: string;
+  username: string;
+  password: string;
+  database: string;
+  port: number;
+}
+
+const dbConfigurations: Record<string, DatabaseConfig> = {
+  mysql: {
+    dialect: "mysql",
+    host: process.env.MYSQL_HOST || process.env.DB_HOST || "localhost",
+    username: process.env.MYSQL_USER || process.env.DB_USER || "root",
+    password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD || "",
+    database: process.env.MYSQL_NAME || process.env.DB_NAME || "trama-moda",
+    port: parseInt(process.env.MYSQL_PORT || process.env.DB_PORT || "3306")
+  }
+};
+
+const selectedEngine = process.env.DB_ENGINE || "mysql";
+const selectedConfig = dbConfigurations[selectedEngine];
+
+if (!selectedConfig) {
+  throw new Error(`Motor de base de datos no soportado: ${selectedEngine}`);
+}
+
+export const sequelize = new Sequelize(
+  selectedConfig.database,
+  selectedConfig.username,
+  selectedConfig.password,
+  {
+    host: selectedConfig.host,
+    port: selectedConfig.port,
+    dialect: selectedConfig.dialect as any,
+    logging: process.env.NODE_ENV === 'development' ? console.log : false,
+    pool: { max: 5, min: 0, acquire: 30000, idle: 10000 }
+  }
+);
+
+export const testConnection = async (): Promise<boolean> => {
+  try {
+    await sequelize.authenticate();
+    console.log(`✅ Conexión exitosa a ${selectedEngine.toUpperCase()}`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Error de conexión:`, error);
+    return false;
+  }
+};
+
+export const syncDatabase = async (): Promise<void> => {
+  try {
+    require("../features/business/client/client.model");
+    require("../features/business/product/product.model");
+    require("../features/business/sale/sale.model");
+    require("../features/business/sale/sale-detail.model");
+    require("../features/business/catalog/collection.model");
+    require("../features/business/variants/variant.model");
+    require("../features/business/branch/branch.model");
+    require("../features/business/inventory/inventory.model");
+    require("../features/business/category/category.model");
+    require("../features/business/supplier/supplier.model");
+    require("../features/business/user/user.model");
+
+    await sequelize.sync({ alter: true });
+    console.log("✅ Tablas sincronizadas correctamente en MySQL");
+  } catch (error) {
+    console.error("❌ Error al sincronizar las tablas:", error);
+  }
+};
+EOF
+```
+
+### Actualizar routes/index.ts
+```bash
+: > src/routes/index.ts
+cat >> src/routes/index.ts << 'EOF'
+import { ClientRoutes } from "../features/business/client/client.routes";
+import { ProductRoutes } from "../features/business/product/product.routes";
+import { SaleRoutes } from "../features/business/sale/sale.routes";
+import { SaleDetailRoutes } from "../features/business/sale/sale-detail.routes";
+import { CollectionRoutes } from "../features/business/catalog/collection.routes";
+import { VariantRoutes } from "../features/business/variants/variant.routes";
+import { BranchRoutes } from "../features/business/branch/branch.routes";
+import { InventoryRoutes } from "../features/business/inventory/inventory.routes";
+import { CategoryRoutes } from "../features/business/category/category.routes";
+import { SupplierRoutes } from "../features/business/supplier/supplier.routes";
+import { UserRoutes } from "../features/business/user/user.routes";
+
+export class Routes {
+  public clientRoutes: ClientRoutes = new ClientRoutes();
+  public productRoutes: ProductRoutes = new ProductRoutes();
+  public saleRoutes: SaleRoutes = new SaleRoutes();
+  public saleDetailRoutes: SaleDetailRoutes = new SaleDetailRoutes();
+  public collectionRoutes: CollectionRoutes = new CollectionRoutes();
+  public variantRoutes: VariantRoutes = new VariantRoutes();
+  public branchRoutes: BranchRoutes = new BranchRoutes();
+  public inventoryRoutes: InventoryRoutes = new InventoryRoutes();
+  public categoryRoutes: CategoryRoutes = new CategoryRoutes();
+  public supplierRoutes: SupplierRoutes = new SupplierRoutes();
+  public userRoutes: UserRoutes = new UserRoutes();
+}
+EOF
+```
+
+### Actualizar config/index.ts
+```bash
+: > src/config/index.ts
+cat >> src/config/index.ts << 'EOF'
+import express, { Application, Request, Response } from "express";
+import cors from "cors";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./swagger";
+import { Routes } from "../routes";
+
+export class App {
+  public app: Application;
+  public routePrv: Routes = new Routes();
+
+  constructor(private port?: number | string) {
+    this.app = express();
+    this.settings();
+    this.middlewares();
+    this.routes();
+  }
+
+  private settings(): void {
+    this.app.set("port", this.port || process.env.PORT || 4000);
+  }
+
+  private middlewares(): void {
+    this.app.use(cors());
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: false }));
+  }
+
+  private routes(): void {
+    this.app.get("/", (req: Request, res: Response) => {
+      res.json({ project: "TramaModa", status: "running" });
+    });
+
+    this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+    this.routePrv.clientRoutes.routes(this.app);
+    this.routePrv.productRoutes.routes(this.app);
+    this.routePrv.saleRoutes.routes(this.app);
+    this.routePrv.saleDetailRoutes.routes(this.app);
+    this.routePrv.collectionRoutes.routes(this.app);
+    this.routePrv.variantRoutes.routes(this.app);
+    this.routePrv.branchRoutes.routes(this.app);
+    this.routePrv.inventoryRoutes.routes(this.app);
+    this.routePrv.categoryRoutes.routes(this.app);
+    this.routePrv.supplierRoutes.routes(this.app);
+    this.routePrv.userRoutes.routes(this.app);
+  }
+
+  public async listen(): Promise<void> {
+    const port = this.app.get("port");
+    this.app.listen(port, () => {
+      console.log(`🚀 Servidor ejecutándose en puerto ${port}`);
+      console.log(`📑 Documentación Swagger disponible en: http://localhost:${port}/api-docs`);
+    });
+  }
+}
+EOF
+```

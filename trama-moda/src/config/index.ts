@@ -42,6 +42,7 @@ export class App {
     this.routePrv.inventoryRoutes.routes(this.app);
     this.routePrv.categoryRoutes.routes(this.app);
     this.routePrv.supplierRoutes.routes(this.app);
+    this.routePrv.userRoutes.routes(this.app);
   }
 
   public async listen(): Promise<void> {

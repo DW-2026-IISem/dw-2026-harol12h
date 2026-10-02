@@ -1,0 +1,16 @@
+### Feature User — READ ALL
+### Leyenda: SIN AUTH
+@baseUrl = http://localhost:4000
+
+# @name getAllUsers
+GET {{baseUrl}}/api/usuarios
+Content-Type: application/json
+
+###
+
+### Feature User — READ ONE
+### Leyenda: SIN AUTH
+
+# @name getOneUser
+GET {{baseUrl}}/api/usuarios/1
+Content-Type: application/json
