@@ -1,5 +1,6 @@
 import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
+import { setupAssociations } from "./associations";
 
 dotenv.config();
 
@@ -68,8 +69,10 @@ export const syncDatabase = async (): Promise<void> => {
     require("../features/business/supplier/supplier.model");
     require("../features/business/user/user.model");
 
+    setupAssociations();
+
     await sequelize.sync({ alter: true });
-    console.log("✅ Tablas sincronizadas correctamente en MySQL");
+    console.log("✅ Tablas y relaciones sincronizadas correctamente en MySQL");
   } catch (error) {
     console.error("❌ Error al sincronizar las tablas:", error);
   }

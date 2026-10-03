@@ -6174,3 +6174,183 @@ Content-Type: application/json
 EOF
 ```
 ![](a/130.png)
+
+### Re-sincronización del Core `db.ts, routes/index.ts y config/index.ts`
+```bash
+# 1. Actualizar db.ts con asociaciones
+: > src/database/db.ts
+cat >> src/database/db.ts << 'EOF'
+import { Sequelize } from "sequelize";
+import dotenv from "dotenv";
+import { setupAssociations } from "./associations";
+
+dotenv.config();
+
+interface DatabaseConfig {
+  dialect: string;
+  host: string;
+  username: string;
+  password: string;
+  database: string;
+  port: number;
+}
+
+const dbConfigurations: Record<string, DatabaseConfig> = {
+  mysql: {
+    dialect: "mysql",
+    host: process.env.MYSQL_HOST || process.env.DB_HOST || "localhost",
+    username: process.env.MYSQL_USER || process.env.DB_USER || "root",
+    password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD || "",
+    database: process.env.MYSQL_NAME || process.env.DB_NAME || "trama-moda",
+    port: parseInt(process.env.MYSQL_PORT || process.env.DB_PORT || "3306")
+  }
+};
+
+const selectedEngine = process.env.DB_ENGINE || "mysql";
+const selectedConfig = dbConfigurations[selectedEngine];
+
+if (!selectedConfig) {
+  throw new Error(`Motor de base de datos no soportado: ${selectedEngine}`);
+}
+
+export const sequelize = new Sequelize(
+  selectedConfig.database,
+  selectedConfig.username,
+  selectedConfig.password,
+  {
+    host: selectedConfig.host,
+    port: selectedConfig.port,
+    dialect: selectedConfig.dialect as any,
+    logging: process.env.NODE_ENV === 'development' ? console.log : false,
+    pool: { max: 5, min: 0, acquire: 30000, idle: 10000 }
+  }
+);
+
+export const testConnection = async (): Promise<boolean> => {
+  try {
+    await sequelize.authenticate();
+    console.log(`✅ Conexión exitosa a ${selectedEngine.toUpperCase()}`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Error de conexión:`, error);
+    return false;
+  }
+};
+
+export const syncDatabase = async (): Promise<void> => {
+  try {
+    require("../features/business/client/client.model");
+    require("../features/business/product/product.model");
+    require("../features/business/sale/sale.model");
+    require("../features/business/sale/sale-detail.model");
+    require("../features/business/catalog/collection.model");
+    require("../features/business/variants/variant.model");
+    require("../features/business/branch/branch.model");
+    require("../features/business/inventory/inventory.model");
+    require("../features/business/category/category.model");
+    require("../features/business/supplier/supplier.model");
+    require("../features/business/user/user.model");
+
+    setupAssociations();
+
+    await sequelize.sync({ alter: true });
+    console.log("✅ Tablas y relaciones sincronizadas correctamente en MySQL");
+  } catch (error) {
+    console.error("❌ Error al sincronizar las tablas:", error);
+  }
+};
+EOF
+
+# 2. Actualizar routes/index.ts con AuthRoutes
+: > src/routes/index.ts
+cat >> src/routes/index.ts << 'EOF'
+import { ClientRoutes } from "../features/business/client/client.routes";
+import { ProductRoutes } from "../features/business/product/product.routes";
+import { SaleRoutes } from "../features/business/sale/sale.routes";
+import { SaleDetailRoutes } from "../features/business/sale/sale-detail.routes";
+import { CollectionRoutes } from "../features/business/catalog/collection.routes";
+import { VariantRoutes } from "../features/business/variants/variant.routes";
+import { BranchRoutes } from "../features/business/branch/branch.routes";
+import { InventoryRoutes } from "../features/business/inventory/inventory.routes";
+import { CategoryRoutes } from "../features/business/category/category.routes";
+import { SupplierRoutes } from "../features/business/supplier/supplier.routes";
+import { UserRoutes } from "../features/business/user/user.routes";
+import { AuthRoutes } from "../features/auth/auth.routes";
+
+export class Routes {
+  public clientRoutes: ClientRoutes = new ClientRoutes();
+  public productRoutes: ProductRoutes = new ProductRoutes();
+  public saleRoutes: SaleRoutes = new SaleRoutes();
+  public saleDetailRoutes: SaleDetailRoutes = new SaleDetailRoutes();
+  public collectionRoutes: CollectionRoutes = new CollectionRoutes();
+  public variantRoutes: VariantRoutes = new VariantRoutes();
+  public branchRoutes: BranchRoutes = new BranchRoutes();
+  public inventoryRoutes: InventoryRoutes = new InventoryRoutes();
+  public categoryRoutes: CategoryRoutes = new CategoryRoutes();
+  public supplierRoutes: SupplierRoutes = new SupplierRoutes();
+  public userRoutes: UserRoutes = new UserRoutes();
+  public authRoutes: AuthRoutes = new AuthRoutes();
+}
+EOF
+
+# 3. Actualizar config/index.ts con la nueva ruta
+: > src/config/index.ts
+cat >> src/config/index.ts << 'EOF'
+import express, { Application, Request, Response } from "express";
+import cors from "cors";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./swagger";
+import { Routes } from "../routes";
+
+export class App {
+  public app: Application;
+  public routePrv: Routes = new Routes();
+
+  constructor(private port?: number | string) {
+    this.app = express();
+    this.settings();
+    this.middlewares();
+    this.routes();
+  }
+
+  private settings(): void {
+    this.app.set("port", this.port || process.env.PORT || 4000);
+  }
+
+  private middlewares(): void {
+    this.app.use(cors());
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: false }));
+  }
+
+  private routes(): void {
+    this.app.get("/", (req: Request, res: Response) => {
+      res.json({ project: "TramaModa", status: "running" });
+    });
+
+    this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+    this.routePrv.authRoutes.routes(this.app);
+    this.routePrv.clientRoutes.routes(this.app);
+    this.routePrv.productRoutes.routes(this.app);
+    this.routePrv.saleRoutes.routes(this.app);
+    this.routePrv.saleDetailRoutes.routes(this.app);
+    this.routePrv.collectionRoutes.routes(this.app);
+    this.routePrv.variantRoutes.routes(this.app);
+    this.routePrv.branchRoutes.routes(this.app);
+    this.routePrv.inventoryRoutes.routes(this.app);
+    this.routePrv.categoryRoutes.routes(this.app);
+    this.routePrv.supplierRoutes.routes(this.app);
+    this.routePrv.userRoutes.routes(this.app);
+  }
+
+  public async listen(): Promise<void> {
+    const port = this.app.get("port");
+    this.app.listen(port, () => {
+      console.log(`🚀 Servidor ejecutándose en puerto ${port}`);
+      console.log(`📑 Documentación Swagger disponible en: http://localhost:${port}/api-docs`);
+    });
+  }
+}
+EOF
+```

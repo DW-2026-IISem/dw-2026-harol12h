@@ -9,6 +9,7 @@ import { InventoryRoutes } from "../features/business/inventory/inventory.routes
 import { CategoryRoutes } from "../features/business/category/category.routes";
 import { SupplierRoutes } from "../features/business/supplier/supplier.routes";
 import { UserRoutes } from "../features/business/user/user.routes";
+import { AuthRoutes } from "../features/auth/auth.routes";
 
 export class Routes {
   public clientRoutes: ClientRoutes = new ClientRoutes();
@@ -22,4 +23,5 @@ export class Routes {
   public categoryRoutes: CategoryRoutes = new CategoryRoutes();
   public supplierRoutes: SupplierRoutes = new SupplierRoutes();
   public userRoutes: UserRoutes = new UserRoutes();
+  public authRoutes: AuthRoutes = new AuthRoutes();
 }
