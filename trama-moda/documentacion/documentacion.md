@@ -5863,3 +5863,145 @@ export const setupAssociations = () => {
 EOF
 ```
 ![](a/126.png)
+
+### Autenticación y Seguridad (JWT & Middlewares)
+```bash
+: > src/features/business/user/user.model.ts
+cat >> src/features/business/user/user.model.ts << 'EOF'
+import { DataTypes, Model } from "sequelize";
+import bcrypt from "bcryptjs";
+import { sequelize } from "../../../database/db";
+
+export interface UserI {
+  id?: number;
+  name: string;
+  email: string;
+  password?: string;
+  role: string;
+  branchId?: number;
+  is_active: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export class User extends Model implements UserI {
+  public id!: number;
+  public name!: string;
+  public email!: string;
+  public password!: string;
+  public role!: string;
+  public branchId!: number;
+  public is_active!: boolean;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+
+  public async validatePassword(password: string): Promise<boolean> {
+    return bcrypt.compare(password, this.password);
+  }
+}
+
+User.init(
+  {
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    role: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: "seller"
+    },
+    branchId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    }
+  },
+  {
+    sequelize,
+    tableName: "users",
+    timestamps: true,
+    hooks: {
+      beforeCreate: async (user: User) => {
+        if (user.password) {
+          const salt = await bcrypt.genSalt(10);
+          user.password = await bcrypt.hash(user.password, salt);
+        }
+      },
+      beforeUpdate: async (user: User) => {
+        if (user.changed("password")) {
+          const salt = await bcrypt.genSalt(10);
+          user.password = await bcrypt.hash(user.password, salt);
+        }
+      }
+    }
+  }
+);
+EOF
+```
+### Middlewares de Autenticación `auth.middleware.ts`
+```bash
+mkdir -p src/middlewares
+: > src/middlewares/auth.middleware.ts
+cat >> src/middlewares/auth.middleware.ts << 'EOF'
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+
+export interface AuthRequest extends Request {
+  user?: {
+    id: number;
+    email: string;
+    role: string;
+  };
+}
+
+const JWT_SECRET = process.env.JWT_SECRET || "trama_moda_secret_key_2026";
+
+export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    res.status(401).json({ error: "Acceso denegado. Token no proporcionado." });
+    return;
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: number; email: string; role: string };
+    req.user = decoded;
+    next();
+  } catch (error) {
+    res.status(403).json({ error: "Token inválido o expirado." });
+  }
+};
+
+export const checkRole = (allowedRoles: string[]) => {
+  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({ error: "No autenticado." });
+      return;
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      res.status(403).json({ error: "No tienes permisos suficientes para realizar esta acción." });
+      return;
+    }
+
+    next();
+  };
+};
+EOF
+```
+![](a/127.png)
