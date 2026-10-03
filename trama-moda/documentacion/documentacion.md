@@ -6145,3 +6145,32 @@ export class AuthRoutes {
 EOF
 ```
 ![](a/129.png)
+
+### ruta http para login
+```bash
+mkdir -p src/features/auth/http
+: > src/features/auth/http/auth.http
+cat >> src/features/auth/http/auth.http << 'EOF'
+### Auth — LOGIN
+@baseUrl = http://localhost:4000
+
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "laura.martinez@tramamoda.com",
+  "password": "SecurePassword123!"
+}
+
+###
+
+### Auth — OBTENER PERFIL (Usa el token obtenido)
+@authToken = {{login.response.body.token}}
+
+GET {{baseUrl}}/api/auth/profile
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+EOF
+```
+![](a/130.png)
