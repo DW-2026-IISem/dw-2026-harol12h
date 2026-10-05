@@ -1,42 +1,28 @@
 import { Application } from "express";
 import { SaleController } from "./sale.controller";
+import { verifyToken } from "../../../middlewares/auth.middleware";
 
 /**
  * @openapi
  * components:
  *   schemas:
- *     Sale:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *           example: 1
- *         client_id:
- *           type: integer
- *           example: 1
- *         fecha:
- *           type: string
- *           format: date-time
- *         monto_total:
- *           type: number
- *           example: 150000.00
- *         status:
- *           type: string
- *           enum: [active, inactive]
- *           example: active
  *     SaleInput:
  *       type: object
  *       required:
- *         - client_id
+ *         - clientId
+ *         - branchId
+ *         - total
  *       properties:
- *         client_id:
+ *         clientId:
  *           type: integer
  *           example: 1
- *         monto_total:
+ *         branchId:
+ *           type: integer
+ *           example: 1
+ *         total:
  *           type: number
- *           example: 150000.00
+ *           example: 150000
  */
-
 export class SaleRoutes {
   public saleController: SaleController = new SaleController();
 
@@ -45,14 +31,20 @@ export class SaleRoutes {
      * @openapi
      * /api/ventas:
      *   get:
-     *     summary: Obtener todas las ventas activas
+     *     summary: Obtener todas las ventas (Requiere Autenticación)
      *     tags: [Sales]
+     *     security:
+     *       - bearerAuth: []
      *     responses:
      *       200:
-     *         description: Lista de ventas obtenida con éxito
+     *         description: Lista de ventas registradas
+     *       401:
+     *         description: No autorizado
      *   post:
-     *     summary: Crear una nueva venta
+     *     summary: Registrar una nueva venta (Requiere Autenticación)
      *     tags: [Sales]
+     *     security:
+     *       - bearerAuth: []
      *     requestBody:
      *       required: true
      *       content:
@@ -65,15 +57,17 @@ export class SaleRoutes {
      */
     app
       .route("/api/ventas")
-      .get(this.saleController.getAll.bind(this.saleController))
-      .post(this.saleController.create.bind(this.saleController));
+      .get(verifyToken, this.saleController.getAll.bind(this.saleController))
+      .post(verifyToken, this.saleController.create.bind(this.saleController));
 
     /**
      * @openapi
      * /api/ventas/{id}:
      *   get:
-     *     summary: Obtener una venta por ID
+     *     summary: Obtener detalle de una venta por ID (Requiere Autenticación)
      *     tags: [Sales]
+     *     security:
+     *       - bearerAuth: []
      *     parameters:
      *       - in: path
      *         name: id
@@ -83,31 +77,11 @@ export class SaleRoutes {
      *     responses:
      *       200:
      *         description: Venta encontrada
-     *       404:
-     *         description: Venta no encontrada
+     *       401:
+     *         description: No autorizado
      */
     app
       .route("/api/ventas/:id")
-      .get(this.saleController.getOne.bind(this.saleController));
-
-    /**
-     * @openapi
-     * /api/ventas/{id}/deactivate:
-     *   patch:
-     *     summary: Desactivar (eliminación lógica) una venta
-     *     tags: [Sales]
-     *     parameters:
-     *       - in: path
-     *         name: id
-     *         required: true
-     *         schema:
-     *           type: integer
-     *     responses:
-     *       200:
-     *         description: Venta desactivada con éxito
-     */
-    app
-      .route("/api/ventas/:id/deactivate")
-      .patch(this.saleController.deleteLogical.bind(this.saleController));
+      .get(verifyToken, this.saleController.getOne.bind(this.saleController));
   }
 }
