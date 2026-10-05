@@ -6682,3 +6682,5 @@ EOF
 ### Verificacion desde la web
 #### Verificar la protección (Prueba sin Token)
 ![](a/138.png)
+#### Verificar el acceso autorizado (Prueba con Token)
+![](a/139.png)
