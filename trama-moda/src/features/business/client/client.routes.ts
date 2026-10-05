@@ -1,5 +1,6 @@
 import { Application } from "express";
 import { ClientController } from "./client.controller";
+import { verifyToken } from "../../../middlewares/auth.middleware";
 
 /**
  * @openapi
@@ -11,42 +12,47 @@ import { ClientController } from "./client.controller";
  *         id:
  *           type: integer
  *           example: 1
- *         nombre:
+ *         first_name:
  *           type: string
- *           example: "Carlos Gómez"
- *         numero_documento:
+ *           example: "Juan"
+ *         last_name:
  *           type: string
- *           example: "1098765432"
+ *           example: "Pérez"
  *         email:
  *           type: string
- *           example: "carlos@email.com"
- *         telefono:
+ *           example: "juan.perez@email.com"
+ *         phone:
  *           type: string
- *           example: "3001234567"
- *         status:
+ *           example: "+573009876543"
+ *         document_number:
  *           type: string
- *           enum: [active, inactive]
- *           example: active
+ *           example: "1020304050"
+ *         is_active:
+ *           type: boolean
+ *           example: true
  *     ClientInput:
  *       type: object
  *       required:
- *         - nombre
- *         - numero_documento
+ *         - first_name
+ *         - last_name
+ *         - document_number
  *       properties:
- *         nombre:
+ *         first_name:
  *           type: string
- *           example: "Carlos Gómez"
- *         numero_documento:
+ *           example: "Juan"
+ *         last_name:
  *           type: string
- *           example: "1098765432"
+ *           example: "Pérez"
  *         email:
  *           type: string
- *           example: "carlos@email.com"
- *         telefono:
+ *           example: "juan.perez@email.com"
+ *         phone:
  *           type: string
- *           example: "3001234567"
+ *           example: "+573009876543"
+ *         document_number:
+ *           type: string
+ *           example: "1020304050"
  */
-
 export class ClientRoutes {
   public clientController: ClientController = new ClientController();
 
@@ -55,14 +61,20 @@ export class ClientRoutes {
      * @openapi
      * /api/clientes:
      *   get:
-     *     summary: Obtener todos los clientes activos
+     *     summary: Obtener todos los clientes activos (Requiere Token)
      *     tags: [Clients]
+     *     security:
+     *       - bearerAuth: []
      *     responses:
      *       200:
-     *         description: Lista de clientes obtenida con éxito
+     *         description: Lista de clientes
+     *       401:
+     *         description: No autorizado
      *   post:
-     *     summary: Crear un nuevo cliente
+     *     summary: Registrar un nuevo cliente (Requiere Token)
      *     tags: [Clients]
+     *     security:
+     *       - bearerAuth: []
      *     requestBody:
      *       required: true
      *       content:
@@ -71,19 +83,23 @@ export class ClientRoutes {
      *             $ref: '#/components/schemas/ClientInput'
      *     responses:
      *       201:
-     *         description: Cliente creado exitosamente
+     *         description: Cliente registrado exitosamente
+     *       401:
+     *         description: No autorizado
      */
     app
       .route("/api/clientes")
-      .get(this.clientController.getAll.bind(this.clientController))
-      .post(this.clientController.create.bind(this.clientController));
+      .get(verifyToken, this.clientController.getAll.bind(this.clientController))
+      .post(verifyToken, this.clientController.create.bind(this.clientController));
 
     /**
      * @openapi
      * /api/clientes/{id}:
      *   get:
-     *     summary: Obtener un cliente por ID
+     *     summary: Obtener cliente por ID (Requiere Token)
      *     tags: [Clients]
+     *     security:
+     *       - bearerAuth: []
      *     parameters:
      *       - in: path
      *         name: id
@@ -93,11 +109,15 @@ export class ClientRoutes {
      *     responses:
      *       200:
      *         description: Cliente encontrado
+     *       401:
+     *         description: No autorizado
      *       404:
-     *         description: Cliente no encontrado
+     *         description: No encontrado
      *   put:
-     *     summary: Actualizar datos de un cliente
+     *     summary: Actualizar información de un cliente (Requiere Token)
      *     tags: [Clients]
+     *     security:
+     *       - bearerAuth: []
      *     parameters:
      *       - in: path
      *         name: id
@@ -112,19 +132,23 @@ export class ClientRoutes {
      *             $ref: '#/components/schemas/ClientInput'
      *     responses:
      *       200:
-     *         description: Cliente actualizado exitosamente
+     *         description: Cliente actualizado
+     *       401:
+     *         description: No autorizado
      */
     app
       .route("/api/clientes/:id")
-      .get(this.clientController.getOne.bind(this.clientController))
-      .put(this.clientController.update.bind(this.clientController));
+      .get(verifyToken, this.clientController.getOne.bind(this.clientController))
+      .put(verifyToken, this.clientController.update.bind(this.clientController));
 
     /**
      * @openapi
      * /api/clientes/{id}/deactivate:
      *   patch:
-     *     summary: Desactivar (eliminación lógica) un cliente
+     *     summary: Desactivar cliente (borrado lógico) (Requiere Token)
      *     tags: [Clients]
+     *     security:
+     *       - bearerAuth: []
      *     parameters:
      *       - in: path
      *         name: id
@@ -133,10 +157,12 @@ export class ClientRoutes {
      *           type: integer
      *     responses:
      *       200:
-     *         description: Cliente desactivado con éxito
+     *         description: Cliente desactivado
+     *       401:
+     *         description: No autorizado
      */
     app
       .route("/api/clientes/:id/deactivate")
-      .patch(this.clientController.deleteLogical.bind(this.clientController));
+      .patch(verifyToken, this.clientController.deleteLogical.bind(this.clientController));
   }
 }

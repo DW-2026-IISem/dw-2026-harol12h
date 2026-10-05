@@ -1,0 +1,30 @@
+### Auth — Obtener Token primero
+@baseUrl = http://localhost:4000
+
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@tramamoda.com",
+  "password": "AdminPassword123!"
+}
+
+###
+
+### Feature Client — READ ALL (CON AUTH)
+@authToken = {{login.response.body.token}}
+
+# @name getAllClients
+GET {{baseUrl}}/api/clientes
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### Feature Client — READ ONE (CON AUTH)
+
+# @name getOneClient
+GET {{baseUrl}}/api/clientes/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json

@@ -6359,7 +6359,8 @@ EOF
 ![](a/131.png)
 
 -------------------------------------------------------------------------------------
-# autenticacion 
+# autenticacion client
+### actualizamos `client.routes.ts`
 ```bash
 : > src/features/business/client/client.routes.ts
 cat >> src/features/business/client/client.routes.ts << 'EOF'
@@ -6534,3 +6535,76 @@ export class ClientRoutes {
 EOF
 ```
 ![](a/132.png)
+
+### actualizar client.create.http
+```bash
+# 1. client.create.http con Login automático
+: > src/features/business/client/client.create.http
+cat >> src/features/business/client/client.create.http << 'EOF'
+### Auth — Obtener Token primero
+@baseUrl = http://localhost:4000
+
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@tramamoda.com",
+  "password": "AdminPassword123!"
+}
+
+###
+
+### Feature Client — CREATE (CON AUTH)
+@authToken = {{login.response.body.token}}
+
+# @name createClient
+POST {{baseUrl}}/api/clientes
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "first_name": "Juan",
+  "last_name": "Pérez",
+  "email": "juan.perez@email.com",
+  "phone": "+573009876543",
+  "document_number": "1020304050"
+}
+EOF
+
+# 2. client.get.http con Login automático
+: > src/features/business/client/client.get.http
+cat >> src/features/business/client/client.get.http << 'EOF'
+### Auth — Obtener Token primero
+@baseUrl = http://localhost:4000
+
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@tramamoda.com",
+  "password": "AdminPassword123!"
+}
+
+###
+
+### Feature Client — READ ALL (CON AUTH)
+@authToken = {{login.response.body.token}}
+
+# @name getAllClients
+GET {{baseUrl}}/api/clientes
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### Feature Client — READ ONE (CON AUTH)
+
+# @name getOneClient
+GET {{baseUrl}}/api/clientes/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+EOF
+```
+![](a/133.png)
