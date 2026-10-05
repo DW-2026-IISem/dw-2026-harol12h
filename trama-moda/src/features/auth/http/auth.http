@@ -6,13 +6,13 @@ POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "laura.martinez@tramamoda.com",
-  "password": "SecurePassword123!"
+  "email": "admin@tramamoda.com",
+  "password": "AdminPassword123!"
 }
 
 ###
 
-### Auth — OBTENER PERFIL (Usa el token obtenido)
+### Auth — OBTENER PERFIL
 @authToken = {{login.response.body.token}}
 
 GET {{baseUrl}}/api/auth/profile

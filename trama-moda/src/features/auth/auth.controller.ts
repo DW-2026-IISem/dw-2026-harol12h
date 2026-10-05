@@ -33,7 +33,7 @@ export class AuthController {
         { expiresIn: "8h" }
       );
 
-      const userResponse = user.toJSON();
+      const userResponse = user.toJSON() as Record<string, any>;
       delete userResponse.password;
 
       res.status(200).json({

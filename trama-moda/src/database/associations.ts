@@ -12,33 +12,33 @@ import { Variant } from "../features/business/variants/variant.model";
 
 export const setupAssociations = () => {
   // --- User & Branch ---
-  User.belongsTo(Branch, { foreignKey: "branchId", as: "branch" });
-  Branch.hasMany(User, { foreignKey: "branchId", as: "users" });
+  User.belongsTo(Branch, { foreignKey: "branchId", as: "userBranch" });
+  Branch.hasMany(User, { foreignKey: "branchId", as: "branchUsers" });
 
   // --- Inventory, Branch & Variant ---
-  Inventory.belongsTo(Branch, { foreignKey: "branchId", as: "branch" });
-  Branch.hasMany(Inventory, { foreignKey: "branchId", as: "inventories" });
+  Inventory.belongsTo(Branch, { foreignKey: "branchId", as: "inventoryBranch" });
+  Branch.hasMany(Inventory, { foreignKey: "branchId", as: "branchInventories" });
 
-  Inventory.belongsTo(Variant, { foreignKey: "variantId", as: "variant" });
-  Variant.hasMany(Inventory, { foreignKey: "variantId", as: "inventories" });
+  Inventory.belongsTo(Variant, { foreignKey: "variantId", as: "inventoryVariant" });
+  Variant.hasMany(Inventory, { foreignKey: "variantId", as: "variantInventories" });
 
   // --- Variant & Product ---
-  Variant.belongsTo(Product, { foreignKey: "productId", as: "product" });
-  Product.hasMany(Variant, { foreignKey: "variants", as: "productVariants" });
+  Variant.belongsTo(Product, { foreignKey: "productId", as: "variantProduct" });
+  Product.hasMany(Variant, { foreignKey: "productId", as: "productVariants" });
 
   // --- Sale, Client & Branch ---
-  Sale.belongsTo(Client, { foreignKey: "clientId", as: "client" });
-  Client.hasMany(Sale, { foreignKey: "clientId", as: "sales" });
+  Sale.belongsTo(Client, { foreignKey: "clientId", as: "saleClient" });
+  Client.hasMany(Sale, { foreignKey: "clientId", as: "clientSales" });
 
-  Sale.belongsTo(Branch, { foreignKey: "branchId", as: "branch" });
-  Branch.hasMany(Sale, { foreignKey: "branchId", as: "sales" });
+  Sale.belongsTo(Branch, { foreignKey: "branchId", as: "saleBranch" });
+  Branch.hasMany(Sale, { foreignKey: "branchId", as: "branchSales" });
 
   // --- SaleDetail, Sale & Variant ---
-  SaleDetail.belongsTo(Sale, { foreignKey: "saleId", as: "sale" });
-  Sale.hasMany(SaleDetail, { foreignKey: "saleId", as: "details" });
+  SaleDetail.belongsTo(Sale, { foreignKey: "saleId", as: "detailSale" });
+  Sale.hasMany(SaleDetail, { foreignKey: "saleId", as: "saleDetails" });
 
-  SaleDetail.belongsTo(Variant, { foreignKey: "variantId", as: "variant" });
-  Variant.hasMany(SaleDetail, { foreignKey: "variantId", as: "saleDetails" });
+  SaleDetail.belongsTo(Variant, { foreignKey: "variantId", as: "detailVariant" });
+  Variant.hasMany(SaleDetail, { foreignKey: "variantId", as: "variantSaleDetails" });
 
-  console.log("🔗 Asociaciones de Sequelize inicializadas correctamente.");
+  console.log("🔗 Asociaciones de Sequelize inicializadas correctamente con alias únicos.");
 };

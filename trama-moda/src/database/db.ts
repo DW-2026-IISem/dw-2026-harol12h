@@ -1,6 +1,5 @@
 import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
-import { setupAssociations } from "./associations";
 
 dotenv.config();
 
@@ -31,6 +30,7 @@ if (!selectedConfig) {
   throw new Error(`Motor de base de datos no soportado: ${selectedEngine}`);
 }
 
+// 1. Crear y exportar primero la instancia de Sequelize
 export const sequelize = new Sequelize(
   selectedConfig.database,
   selectedConfig.username,
@@ -55,20 +55,22 @@ export const testConnection = async (): Promise<boolean> => {
   }
 };
 
+// 2. Importar los modelos DENTRO de la función syncDatabase para evitar dependencias circulares al inicializar
 export const syncDatabase = async (): Promise<void> => {
   try {
+    require("../features/business/branch/branch.model");
     require("../features/business/client/client.model");
     require("../features/business/product/product.model");
     require("../features/business/sale/sale.model");
     require("../features/business/sale/sale-detail.model");
     require("../features/business/catalog/collection.model");
     require("../features/business/variants/variant.model");
-    require("../features/business/branch/branch.model");
     require("../features/business/inventory/inventory.model");
     require("../features/business/category/category.model");
     require("../features/business/supplier/supplier.model");
     require("../features/business/user/user.model");
 
+    const { setupAssociations } = require("./associations");
     setupAssociations();
 
     await sequelize.sync({ alter: true });
