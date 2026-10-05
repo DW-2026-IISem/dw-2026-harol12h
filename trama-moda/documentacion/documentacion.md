@@ -6608,3 +6608,7 @@ Content-Type: application/json
 EOF
 ```
 ![](a/133.png)
+### Verificar la protección (Prueba sin Token)
+![](a/134.png)
+### Verificar el acceso autorizado (Prueba con Token)
+![](a/135.png)
