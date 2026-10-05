@@ -6614,7 +6614,7 @@ EOF
 ![](a/135.png)
 
 --------------------------------------------------------
-### Autenticacion users
+# Autenticacion users
 #### Configurar la Seguridad en las Rutas
 Aplicamos los middlewares `verifyToken` (valida que la petición incluya una firma JWT activa) y `checkRole(["admin"])` (garantiza que solo los administradores puedan crear, consultar, modificar o desactivar cuentas de usuario).
 ```bash
@@ -6650,3 +6650,31 @@ EOF
 ```
 ![](a/136.png)
 
+### Crear el Archivo de Pruebas HTTP
+Este archivo permite probar los endpoints de usuarios desde VS Code. Incluye una petición inicial de login para obtener automáticamente el token de administrador y adjuntarlo en la cabecera Authorization: Bearer `TOKEN`
+```bash
+: > src/features/business/user/user.get.http
+cat >> src/features/business/user/user.get.http << 'EOF'
+### 1. Iniciar Sesión para Obtener Token de Admin
+@baseUrl = http://localhost:4000
+
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@tramamoda.com",
+  "password": "AdminPassword123!"
+}
+
+###
+
+### 2. Consultar Listado de Usuarios (Requiere Rol Admin)
+@authToken = {{login.response.body.token}}
+
+GET {{baseUrl}}/api/usuarios
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+EOF
+```
+![](a/137.png)

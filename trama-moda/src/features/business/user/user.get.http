@@ -1,16 +1,20 @@
-### Feature User — READ ALL
-### Leyenda: SIN AUTH
+### 1. Iniciar Sesión para Obtener Token de Admin
 @baseUrl = http://localhost:4000
 
-# @name getAllUsers
-GET {{baseUrl}}/api/usuarios
+# @name login
+POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
+
+{
+  "email": "admin@tramamoda.com",
+  "password": "AdminPassword123!"
+}
 
 ###
 
-### Feature User — READ ONE
-### Leyenda: SIN AUTH
+### 2. Consultar Listado de Usuarios (Requiere Rol Admin)
+@authToken = {{login.response.body.token}}
 
-# @name getOneUser
-GET {{baseUrl}}/api/usuarios/1
+GET {{baseUrl}}/api/usuarios
+Authorization: Bearer {{authToken}}
 Content-Type: application/json
