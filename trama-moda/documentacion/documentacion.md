@@ -6810,3 +6810,8 @@ Content-Type: application/json
 EOF
 ```
 ![](a/141.png)
+### Verificacion 
+#### Verificar la protección (Prueba sin Token)
+![](a/142.png)
+
+
