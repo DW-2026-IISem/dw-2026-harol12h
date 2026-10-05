@@ -6782,3 +6782,31 @@ EOF
 ```
 ![](a/140.png)
 
+### Crear el Archivo de Pruebas HTTP
+Genera el archivo para probar la consulta de ventas en VS Code, iniciando sesión previamente de forma automática para obtener el token.
+```bash
+: > src/features/business/sale/sale.get.http
+cat >> src/features/business/sale/sale.get.http << 'EOF'
+### 1. Iniciar Sesión para Obtener Token
+@baseUrl = http://localhost:4000
+
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@tramamoda.com",
+  "password": "AdminPassword123!"
+}
+
+###
+
+### 2. Consultar Listado de Ventas (Requiere Auth)
+@authToken = {{login.response.body.token}}
+
+GET {{baseUrl}}/api/ventas
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+EOF
+```
+![](a/141.png)
