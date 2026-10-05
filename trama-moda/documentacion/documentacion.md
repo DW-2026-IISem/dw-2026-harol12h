@@ -6813,5 +6813,5 @@ EOF
 ### Verificacion 
 #### Verificar la protección (Prueba sin Token)
 ![](a/142.png)
-
-
+#### Verificar el acceso autorizado (Prueba con Token)
+![](a/143.png)

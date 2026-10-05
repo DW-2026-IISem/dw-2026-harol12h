@@ -1,0 +1,30 @@
+### 1. Iniciar Sesión para Obtener Token (Ejecutar primero)
+@baseUrl = http://localhost:4000
+
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@tramamoda.com",
+  "password": "AdminPassword123!"
+}
+
+###
+
+### 2. Consultar Todas las Ventas (Requiere Auth)
+@authToken = {{login.response.body.token}}
+
+# @name getAllSales
+GET {{baseUrl}}/api/ventas
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### 3. Consultar una Venta por ID (Requiere Auth)
+
+# @name getOneSale
+GET {{baseUrl}}/api/ventas/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json

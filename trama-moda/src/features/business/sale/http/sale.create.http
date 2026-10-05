@@ -1,4 +1,4 @@
-### 1. Iniciar Sesión para Obtener Token
+### 1. Iniciar Sesión para Obtener Token (Ejecutar primero)
 @baseUrl = http://localhost:4000
 
 # @name login
@@ -12,9 +12,16 @@ Content-Type: application/json
 
 ###
 
-### 2. Consultar Listado de Ventas (Requiere Auth)
+### 2. Registrar una Nueva Venta (Requiere Auth)
 @authToken = {{login.response.body.token}}
 
-GET {{baseUrl}}/api/ventas
+# @name createSale
+POST {{baseUrl}}/api/ventas
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
+
+{
+  "clientId": 1,
+  "branchId": 1,
+  "total": 150000
+}
