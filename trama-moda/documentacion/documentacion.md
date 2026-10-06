@@ -6937,3 +6937,41 @@ export class InventoryRoutes {
 EOF
 ```
 ![](a/144.png)
+
+### Crear el Archivo de Pruebas HTTP `inventory.get.http`
+```bash
+: > src/features/business/inventory/inventory.get.http
+cat >> src/features/business/inventory/inventory.get.http << 'EOF'
+### 1. Iniciar Sesión para Obtener Token de Admin
+@baseUrl = http://localhost:4000
+
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@tramamoda.com",
+  "password": "AdminPassword123!"
+}
+
+###
+
+### 2. Consultar Listado de Inventarios (Requiere Rol Admin)
+@authToken = {{login.response.body.token}}
+
+# @name getAllInventories
+GET {{baseUrl}}/api/inventarios
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### 3. Consultar Registro de Inventario por ID (Requiere Rol Admin)
+
+# @name getOneInventory
+GET {{baseUrl}}/api/inventarios/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+EOF
+```
+![](a/145.png)
