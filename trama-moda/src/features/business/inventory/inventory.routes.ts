@@ -1,46 +1,31 @@
 import { Application } from "express";
 import { InventoryController } from "./inventory.controller";
+import { verifyToken, checkRole } from "../../../middlewares/auth.middleware";
 
 /**
  * @openapi
  * components:
  *   schemas:
- *     Inventory:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *           example: 1
- *         branchId:
- *           type: integer
- *           example: 1
- *         variantId:
- *           type: integer
- *           example: 1
- *         stock:
- *           type: integer
- *           example: 50
- *         is_active:
- *           type: boolean
- *           example: true
  *     InventoryInput:
  *       type: object
  *       required:
- *         - branchId
  *         - variantId
+ *         - branchId
  *         - stock
  *       properties:
- *         branchId:
+ *         variantId:
  *           type: integer
  *           example: 1
- *         variantId:
+ *         branchId:
  *           type: integer
  *           example: 1
  *         stock:
  *           type: integer
  *           example: 50
+ *         min_stock:
+ *           type: integer
+ *           example: 5
  */
-
 export class InventoryRoutes {
   public inventoryController: InventoryController = new InventoryController();
 
@@ -49,14 +34,22 @@ export class InventoryRoutes {
      * @openapi
      * /api/inventarios:
      *   get:
-     *     summary: Obtener todo el inventario activo
+     *     summary: Obtener todo el inventario (Solo Admin)
      *     tags: [Inventories]
+     *     security:
+     *       - bearerAuth: []
      *     responses:
      *       200:
-     *         description: Lista de inventarios
+     *         description: Lista de registros de inventario
+     *       401:
+     *         description: No autorizado
+     *       403:
+     *         description: Requiere rol admin
      *   post:
-     *     summary: Registrar stock en una sucursal para una variante
+     *     summary: Registrar stock en inventario (Solo Admin)
      *     tags: [Inventories]
+     *     security:
+     *       - bearerAuth: []
      *     requestBody:
      *       required: true
      *       content:
@@ -69,15 +62,17 @@ export class InventoryRoutes {
      */
     app
       .route("/api/inventarios")
-      .get(this.inventoryController.getAll.bind(this.inventoryController))
-      .post(this.inventoryController.create.bind(this.inventoryController));
+      .get(verifyToken, checkRole(["admin"]), this.inventoryController.getAll.bind(this.inventoryController))
+      .post(verifyToken, checkRole(["admin"]), this.inventoryController.create.bind(this.inventoryController));
 
     /**
      * @openapi
      * /api/inventarios/{id}:
      *   get:
-     *     summary: Obtener registro de inventario por ID
+     *     summary: Obtener registro de inventario por ID (Solo Admin)
      *     tags: [Inventories]
+     *     security:
+     *       - bearerAuth: []
      *     parameters:
      *       - in: path
      *         name: id
@@ -86,12 +81,12 @@ export class InventoryRoutes {
      *           type: integer
      *     responses:
      *       200:
-     *         description: Registro de inventario encontrado
-     *       404:
-     *         description: No encontrado
+     *         description: Registro encontrado
      *   put:
-     *     summary: Actualizar stock/información de inventario
+     *     summary: Actualizar stock de inventario (Solo Admin)
      *     tags: [Inventories]
+     *     security:
+     *       - bearerAuth: []
      *     parameters:
      *       - in: path
      *         name: id
@@ -110,27 +105,7 @@ export class InventoryRoutes {
      */
     app
       .route("/api/inventarios/:id")
-      .get(this.inventoryController.getOne.bind(this.inventoryController))
-      .put(this.inventoryController.update.bind(this.inventoryController));
-
-    /**
-     * @openapi
-     * /api/inventarios/{id}/deactivate:
-     *   patch:
-     *     summary: Desactivar registro de inventario (borrado lógico)
-     *     tags: [Inventories]
-     *     parameters:
-     *       - in: path
-     *         name: id
-     *         required: true
-     *         schema:
-     *           type: integer
-     *     responses:
-     *       200:
-     *         description: Registro desactivado
-     */
-    app
-      .route("/api/inventarios/:id/deactivate")
-      .patch(this.inventoryController.deleteLogical.bind(this.inventoryController));
+      .get(verifyToken, checkRole(["admin"]), this.inventoryController.getOne.bind(this.inventoryController))
+      .put(verifyToken, checkRole(["admin"]), this.inventoryController.update.bind(this.inventoryController));
   }
 }
