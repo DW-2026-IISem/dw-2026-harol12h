@@ -6942,7 +6942,7 @@ EOF
 ```bash
 : > src/features/business/inventory/inventory.get.http
 cat >> src/features/business/inventory/inventory.get.http << 'EOF'
-### 1. Iniciar Sesión para Obtener Token de Admin
+### Iniciar Sesión para Obtener Token de Admin
 @baseUrl = http://localhost:4000
 
 # @name login
@@ -6956,7 +6956,7 @@ Content-Type: application/json
 
 ###
 
-### 2. Consultar Listado de Inventarios (Requiere Rol Admin)
+### Consultar Listado de Inventarios (Requiere Rol Admin)
 @authToken = {{login.response.body.token}}
 
 # @name getAllInventories
@@ -6966,7 +6966,7 @@ Content-Type: application/json
 
 ###
 
-### 3. Consultar Registro de Inventario por ID (Requiere Rol Admin)
+### Consultar Registro de Inventario por ID (Requiere Rol Admin)
 
 # @name getOneInventory
 GET {{baseUrl}}/api/inventarios/1
@@ -6975,3 +6975,9 @@ Content-Type: application/json
 EOF
 ```
 ![](a/145.png)
+### Verificacion 
+#### Verificar la protección (Prueba sin Token)
+![](a/146.png)
+#### Verificar el acceso autorizado (Prueba con Token)
+![](a/147.png)
+
