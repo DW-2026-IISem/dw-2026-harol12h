@@ -1,5 +1,6 @@
 import { Application } from "express";
 import { CollectionController } from "./collection.controller";
+import { checkRole, verifyToken } from "../../../middlewares/auth.middleware";
 
 /**
  * @openapi
@@ -61,8 +62,8 @@ export class CollectionRoutes {
      */
     app
       .route("/api/colecciones")
-      .get(this.collectionController.getAll.bind(this.collectionController))
-      .post(this.collectionController.create.bind(this.collectionController));
+      .get(verifyToken, this.collectionController.getAll.bind(this.collectionController))
+      .post(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.collectionController.create.bind(this.collectionController));
 
     /**
      * @openapi
@@ -102,8 +103,9 @@ export class CollectionRoutes {
      */
     app
       .route("/api/colecciones/:id")
-      .get(this.collectionController.getOne.bind(this.collectionController))
-      .put(this.collectionController.update.bind(this.collectionController));
+      .get(verifyToken, this.collectionController.getOne.bind(this.collectionController))
+      .put(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.collectionController.update.bind(this.collectionController))
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.collectionController.deleteLogical.bind(this.collectionController));
 
     /**
      * @openapi
@@ -123,6 +125,7 @@ export class CollectionRoutes {
      */
     app
       .route("/api/colecciones/:id/deactivate")
-      .patch(this.collectionController.deleteLogical.bind(this.collectionController));
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.collectionController.deleteLogical.bind(this.collectionController))
+      .patch(verifyToken, checkRole(["ADMINISTRADOR"]), this.collectionController.deleteLogical.bind(this.collectionController));
   }
 }

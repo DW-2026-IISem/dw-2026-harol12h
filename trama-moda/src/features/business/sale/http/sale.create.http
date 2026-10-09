@@ -2,18 +2,18 @@
 @baseUrl = http://localhost:4000
 
 # @name login
-POST {{baseUrl}}/api/auth/login
+POST {{baseUrl}}/api/sesion/login
 Content-Type: application/json
 
 {
-  "email": "admin@tramamoda.com",
-  "password": "AdminPassword123!"
+  "username": "{{$dotenv AUTH_TEST_USERNAME}}",
+  "password": "{{$dotenv AUTH_TEST_PASSWORD}}"
 }
 
 ###
 
 ### 2. Registrar una Nueva Venta (Requiere Auth)
-@authToken = {{login.response.body.token}}
+@authToken = {{login.response.body.$.accessToken}}
 
 # @name createSale
 POST {{baseUrl}}/api/ventas

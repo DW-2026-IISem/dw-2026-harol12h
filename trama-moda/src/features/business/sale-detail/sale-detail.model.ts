@@ -1,6 +1,6 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../../../database/db";
-import { Sale } from "./sale.model";
+import { Sale } from "../sale/sale.model";
 import { Product } from "../product/product.model";
 
 export interface SaleDetailI {

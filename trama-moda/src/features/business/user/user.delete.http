@@ -1,7 +1,8 @@
-### Feature User — DELETE LOGICAL (Desactivar)
-### Leyenda: SIN AUTH
+### Feature User — DELETE LOGICAL (requiere ADMINISTRADOR)
 @baseUrl = http://localhost:4000
+@adminToken = REPLACE_WITH_ADMIN_TOKEN
 
 # @name deactivateUser
 PATCH {{baseUrl}}/api/usuarios/1/deactivate
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json

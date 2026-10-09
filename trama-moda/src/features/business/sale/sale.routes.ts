@@ -1,6 +1,6 @@
 import { Application } from "express";
 import { SaleController } from "./sale.controller";
-import { verifyToken } from "../../../middlewares/auth.middleware";
+import { checkRole, verifyToken } from "../../../middlewares/auth.middleware";
 
 /**
  * @openapi
@@ -58,7 +58,7 @@ export class SaleRoutes {
     app
       .route("/api/ventas")
       .get(verifyToken, this.saleController.getAll.bind(this.saleController))
-      .post(verifyToken, this.saleController.create.bind(this.saleController));
+      .post(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.saleController.create.bind(this.saleController));
 
     /**
      * @openapi
@@ -82,6 +82,12 @@ export class SaleRoutes {
      */
     app
       .route("/api/ventas/:id")
-      .get(verifyToken, this.saleController.getOne.bind(this.saleController));
+      .get(verifyToken, this.saleController.getOne.bind(this.saleController))
+      .put(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.saleController.update.bind(this.saleController))
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.saleController.deleteLogical.bind(this.saleController));
+
+    app
+      .route("/api/ventas/:id/deactivate")
+      .patch(verifyToken, checkRole(["ADMINISTRADOR"]), this.saleController.deleteLogical.bind(this.saleController));
   }
 }

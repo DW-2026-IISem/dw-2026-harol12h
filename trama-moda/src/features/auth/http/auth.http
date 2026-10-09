@@ -1,20 +1,23 @@
-### Auth — LOGIN
+### Login with the configured authentication test account
 @baseUrl = http://localhost:4000
+@username = {{$dotenv AUTH_TEST_USERNAME}}
+@password = {{$dotenv AUTH_TEST_PASSWORD}}
 
 # @name login
-POST {{baseUrl}}/api/auth/login
+POST {{baseUrl}}/api/sesion/login
 Content-Type: application/json
+Accept: application/json
 
 {
-  "email": "admin@tramamoda.com",
-  "password": "AdminPassword123!"
+  "username": "{{username}}",
+  "password": "{{password}}"
 }
 
 ###
 
-### Auth — OBTENER PERFIL
-@authToken = {{login.response.body.token}}
+### Verify the access token and get the authenticated profile
+@authToken = {{login.response.body.$.accessToken}}
 
-GET {{baseUrl}}/api/auth/profile
+GET {{baseUrl}}/api/sesion/me
 Authorization: Bearer {{authToken}}
-Content-Type: application/json
+Accept: application/json

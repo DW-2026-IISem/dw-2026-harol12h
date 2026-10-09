@@ -1,5 +1,6 @@
 import { Application } from "express";
 import { CategoryController } from "./category.controller";
+import { checkRole, verifyToken } from "../../../middlewares/auth.middleware";
 
 /**
  * @openapi
@@ -60,8 +61,8 @@ export class CategoryRoutes {
      */
     app
       .route("/api/categorias")
-      .get(this.categoryController.getAll.bind(this.categoryController))
-      .post(this.categoryController.create.bind(this.categoryController));
+      .get(verifyToken, this.categoryController.getAll.bind(this.categoryController))
+      .post(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.categoryController.create.bind(this.categoryController));
 
     /**
      * @openapi
@@ -101,8 +102,9 @@ export class CategoryRoutes {
      */
     app
       .route("/api/categorias/:id")
-      .get(this.categoryController.getOne.bind(this.categoryController))
-      .put(this.categoryController.update.bind(this.categoryController));
+      .get(verifyToken, this.categoryController.getOne.bind(this.categoryController))
+      .put(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.categoryController.update.bind(this.categoryController))
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.categoryController.deleteLogical.bind(this.categoryController));
 
     /**
      * @openapi
@@ -122,6 +124,7 @@ export class CategoryRoutes {
      */
     app
       .route("/api/categorias/:id/deactivate")
-      .patch(this.categoryController.deleteLogical.bind(this.categoryController));
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.categoryController.deleteLogical.bind(this.categoryController))
+      .patch(verifyToken, checkRole(["ADMINISTRADOR"]), this.categoryController.deleteLogical.bind(this.categoryController));
   }
 }

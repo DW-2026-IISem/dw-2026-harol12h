@@ -1,5 +1,6 @@
 import { Application } from "express";
 import { ProductController } from "./product.controller";
+import { checkRole, verifyToken } from "../../../middlewares/auth.middleware";
 
 /**
  * @openapi
@@ -69,8 +70,8 @@ export class ProductRoutes {
      */
     app
       .route("/api/productos")
-      .get(this.productController.getAll.bind(this.productController))
-      .post(this.productController.create.bind(this.productController));
+      .get(verifyToken, this.productController.getAll.bind(this.productController))
+      .post(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.productController.create.bind(this.productController));
 
     /**
      * @openapi
@@ -110,8 +111,9 @@ export class ProductRoutes {
      */
     app
       .route("/api/productos/:id")
-      .get(this.productController.getOne.bind(this.productController))
-      .put(this.productController.update.bind(this.productController));
+      .get(verifyToken, this.productController.getOne.bind(this.productController))
+      .put(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.productController.update.bind(this.productController))
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.productController.deleteLogical.bind(this.productController));
 
     /**
      * @openapi
@@ -131,6 +133,7 @@ export class ProductRoutes {
      */
     app
       .route("/api/productos/:id/deactivate")
-      .patch(this.productController.deleteLogical.bind(this.productController));
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.productController.deleteLogical.bind(this.productController))
+      .patch(verifyToken, checkRole(["ADMINISTRADOR"]), this.productController.deleteLogical.bind(this.productController));
   }
 }

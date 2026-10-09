@@ -1,5 +1,6 @@
 import { Application } from "express";
 import { SupplierController } from "./supplier.controller";
+import { checkRole, verifyToken } from "../../../middlewares/auth.middleware";
 
 /**
  * @openapi
@@ -78,8 +79,8 @@ export class SupplierRoutes {
      */
     app
       .route("/api/proveedores")
-      .get(this.supplierController.getAll.bind(this.supplierController))
-      .post(this.supplierController.create.bind(this.supplierController));
+      .get(verifyToken, this.supplierController.getAll.bind(this.supplierController))
+      .post(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.supplierController.create.bind(this.supplierController));
 
     /**
      * @openapi
@@ -119,8 +120,9 @@ export class SupplierRoutes {
      */
     app
       .route("/api/proveedores/:id")
-      .get(this.supplierController.getOne.bind(this.supplierController))
-      .put(this.supplierController.update.bind(this.supplierController));
+      .get(verifyToken, this.supplierController.getOne.bind(this.supplierController))
+      .put(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.supplierController.update.bind(this.supplierController))
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.supplierController.deleteLogical.bind(this.supplierController));
 
     /**
      * @openapi
@@ -140,6 +142,7 @@ export class SupplierRoutes {
      */
     app
       .route("/api/proveedores/:id/deactivate")
-      .patch(this.supplierController.deleteLogical.bind(this.supplierController));
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.supplierController.deleteLogical.bind(this.supplierController))
+      .patch(verifyToken, checkRole(["ADMINISTRADOR"]), this.supplierController.deleteLogical.bind(this.supplierController));
   }
 }

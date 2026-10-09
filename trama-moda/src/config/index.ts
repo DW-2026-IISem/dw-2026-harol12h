@@ -33,6 +33,7 @@ export class App {
     this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
     this.routePrv.authRoutes.routes(this.app);
+    this.routePrv.adminRoutes.routes(this.app);
     this.routePrv.clientRoutes.routes(this.app);
     this.routePrv.productRoutes.routes(this.app);
     this.routePrv.saleRoutes.routes(this.app);

@@ -1,15 +1,13 @@
-### Feature User — CREATE
-### Leyenda: SIN AUTH
+### Feature User — CREATE (requiere ADMINISTRADOR)
 @baseUrl = http://localhost:4000
+@adminToken = REPLACE_WITH_ADMIN_TOKEN
 
 # @name createUser
 POST {{baseUrl}}/api/usuarios
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "name": "Laura Martínez",
-  "email": "laura.martinez@tramamoda.com",
-  "password": "SecurePassword123!",
-  "role": "admin",
-  "branchId": 1
+  "nombre": "Laura Martínez",
+  "email": "laura.martinez@example.com"
 }

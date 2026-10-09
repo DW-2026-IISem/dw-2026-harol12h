@@ -1,7 +1,7 @@
 import { ClientRoutes } from "../features/business/client/client.routes";
 import { ProductRoutes } from "../features/business/product/product.routes";
 import { SaleRoutes } from "../features/business/sale/sale.routes";
-import { SaleDetailRoutes } from "../features/business/sale/sale-detail.routes";
+import { SaleDetailRoutes } from "../features/business/sale-detail/sale-detail.routes";
 import { CollectionRoutes } from "../features/business/catalog/collection.routes";
 import { VariantRoutes } from "../features/business/variants/variant.routes";
 import { BranchRoutes } from "../features/business/branch/branch.routes";
@@ -10,6 +10,7 @@ import { CategoryRoutes } from "../features/business/category/category.routes";
 import { SupplierRoutes } from "../features/business/supplier/supplier.routes";
 import { UserRoutes } from "../features/business/user/user.routes";
 import { AuthRoutes } from "../features/auth/auth.routes";
+import { AdminRoutes } from "../features/auth/admin.routes";
 
 export class Routes {
   public clientRoutes: ClientRoutes = new ClientRoutes();
@@ -24,4 +25,5 @@ export class Routes {
   public supplierRoutes: SupplierRoutes = new SupplierRoutes();
   public userRoutes: UserRoutes = new UserRoutes();
   public authRoutes: AuthRoutes = new AuthRoutes();
+  public adminRoutes: AdminRoutes = new AdminRoutes();
 }

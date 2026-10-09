@@ -1,5 +1,6 @@
 import { Application } from "express";
 import { BranchController } from "./branch.controller";
+import { checkRole, verifyToken } from "../../../middlewares/auth.middleware";
 
 /**
  * @openapi
@@ -67,8 +68,8 @@ export class BranchRoutes {
      */
     app
       .route("/api/sucursales")
-      .get(this.branchController.getAll.bind(this.branchController))
-      .post(this.branchController.create.bind(this.branchController));
+      .get(verifyToken, this.branchController.getAll.bind(this.branchController))
+      .post(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.branchController.create.bind(this.branchController));
 
     /**
      * @openapi
@@ -108,8 +109,9 @@ export class BranchRoutes {
      */
     app
       .route("/api/sucursales/:id")
-      .get(this.branchController.getOne.bind(this.branchController))
-      .put(this.branchController.update.bind(this.branchController));
+      .get(verifyToken, this.branchController.getOne.bind(this.branchController))
+      .put(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.branchController.update.bind(this.branchController))
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.branchController.deleteLogical.bind(this.branchController));
 
     /**
      * @openapi
@@ -129,6 +131,7 @@ export class BranchRoutes {
      */
     app
       .route("/api/sucursales/:id/deactivate")
-      .patch(this.branchController.deleteLogical.bind(this.branchController));
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.branchController.deleteLogical.bind(this.branchController))
+      .patch(verifyToken, checkRole(["ADMINISTRADOR"]), this.branchController.deleteLogical.bind(this.branchController));
   }
 }

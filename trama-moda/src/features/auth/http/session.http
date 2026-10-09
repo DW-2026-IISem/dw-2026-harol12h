@@ -1,0 +1,70 @@
+@baseUrl = http://localhost:4000
+@username = {{$dotenv AUTH_TEST_USERNAME}}
+@password = {{$dotenv AUTH_TEST_PASSWORD}}
+
+### Open: login returns an access token and a one-time refresh token
+# @name login
+POST {{baseUrl}}/api/sesion/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+###
+
+@accessToken = {{login.response.body.$.accessToken}}
+@refreshToken = {{login.response.body.$.refreshToken}}
+
+### JWT: access token authenticates the session
+GET {{baseUrl}}/api/sesion/me
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+### JWT: inspect effective RBAC permissions
+GET {{baseUrl}}/api/sesion/permissions
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+
+### Open: rotate refresh token; the old refresh token must not be reused
+# @name refreshed
+POST {{baseUrl}}/api/sesion/refresh
+Content-Type: application/json
+Accept: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+###
+
+@rotatedAccessToken = {{refreshed.response.body.$.accessToken}}
+@rotatedRefreshToken = {{refreshed.response.body.$.refreshToken}}
+
+### JWT: list active and revoked sessions without exposing token hashes
+GET {{baseUrl}}/api/sesion/sessions
+Authorization: Bearer {{rotatedAccessToken}}
+Accept: application/json
+
+###
+
+### Open: revoke the current refresh session
+POST {{baseUrl}}/api/sesion/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "{{rotatedRefreshToken}}"
+}
+
+###
+
+### JWT + RBAC: admin-only endpoint is denied to AUTH_TESTER (expect 403)
+GET {{baseUrl}}/api/usuarios
+Authorization: Bearer {{accessToken}}
+Accept: application/json

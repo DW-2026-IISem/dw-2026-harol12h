@@ -1,12 +1,12 @@
-### Feature User — UPDATE
-### Leyenda: SIN AUTH
+### Feature User — UPDATE (requiere ADMINISTRADOR)
 @baseUrl = http://localhost:4000
+@adminToken = REPLACE_WITH_ADMIN_TOKEN
 
 # @name updateUser
 PUT {{baseUrl}}/api/usuarios/1
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "name": "Laura Martínez R.",
-  "role": "super_admin"
+  "nombre": "Laura Martínez R."
 }

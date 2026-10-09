@@ -1,0 +1,81 @@
+@baseUrl = http://localhost:4000
+@adminUsername = {{$dotenv ADMIN_USERNAME}}
+@adminPassword = {{$dotenv ADMIN_PASSWORD}}
+
+### Login as administrator
+# @name adminLogin
+POST {{baseUrl}}/api/sesion/login
+Content-Type: application/json
+
+{
+  "username": "{{adminUsername}}",
+  "password": "{{adminPassword}}"
+}
+
+###
+
+@adminToken = {{adminLogin.response.body.$.accessToken}}
+
+### List authentication accounts and their roles
+GET {{baseUrl}}/api/admin/accounts
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Create a custom role; catalog defaults give no writes
+# @name createRole
+POST {{baseUrl}}/api/admin/roles
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "CONSULTA",
+  "description": "Rol de consulta de prueba"
+}
+
+###
+
+@roleId = {{createRole.response.body.$.role.id}}
+
+### Read the API resource catalog
+# @name listResources
+GET {{baseUrl}}/api/admin/resources
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Assign the custom role to an existing account; replace accountId
+@accountId = 1
+POST {{baseUrl}}/api/admin/role-users
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "userId": {{accountId}},
+  "roleId": {{roleId}}
+}
+
+###
+
+### Reconcile the custom role's complete permission set
+PUT {{baseUrl}}/api/admin/roles/{{roleId}}/resources
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "resourceIds": []
+}
+
+###
+
+### Revoke a permission directly; replace grantId
+@grantId = 1
+PATCH {{baseUrl}}/api/admin/resource-roles/{{grantId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "inactive"
+}

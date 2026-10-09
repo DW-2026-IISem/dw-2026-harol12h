@@ -12,18 +12,40 @@ import { verifyToken, checkRole } from "../../../middlewares/auth.middleware";
  *         id:
  *           type: integer
  *           example: 1
- *         name:
+ *         nombre:
  *           type: string
- *           example: "Admin Principal"
+ *           example: "Laura Martínez"
  *         email:
  *           type: string
  *           example: "admin@tramamoda.com"
- *         role:
+ *         status:
  *           type: string
- *           example: "admin"
- *         is_active:
- *           type: boolean
- *           example: true
+ *           enum: [active, inactive]
+ *           example: "active"
+ *     UserInput:
+ *       type: object
+ *       required: [nombre, email]
+ *       properties:
+ *         nombre:
+ *           type: string
+ *           maxLength: 100
+ *           example: "Laura Martínez"
+ *         email:
+ *           type: string
+ *           format: email
+ *           maxLength: 150
+ *           example: "laura.martinez@example.com"
+ *     UserUpdate:
+ *       type: object
+ *       minProperties: 1
+ *       properties:
+ *         nombre:
+ *           type: string
+ *           maxLength: 100
+ *         email:
+ *           type: string
+ *           format: email
+ *           maxLength: 150
  */
 export class UserRoutes {
   public userController: UserController = new UserController();
@@ -54,30 +76,15 @@ export class UserRoutes {
      *       content:
      *         application/json:
      *           schema:
-     *             type: object
-     *             required:
-     *               - name:
-     *               - email
-     *               - password
-     *               - role
-     *             properties:
-     *               name:
-     *                 type: string
-     *               email:
-     *                 type: string
-     *               password:
-     *                 type: string
-     *               role:
-     *                 type: string
-     *                 enum: [admin, seller]
+     *               $ref: '#/components/schemas/UserInput'
      *     responses:
      *       201:
      *         description: Usuario creado
      */
     app
       .route("/api/usuarios")
-      .get(verifyToken, checkRole(["admin"]), this.userController.getAll.bind(this.userController))
-      .post(verifyToken, checkRole(["admin"]), this.userController.create.bind(this.userController));
+      .get(verifyToken, checkRole(["ADMINISTRADOR"]), this.userController.getAll.bind(this.userController))
+      .post(verifyToken, checkRole(["ADMINISTRADOR"]), this.userController.create.bind(this.userController));
 
     /**
      * @openapi
@@ -110,11 +117,18 @@ export class UserRoutes {
      *     responses:
      *       200:
      *         description: Usuario actualizado
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/UserUpdate'
      */
     app
       .route("/api/usuarios/:id")
-      .get(verifyToken, checkRole(["admin"]), this.userController.getOne.bind(this.userController))
-      .put(verifyToken, checkRole(["admin"]), this.userController.update.bind(this.userController));
+      .get(verifyToken, checkRole(["ADMINISTRADOR"]), this.userController.getOne.bind(this.userController))
+      .put(verifyToken, checkRole(["ADMINISTRADOR"]), this.userController.update.bind(this.userController))
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.userController.deleteLogical.bind(this.userController));
 
     /**
      * @openapi
@@ -136,6 +150,7 @@ export class UserRoutes {
      */
     app
       .route("/api/usuarios/:id/deactivate")
-      .patch(verifyToken, checkRole(["admin"]), this.userController.deleteLogical.bind(this.userController));
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.userController.deleteLogical.bind(this.userController))
+      .patch(verifyToken, checkRole(["ADMINISTRADOR"]), this.userController.deleteLogical.bind(this.userController));
   }
 }

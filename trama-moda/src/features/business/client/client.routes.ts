@@ -1,6 +1,6 @@
 import { Application } from "express";
 import { ClientController } from "./client.controller";
-import { verifyToken } from "../../../middlewares/auth.middleware";
+import { checkRole, verifyToken } from "../../../middlewares/auth.middleware";
 
 /**
  * @openapi
@@ -90,7 +90,7 @@ export class ClientRoutes {
     app
       .route("/api/clientes")
       .get(verifyToken, this.clientController.getAll.bind(this.clientController))
-      .post(verifyToken, this.clientController.create.bind(this.clientController));
+      .post(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.clientController.create.bind(this.clientController));
 
     /**
      * @openapi
@@ -139,7 +139,8 @@ export class ClientRoutes {
     app
       .route("/api/clientes/:id")
       .get(verifyToken, this.clientController.getOne.bind(this.clientController))
-      .put(verifyToken, this.clientController.update.bind(this.clientController));
+      .put(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.clientController.update.bind(this.clientController))
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.clientController.deleteLogical.bind(this.clientController));
 
     /**
      * @openapi
@@ -163,6 +164,7 @@ export class ClientRoutes {
      */
     app
       .route("/api/clientes/:id/deactivate")
-      .patch(verifyToken, this.clientController.deleteLogical.bind(this.clientController));
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.clientController.deleteLogical.bind(this.clientController))
+      .patch(verifyToken, checkRole(["ADMINISTRADOR"]), this.clientController.deleteLogical.bind(this.clientController));
   }
 }

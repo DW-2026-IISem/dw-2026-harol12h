@@ -1,0 +1,43 @@
+{
+  "name": "@fakerjs/paragraph",
+  "version": "1.0.0",
+  "description": "Paragraph package provides functionality to generate a fake paragraph populated by semi-pronounceable random (nonsense) sentences value.",
+  "license": "MIT",
+  "repository": "faker-javascript/paragraph",
+  "author": {
+    "name": "Sergey Romanenko",
+    "email": "awilum@msn.com",
+    "url": "https://github.com/Awilum"
+  },
+  "type": "module",
+  "exports": "./index.js",
+  "engines": {
+    "node": ">=12"
+  },
+  "scripts": {
+    "test": "c8 ava; xo --space 4; tsd;"
+  },
+  "dependencies": {
+    "@fakerjs/sentence": "^1" 
+  },
+  "devDependencies": {
+    "ava": "^4.0.0",
+    "c8": "^7.11.0",
+    "tsd": "^0.19.1",
+    "xo": "^0.47.0"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
+  "keysentences": [
+    "fakerjs",
+    "faker",
+    "fake",
+    "random",
+    "string",
+    "syllable",
+    "sentences",
+    "paragraph"
+  ]
+}

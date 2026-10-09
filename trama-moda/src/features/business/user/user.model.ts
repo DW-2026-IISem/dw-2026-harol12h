@@ -1,81 +1,37 @@
-import { DataTypes, Model } from "sequelize";
-import bcrypt from "bcryptjs";
+import { Model, DataTypes } from "sequelize";
 import { sequelize } from "../../../database/db";
 
-export interface UserI {
-  id?: number;
-  name: string;
-  email: string;
-  password?: string;
-  role: string;
-  branchId?: number;
-  is_active: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export class User extends Model implements UserI {
+export class User extends Model {
   public id!: number;
-  public name!: string;
+  public nombre!: string;
   public email!: string;
-  public password!: string;
-  public role!: string;
-  public branchId!: number;
-  public is_active!: boolean;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
-
-  public async validatePassword(password: string): Promise<boolean> {
-    return bcrypt.compare(password, this.password);
-  }
+  public status!: string;
 }
 
 User.init(
   {
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    nombre: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
     },
     email: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(150),
       allowNull: false,
-      unique: true
+      unique: true,
     },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false
+    status: {
+      type: DataTypes.STRING(20),
+      defaultValue: "active",
     },
-    role: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      defaultValue: "seller"
-    },
-    branchId: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    is_active: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true
-    }
   },
   {
     sequelize,
-    tableName: "users",
+    tableName: "business_users",
     timestamps: true,
-    hooks: {
-      beforeCreate: async (user: User) => {
-        if (user.password) {
-          const salt = await bcrypt.genSalt(10);
-          user.password = await bcrypt.hash(user.password, salt);
-        }
-      },
-      beforeUpdate: async (user: User) => {
-        if (user.changed("password")) {
-          const salt = await bcrypt.genSalt(10);
-          user.password = await bcrypt.hash(user.password, salt);
-        }
-      }
-    }
   }
 );

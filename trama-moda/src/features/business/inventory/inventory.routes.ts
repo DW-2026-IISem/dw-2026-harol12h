@@ -62,8 +62,8 @@ export class InventoryRoutes {
      */
     app
       .route("/api/inventarios")
-      .get(verifyToken, checkRole(["admin"]), this.inventoryController.getAll.bind(this.inventoryController))
-      .post(verifyToken, checkRole(["admin"]), this.inventoryController.create.bind(this.inventoryController));
+      .get(verifyToken, checkRole(["ADMINISTRADOR"]), this.inventoryController.getAll.bind(this.inventoryController))
+      .post(verifyToken, checkRole(["ADMINISTRADOR"]), this.inventoryController.create.bind(this.inventoryController));
 
     /**
      * @openapi
@@ -105,7 +105,8 @@ export class InventoryRoutes {
      */
     app
       .route("/api/inventarios/:id")
-      .get(verifyToken, checkRole(["admin"]), this.inventoryController.getOne.bind(this.inventoryController))
-      .put(verifyToken, checkRole(["admin"]), this.inventoryController.update.bind(this.inventoryController));
+      .get(verifyToken, checkRole(["ADMINISTRADOR"]), this.inventoryController.getOne.bind(this.inventoryController))
+      .put(verifyToken, checkRole(["ADMINISTRADOR"]), this.inventoryController.update.bind(this.inventoryController))
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.inventoryController.deleteLogical.bind(this.inventoryController));
   }
 }

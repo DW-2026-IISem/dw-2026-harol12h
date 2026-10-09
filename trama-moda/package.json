@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "nodemon --watch src --ext ts --exec ts-node -- src/server.ts"
+    "dev": "nodemon --watch src --ext ts --exec ts-node -- src/server.ts",
+    "init-admin": "ts-node src/database/init-admin.ts",
+    "seed:auth-test": "ts-node src/database/seeders/auth-test.seeder.ts",
+    "seed": "ts-node src/database/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +27,7 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@fakerjs/faker": "^3.0.0",
     "@types/bcryptjs": "^3.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",

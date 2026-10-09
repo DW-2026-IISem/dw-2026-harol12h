@@ -1,46 +1,50 @@
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import { NextFunction, Request, Response } from "express";
+import { attachAuthenticatedUser } from "../features/auth/access/authenticate.middleware";
+import { Role } from "../features/auth/roles/role.model";
+import { RoleUser } from "../features/auth/role-users/role-user.model";
+import { authorize } from "../features/auth/access/authorize.middleware";
+import { AppError } from "../shared/errors/app-error";
+import { sendError } from "../shared/http/error-response";
+import "../shared/auth/auth-user";
 
-export interface AuthRequest extends Request {
-  user?: {
-    id: number;
-    email: string;
-    role: string;
-  };
+export async function verifyToken(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    await attachAuthenticatedUser(req);
+    await authorize(req, res, next);
+  } catch (error) {
+    sendError(res, error);
+  }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || "trama_moda_secret_key_2026";
-
-export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction): void => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-
-  if (!token) {
-    res.status(401).json({ error: "Acceso denegado. Token no proporcionado." });
-    return;
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: number; email: string; role: string };
-    req.user = decoded;
-    next();
-  } catch (error) {
-    res.status(403).json({ error: "Token inválido o expirado." });
-  }
-};
+function normalizeRoleName(role: string): string {
+  const normalized = role.trim().toLowerCase();
+  return normalized === "admin" ? "administrador" : normalized;
+}
 
 export const checkRole = (allowedRoles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction): void => {
-    if (!req.user) {
-      res.status(401).json({ error: "No autenticado." });
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    if (!req.auth) {
+      sendError(res, new AppError(401, "Authentication required"));
       return;
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
-      res.status(403).json({ error: "No tienes permisos suficientes para realizar esta acción." });
-      return;
-    }
+    try {
+      const assignments = await RoleUser.findAll({
+        where: { user_id: req.auth.id, status: "active" },
+      });
+      const roleIds = assignments.map((assignment) => assignment.role_id);
+      const roles = await Role.findAll({
+        where: { id: roleIds, status: "active" },
+      });
+      const allowed = new Set(allowedRoles.map(normalizeRoleName));
 
-    next();
+      if (!roles.some((role) => allowed.has(normalizeRoleName(role.name)))) {
+        throw new AppError(403, "No tienes permisos suficientes para realizar esta acción.");
+      }
+
+      next();
+    } catch (error) {
+      sendError(res, error);
+    }
   };
 };

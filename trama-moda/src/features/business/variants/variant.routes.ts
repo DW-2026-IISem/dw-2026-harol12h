@@ -1,5 +1,6 @@
 import { Application } from "express";
 import { VariantController } from "./variant.controller";
+import { checkRole, verifyToken } from "../../../middlewares/auth.middleware";
 
 /**
  * @openapi
@@ -61,8 +62,8 @@ export class VariantRoutes {
      */
     app
       .route("/api/variantes")
-      .get(this.variantController.getAll.bind(this.variantController))
-      .post(this.variantController.create.bind(this.variantController));
+      .get(verifyToken, this.variantController.getAll.bind(this.variantController))
+      .post(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.variantController.create.bind(this.variantController));
 
     /**
      * @openapi
@@ -102,8 +103,9 @@ export class VariantRoutes {
      */
     app
       .route("/api/variantes/:id")
-      .get(this.variantController.getOne.bind(this.variantController))
-      .put(this.variantController.update.bind(this.variantController));
+      .get(verifyToken, this.variantController.getOne.bind(this.variantController))
+      .put(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.variantController.update.bind(this.variantController))
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.variantController.deleteLogical.bind(this.variantController));
 
     /**
      * @openapi
@@ -123,6 +125,7 @@ export class VariantRoutes {
      */
     app
       .route("/api/variantes/:id/deactivate")
-      .patch(this.variantController.deleteLogical.bind(this.variantController));
+      .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.variantController.deleteLogical.bind(this.variantController))
+      .patch(verifyToken, checkRole(["ADMINISTRADOR"]), this.variantController.deleteLogical.bind(this.variantController));
   }
 }
