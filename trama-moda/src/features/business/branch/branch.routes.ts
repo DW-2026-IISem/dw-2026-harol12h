@@ -48,8 +48,9 @@ export class BranchRoutes {
      * @openapi
      * /api/sucursales:
      *   get:
-     *     summary: Obtener todas las sucursales activas
+     *     summary: Obtener sucursales activas (público)
      *     tags: [Branches]
+     *     security: []
      *     responses:
      *       200:
      *         description: Lista de sucursales
@@ -68,15 +69,16 @@ export class BranchRoutes {
      */
     app
       .route("/api/sucursales")
-      .get(verifyToken, this.branchController.getAll.bind(this.branchController))
+      .get(this.branchController.getAll.bind(this.branchController))
       .post(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.branchController.create.bind(this.branchController));
 
     /**
      * @openapi
      * /api/sucursales/{id}:
      *   get:
-     *     summary: Obtener sucursal por ID
+     *     summary: Obtener sucursal por ID (público)
      *     tags: [Branches]
+     *     security: []
      *     parameters:
      *       - in: path
      *         name: id
@@ -109,7 +111,7 @@ export class BranchRoutes {
      */
     app
       .route("/api/sucursales/:id")
-      .get(verifyToken, this.branchController.getOne.bind(this.branchController))
+      .get(this.branchController.getOne.bind(this.branchController))
       .put(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.branchController.update.bind(this.branchController))
       .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.branchController.deleteLogical.bind(this.branchController));
 

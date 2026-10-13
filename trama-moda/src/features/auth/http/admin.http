@@ -8,8 +8,8 @@ POST {{baseUrl}}/api/sesion/login
 Content-Type: application/json
 
 {
-  "username": "{{adminUsername}}",
-  "password": "{{adminPassword}}"
+  "username": "harol",
+  "password": "harol1234567+"
 }
 
 ###
@@ -30,8 +30,8 @@ Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "name": "CONSULTA",
-  "description": "Rol de consulta de prueba"
+  "name": "CLIENTE",
+  "description": "Rol para clientes con acceso de consulta"
 }
 
 ###

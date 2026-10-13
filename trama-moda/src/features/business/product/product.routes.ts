@@ -50,8 +50,9 @@ export class ProductRoutes {
      * @openapi
      * /api/productos:
      *   get:
-     *     summary: Obtener todos los productos activos
+     *     summary: Obtener productos activos (público)
      *     tags: [Products]
+     *     security: []
      *     responses:
      *       200:
      *         description: Lista de productos obtenida con éxito
@@ -70,15 +71,16 @@ export class ProductRoutes {
      */
     app
       .route("/api/productos")
-      .get(verifyToken, this.productController.getAll.bind(this.productController))
+      .get(this.productController.getAll.bind(this.productController))
       .post(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.productController.create.bind(this.productController));
 
     /**
      * @openapi
      * /api/productos/{id}:
      *   get:
-     *     summary: Obtener un producto por ID
+     *     summary: Obtener un producto por ID (público)
      *     tags: [Products]
+     *     security: []
      *     parameters:
      *       - in: path
      *         name: id
@@ -111,7 +113,7 @@ export class ProductRoutes {
      */
     app
       .route("/api/productos/:id")
-      .get(verifyToken, this.productController.getOne.bind(this.productController))
+      .get(this.productController.getOne.bind(this.productController))
       .put(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.productController.update.bind(this.productController))
       .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.productController.deleteLogical.bind(this.productController));
 

@@ -9,17 +9,12 @@ import { checkRole, verifyToken } from "../../../middlewares/auth.middleware";
  *     SaleInput:
  *       type: object
  *       required:
- *         - clientId
- *         - branchId
- *         - total
+ *         - client_id
  *       properties:
- *         clientId:
+ *         client_id:
  *           type: integer
  *           example: 1
- *         branchId:
- *           type: integer
- *           example: 1
- *         total:
+ *         monto_total:
  *           type: number
  *           example: 150000
  */

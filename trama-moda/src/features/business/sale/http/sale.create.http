@@ -21,7 +21,6 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-  "clientId": 1,
-  "branchId": 1,
-  "total": 150000
+  "client_id": 1,
+  "monto_total": 150000
 }

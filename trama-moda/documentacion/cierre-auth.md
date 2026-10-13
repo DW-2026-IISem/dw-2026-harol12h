@@ -34,8 +34,13 @@ El access token usa HS256, `issuer`, `audience`, `exp` y `jti`. El refresh token
 | `GET /api/sesion/permissions` | JWT | Devuelve concesiones efectivas |
 | `GET /api/sesion/sessions` | JWT | Lista sesiones sin hashes de tokens |
 | `POST /api/sesion/sessions/revoke` | JWT | Revoca todas las sesiones de la cuenta |
+| `GET /api/productos`, `/api/productos/:id` | Publica | Consulta del catalogo de productos |
+| `GET /api/categorias`, `/api/categorias/:id` | Publica | Consulta del catalogo de categorias |
+| `GET /api/colecciones`, `/api/colecciones/:id` | Publica | Consulta del catalogo de colecciones |
+| `GET /api/variantes`, `/api/variantes/:id` | Publica | Consulta de tallas y variantes |
+| `GET /api/sucursales`, `/api/sucursales/:id` | Publica | Consulta de sucursales |
 
-Login, refresh y logout son abiertos intencionalmente; las operaciones de perfil requieren JWT. Las rutas de negocio y administracion requieren JWT y una concesion activa para el metodo y patron de ruta. Un token valido sin concesion responde `403`; credenciales/token ausentes, invalidos, expirados o cuenta inactiva responden `401`.
+Login, refresh y logout son abiertos intencionalmente; las operaciones de perfil requieren JWT. Las lecturas de catalogo indicadas son publicas; sus escrituras y las demas rutas de negocio/administracion requieren JWT y una concesion activa para el metodo y patron de ruta. Un token valido sin concesion responde `403`; credenciales/token ausentes, invalidos, expirados o cuenta inactiva responden `401`.
 
 ## Administracion RBAC
 
@@ -50,7 +55,7 @@ Al iniciar el servidor, el catalogo sincroniza las rutas y permisos de los roles
 1. Ejecuta `npm run build`.
 2. Configura `AUTH_TEST_USERNAME`, `AUTH_TEST_EMAIL` y `AUTH_TEST_PASSWORD`; prepara esa cuenta de prueba con `npm run seed:auth-test`.
 3. Arranca con `npm run dev` y abre `src/features/auth/http/session.http`.
-4. Comprueba login abierto, `/me` y `/permissions` con JWT, rotacion refresh y logout. Reutilizar el refresh anterior debe responder `401` y revocar la familia.
+4. Comprueba sin Authorization los GET publicos del catalogo; login abierto, `/me` y `/permissions` con JWT, rotacion refresh y logout. Reutilizar el refresh anterior debe responder `401` y revocar la familia.
 5. La solicitud a `GET /api/usuarios` con `AUTH_TESTER` debe responder `403`; sin Authorization, una ruta protegida debe responder `401`. Una operacion con concesion activa debe responder `200` o `201`.
 6. Revisa el contrato OpenAPI en `/api-docs`.
 

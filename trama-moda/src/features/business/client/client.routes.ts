@@ -12,46 +12,46 @@ import { checkRole, verifyToken } from "../../../middlewares/auth.middleware";
  *         id:
  *           type: integer
  *           example: 1
- *         first_name:
+ *         tipo_documento:
  *           type: string
- *           example: "Juan"
- *         last_name:
+ *           example: "CC"
+ *         numero_documento:
  *           type: string
- *           example: "Pérez"
+ *           example: "1020304050"
+ *         nombre:
+ *           type: string
+ *           example: "Juan Pérez"
  *         email:
  *           type: string
  *           example: "juan.perez@email.com"
- *         phone:
+ *         telefono:
  *           type: string
  *           example: "+573009876543"
- *         document_number:
+ *         status:
  *           type: string
- *           example: "1020304050"
- *         is_active:
- *           type: boolean
- *           example: true
+ *           enum: [active, inactive]
  *     ClientInput:
  *       type: object
  *       required:
- *         - first_name
- *         - last_name
- *         - document_number
+ *         - tipo_documento
+ *         - numero_documento
+ *         - nombre
  *       properties:
- *         first_name:
+ *         tipo_documento:
  *           type: string
- *           example: "Juan"
- *         last_name:
+ *           example: "CC"
+ *         numero_documento:
  *           type: string
- *           example: "Pérez"
+ *           example: "1020304050"
+ *         nombre:
+ *           type: string
+ *           example: "Juan Pérez"
  *         email:
  *           type: string
  *           example: "juan.perez@email.com"
- *         phone:
+ *         telefono:
  *           type: string
  *           example: "+573009876543"
- *         document_number:
- *           type: string
- *           example: "1020304050"
  */
 export class ClientRoutes {
   public clientController: ClientController = new ClientController();

@@ -8,6 +8,7 @@ const options: swaggerJSDoc.Options = {
       version: "1.0.0",
       description: "Documentación interactiva de la API de TramaModa"
     },
+    security: [{ bearerAuth: [] }],
     servers: [
       {
         url: "http://localhost:4000",

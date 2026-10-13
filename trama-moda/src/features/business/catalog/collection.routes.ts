@@ -42,8 +42,9 @@ export class CollectionRoutes {
      * @openapi
      * /api/colecciones:
      *   get:
-     *     summary: Obtener todas las colecciones activas
+     *     summary: Obtener colecciones activas (público)
      *     tags: [Collections]
+     *     security: []
      *     responses:
      *       200:
      *         description: Lista de colecciones
@@ -62,15 +63,16 @@ export class CollectionRoutes {
      */
     app
       .route("/api/colecciones")
-      .get(verifyToken, this.collectionController.getAll.bind(this.collectionController))
+      .get(this.collectionController.getAll.bind(this.collectionController))
       .post(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.collectionController.create.bind(this.collectionController));
 
     /**
      * @openapi
      * /api/colecciones/{id}:
      *   get:
-     *     summary: Obtener colección por ID
+     *     summary: Obtener colección por ID (público)
      *     tags: [Collections]
+     *     security: []
      *     parameters:
      *       - in: path
      *         name: id
@@ -103,7 +105,7 @@ export class CollectionRoutes {
      */
     app
       .route("/api/colecciones/:id")
-      .get(verifyToken, this.collectionController.getOne.bind(this.collectionController))
+      .get(this.collectionController.getOne.bind(this.collectionController))
       .put(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.collectionController.update.bind(this.collectionController))
       .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.collectionController.deleteLogical.bind(this.collectionController));
 

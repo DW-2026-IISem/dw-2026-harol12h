@@ -33,8 +33,9 @@ export class ClientController {
 
   public async create(req: Request, res: Response) {
     try {
-      const { nombre, numero_documento, email, telefono } = req.body;
+      const { tipo_documento, nombre, numero_documento, email, telefono } = req.body;
       const client = await Client.create({
+        tipo_documento,
         nombre,
         numero_documento,
         email,

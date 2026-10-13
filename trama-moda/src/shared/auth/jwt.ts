@@ -72,7 +72,6 @@ export function verifyAccessToken(token: string): AccessTokenPayload {
 
 export function extractBearerToken(header: string | undefined): string | null {
   if (!header) return null;
-  const [scheme, value] = header.split(" ");
-  if (!scheme || !value || scheme.toLowerCase() !== "bearer") return null;
-  return value;
+  const match = /^Bearer\s+(\S+)$/i.exec(header.trim());
+  return match?.[1] ?? null;
 }

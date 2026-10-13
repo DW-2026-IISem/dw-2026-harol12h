@@ -41,8 +41,9 @@ export class CategoryRoutes {
      * @openapi
      * /api/categorias:
      *   get:
-     *     summary: Obtener todas las categorías activas
+     *     summary: Obtener categorías activas (público)
      *     tags: [Categories]
+     *     security: []
      *     responses:
      *       200:
      *         description: Lista de categorías
@@ -61,15 +62,16 @@ export class CategoryRoutes {
      */
     app
       .route("/api/categorias")
-      .get(verifyToken, this.categoryController.getAll.bind(this.categoryController))
+      .get(this.categoryController.getAll.bind(this.categoryController))
       .post(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.categoryController.create.bind(this.categoryController));
 
     /**
      * @openapi
      * /api/categorias/{id}:
      *   get:
-     *     summary: Obtener categoría por ID
+     *     summary: Obtener categoría por ID (público)
      *     tags: [Categories]
+     *     security: []
      *     parameters:
      *       - in: path
      *         name: id
@@ -102,7 +104,7 @@ export class CategoryRoutes {
      */
     app
       .route("/api/categorias/:id")
-      .get(verifyToken, this.categoryController.getOne.bind(this.categoryController))
+      .get(this.categoryController.getOne.bind(this.categoryController))
       .put(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.categoryController.update.bind(this.categoryController))
       .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.categoryController.deleteLogical.bind(this.categoryController));
 

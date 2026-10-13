@@ -42,8 +42,9 @@ export class VariantRoutes {
      * @openapi
      * /api/variantes:
      *   get:
-     *     summary: Obtener todas las variantes activas
+     *     summary: Obtener variantes activas (público)
      *     tags: [Variants]
+     *     security: []
      *     responses:
      *       200:
      *         description: Lista de variantes
@@ -62,15 +63,16 @@ export class VariantRoutes {
      */
     app
       .route("/api/variantes")
-      .get(verifyToken, this.variantController.getAll.bind(this.variantController))
+      .get(this.variantController.getAll.bind(this.variantController))
       .post(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.variantController.create.bind(this.variantController));
 
     /**
      * @openapi
      * /api/variantes/{id}:
      *   get:
-     *     summary: Obtener variante por ID
+     *     summary: Obtener variante por ID (público)
      *     tags: [Variants]
+     *     security: []
      *     parameters:
      *       - in: path
      *         name: id
@@ -103,7 +105,7 @@ export class VariantRoutes {
      */
     app
       .route("/api/variantes/:id")
-      .get(verifyToken, this.variantController.getOne.bind(this.variantController))
+      .get(this.variantController.getOne.bind(this.variantController))
       .put(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.variantController.update.bind(this.variantController))
       .delete(verifyToken, checkRole(["ADMINISTRADOR"]), this.variantController.deleteLogical.bind(this.variantController));
 
