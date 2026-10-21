@@ -6980,4 +6980,214 @@ EOF
 ![](a/146.png)
 #### Verificar el acceso autorizado (Prueba con Token)
 ![](a/147.png)
----------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+# Frontend
+## ISS-01 Bootstrap Angular 22 con CLI, Tailwind y PrimeNG
+### 1.1 Crear el proyecto en la carpeta actual
+```bash
+cd ~/ia-lab/projects/dw/trama-moda/frontend
+npx @angular/cli@22 new frontend \
+  --directory . \
+  --style=tailwind \
+  --ssr=false \
+  --routing \
+  --zoneless \
+  --skip-git \
+  --package-manager=npm
+```
+### 1.2 Instalar PrimeNG 22 y sus temas
+```bash
+npm install primeng @primeuix/themes primeicons @angular/cdk
+```
+![](a/154.png)
+
+Verificamos versiones 
+```bash
+npm ls primeng @primeuix/themes primeicons @angular/cdk --depth=0
+```
+![](a/155.png)
+
+### 1.3 Estilos globales
+Crea/reemplaza src/styles.css:
+```bash
+cat > src/styles.css <<'EOF'
+/* Tailwind 4 (lo configuró `ng new --style=tailwind`) */
+@import 'tailwindcss';
+/* Iconos usados por PrimeNG (pi pi-*) */
+@import 'primeicons/primeicons.css';
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  background-color: #f1f5f9; /* slate-100 */
+  color: #0f172a; /* slate-900 */
+}
+
+/* Los controles de PrimeNG ocupan el ancho de su contenedor. */
+.p-inputtext,
+.p-select,
+.p-password,
+.p-inputnumber,
+.p-datepicker,
+.p-textarea {
+  width: 100%;
+}
+
+/* Tarjetas reutilizables */
+@layer components {
+  .card {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  }
+  .card-body {
+    @apply p-4 sm:p-6;
+  }
+  .field-label {
+    @apply mb-1 block text-sm font-medium text-slate-700;
+  }
+  .field-error {
+    @apply mt-1 block text-xs font-medium text-red-600;
+  }
+}
+
+/* Ajustes finos de la tabla */
+.p-datatable .p-datatable-header {
+  background: transparent;
+  border: 0;
+  padding: 0 0 1rem 0;
+}
+
+/* Scrollbar discreto */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+EOF
+```
+### 1.4 Configurar PrimeNG en app.config.ts
+Reemplaza src/app/app.config.ts:
+```bash
+cat > src/app/app.config.ts <<'EOF'
+import {
+  ApplicationConfig,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
+import {
+  provideRouter,
+  withComponentInputBinding,
+  withInMemoryScrolling,
+} from '@angular/router';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeuix/themes/aura';
+
+import { routes } from './app.routes';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideBrowserGlobalErrorListeners(),
+
+    provideRouter(
+      routes,
+      withComponentInputBinding(),
+      withInMemoryScrolling({ scrollPositionRestoration: 'top' }),
+    ),
+
+    // PrimeNG 22: tema Aura. El modo oscuro se activa con la clase .app-dark.
+    providePrimeNG({
+      ripple: true,
+      inputVariant: 'outlined',
+      theme: {
+        preset: Aura,
+        options: {
+          darkModeSelector: '.app-dark',
+          cssLayer: false,
+        },
+      },
+    }),
+
+    MessageService,
+    ConfirmationService,
+  ],
+};
+EOF
+```
+### 1.5 Limpiar la pantalla por defecto
+
+```bash
+cat > src/app/app.html <<'EOF'
+<router-outlet />
+EOF
+```
+
+```bash
+cat > src/app/app.ts <<'EOF'
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+
+@Component({
+  selector: 'app-root',
+  imports: [RouterOutlet],
+  templateUrl: './app.html',
+  styleUrl: './app.css',
+})
+export class App {}
+EOF
+```
+### 1.6 Personalizar index.html
+```bash
+cat > src/index.html <<'EOF'
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Trama Moda · Angular 22</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Frontend Angular 22 con Signals, PrimeNG y Tailwind para StoreLab Express.">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>
+EOF
+```
+### 1.7 Ajustar el presupuesto de build
+
+El bundle inicial con PrimeNG supera los 500 kB por defecto. En angular.json, dentro de projects → ... → architect → build → configurations → production → budgets, cambia el primer presupuesto:
+```bash
+{
+  "type": "initial",
+  "maximumWarning": "750kB",
+  "maximumError": "1MB"
+}
+```
+### 1.8 Primera ejecución
+```bash
+npm start
+```

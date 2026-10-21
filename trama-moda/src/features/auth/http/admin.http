@@ -21,6 +21,18 @@ GET {{baseUrl}}/api/admin/accounts
 Authorization: Bearer {{adminToken}}
 Accept: application/json
 
+### Crear una cuenta nueva de vendedor
+POST {{baseUrl}}/api/admin/accounts
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "username": "basico",
+  "email": "basico@example.com",
+  "password": "basico12345678",
+  "role": "operador"
+}
+
 ###
 
 ### Create a custom role; catalog defaults give no writes
@@ -30,8 +42,8 @@ Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "name": "CLIENTE",
-  "description": "Rol para clientes con acceso de consulta"
+  "name": "operador",
+  "description": "rol operador"
 }
 
 ###
@@ -53,19 +65,19 @@ Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "userId": {{accountId}},
-  "roleId": {{roleId}}
+  "userId": 10,
+  "roleId": 129
 }
 
 ###
 
 ### Reconcile the custom role's complete permission set
-PUT {{baseUrl}}/api/admin/roles/{{roleId}}/resources
+PUT {{baseUrl}}/api/admin/roles/8/resources
 Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "resourceIds": []
+  "resourceIds": [129]
 }
 
 ###

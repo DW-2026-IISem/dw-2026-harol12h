@@ -6,8 +6,8 @@ POST {{baseUrl}}/api/sesion/login
 Content-Type: application/json
 
 {
-  "username": "{{$dotenv AUTH_TEST_USERNAME}}",
-  "password": "{{$dotenv AUTH_TEST_PASSWORD}}"
+  "username": "harol",
+  "password": "harol1234567+"
 }
 
 ###
