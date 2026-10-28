@@ -1,0 +1,21 @@
+<div class="flex h-full flex-col border-r border-slate-200 bg-white text-slate-900">
+  <div class="flex h-16 items-center border-b border-slate-200 px-5">
+    <div class="min-w-0">
+      <p class="truncate text-sm font-semibold text-slate-900">
+        {{ appName() }}
+      </p>
+      <p class="text-[11px] uppercase tracking-wider text-slate-400">
+        Panel administrativo
+      </p>
+    </div>
+  </div>
+
+  <div class="flex-1 overflow-y-auto p-3">
+    <nav
+      aria-label="Navegación principal"
+      (click)="onNavigationClick($event)"
+    >
+      <p-panelmenu [model]="items()" [multiple]="true" />
+    </nav>
+  </div>
+</div>

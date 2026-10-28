@@ -7191,3 +7191,1605 @@ El bundle inicial con PrimeNG supera los 500 kB por defecto. En angular.json, de
 ```bash
 npm start
 ```
+## ISS-02 · Núcleo: environment, modelos, servicios y layout
+
+### 2.1 Environment
+Crea los dos archivos con el mismo contenido; Angular reemplaza el de producción según angular.json → fileReplacements.
+
+```bash
+mkdir -p src/environments
+cat > src/environments/environment.ts <<'EOF'
+export const environment = {
+  production: true,
+  appName: 'StoreLab Express II',
+  apiUrl: 'http://localhost:4000/api',
+  /**
+   * Fase I: false → sin login, guards y permisos dejan pasar.
+   * Fase II: true → login JWT + RBAC.
+   */
+  requireAuth: true,
+};
+EOF
+cp src/environments/environment.ts src/environments/environment.development.ts
+sed -i 's/production: true/production: false/' src/environments/environment.development.ts
+```
+![](a/156.png)
+
+### 2.2 Modelos: reflejar el backend, no inventarlo
+El backend responde con objetos envolventes: { clients }, { client }, { product_types }, etc. Los modelos representan la entidad; los servicios desenvuelven la respuesta.
+**CLI para crear las interfaces**
+```bash 
+npx ng g interface core/models/api model --defaults
+npx ng g interface core/models/client model --defaults
+npx ng g interface core/models/category model --defaults
+npx ng g interface core/models/collection model --defaults
+npx ng g interface core/models/product model --defaults
+npx ng g interface core/models/variant model --defaults
+npx ng g interface core/models/branch model --defaults
+npx ng g interface core/models/inventory model --defaults
+npx ng g interface core/models/sale model --defaults
+npx ng g interface core/models/sale-detail model --defaults
+npx ng g interface core/models/supplier model --defaults
+npx ng g interface core/models/user model --defaults
+npx ng g interface core/models/role model --defaults
+npx ng g interface core/models/resource model --defaults
+npx ng g interface core/models/role-user model --defaults
+npx ng g interface core/models/resource-role model --defaults
+npx ng g interface core/models/auth model --defaults
+npx ng g interface core/models/dashboard model --defaults
+```
+![](a/157.png)
+
+#### src/app/core/models/api.model.ts
+```bash
+cat > src/app/core/models/api.model.ts <<'EOF'
+/** Estados utilizados por las entidades del backend. */
+export type Status = 'active' | 'inactive';
+
+/** Los valores DECIMAL de Sequelize pueden recibirse como números o strings. */
+export type Money = number | string;
+
+/** Fechas devueltas por Sequelize con los nombres actuales del proyecto. */
+export interface Timestamps {
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/** Convierte un valor monetario recibido de la API a número. */
+export function toNumber(value: Money | null | undefined): number {
+  if (value === null || value === undefined) {
+    return 0;
+  }
+
+  return typeof value === 'number'
+    ? value
+    : Number.parseFloat(value) || 0;
+}
+EOF
+```
+![](a/158.png)
+
+#### src/app/core/models/client.model.ts
+```bash
+cat > src/app/core/models/client.model.ts <<'EOF'
+import { Status, Timestamps } from './api.model';
+
+/** Cliente de TramaModa. */
+export interface Client extends Timestamps {
+  id: number;
+  tipo_documento: string;
+  numero_documento: string;
+  nombre: string;
+  telefono?: string | null;
+  email?: string | null;
+  status: Status;
+}
+
+export interface ClientPayload {
+  tipo_documento: string;
+  numero_documento: string;
+  nombre: string;
+  telefono?: string | null;
+  email?: string | null;
+  status?: Status;
+}
+EOF
+```
+![](a/159.png)
+
+#### src/app/core/models/category.model.ts
+```bash
+cat > src/app/core/models/category.model.ts <<'EOF'
+import { Timestamps } from './api.model';
+
+/** Categorías comerciales de TramaModa. */
+export interface Category extends Timestamps {
+  id: number;
+  name: string;
+  description?: string;
+  is_active: boolean;
+}
+
+export interface CategoryPayload {
+  name: string;
+  description?: string;
+  is_active: boolean;
+}
+EOF
+```
+![](a/160.png)
+
+#### src/app/core/models/collection.model.ts
+```bash
+cat > src/app/core/models/collection.model.ts <<'EOF'
+import { Timestamps } from './api.model';
+
+/** Colecciones de prendas. */
+export interface Collection extends Timestamps {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  is_active: boolean;
+}
+
+export interface CollectionPayload {
+  nombre: string;
+  descripcion?: string;
+  is_active: boolean;
+}
+EOF
+```
+![](a/161.png)
+
+#### src/app/core/models/product.model.ts
+```bash
+cat > src/app/core/models/product.model.ts <<'EOF'
+import { Money, Status, Timestamps } from './api.model';
+
+/** Producto según el modelo Product de Sequelize. */
+export interface Product extends Timestamps {
+  id: number;
+  nombre: string;
+  precio: Money;
+  stock: number;
+  status: Status;
+}
+
+export interface ProductPayload {
+  nombre: string;
+  precio: number;
+  stock: number;
+  status?: Status;
+}
+EOF
+```
+![](a/162.png)
+
+#### src/app/core/models/variant.model.ts
+```bash
+cat > src/app/core/models/variant.model.ts <<'EOF'
+import { Timestamps } from './api.model';
+
+/** Variante comercial de un producto. */
+export interface Variant extends Timestamps {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  is_active: boolean;
+}
+
+export interface VariantPayload {
+  nombre: string;
+  descripcion?: string;
+  is_active: boolean;
+}
+EOF
+```
+![](a/163.png)
+
+#### src/app/core/models/branch.model.ts
+```bash
+cat > src/app/core/models/branch.model.ts <<'EOF'
+import { Timestamps } from './api.model';
+
+/** Sucursales de TramaModa. */
+export interface Branch extends Timestamps {
+  id: number;
+  nombre: string;
+  direccion?: string;
+  telefono?: string;
+  is_active: boolean;
+}
+
+export interface BranchPayload {
+  nombre: string;
+  direccion?: string;
+  telefono?: string;
+  is_active: boolean;
+}
+EOF
+```
+![](a/164.png)
+
+#### src/app/core/models/inventory.model.ts
+```bash
+cat > src/app/core/models/inventory.model.ts <<'EOF'
+import { Timestamps } from './api.model';
+
+/** Inventario por sucursal y variante. */
+export interface Inventory extends Timestamps {
+  id: number;
+  branchId: number;
+  variantId: number;
+  stock: number;
+  is_active: boolean;
+}
+
+export interface InventoryPayload {
+  branchId: number;
+  variantId: number;
+  stock: number;
+  is_active: boolean;
+}
+EOF
+```
+![](a/165.png)
+#### src/app/core/models/sale.model.ts
+```bash
+cat > src/app/core/models/sale.model.ts <<'EOF'
+import { Money, Status, Timestamps } from './api.model';
+import { SaleDetail } from './sale-detail.model';
+
+/** Cabecera de venta según el modelo Sale del backend. */
+export interface Sale extends Timestamps {
+  id: number;
+  client_id: number;
+  fecha?: string;
+  monto_total: Money;
+  status: Status;
+  detalles?: SaleDetail[];
+}
+
+export interface SalePayload {
+  client_id: number;
+  fecha?: string;
+  monto_total: number;
+  status?: Status;
+}
+EOF
+```
+![](a/166.png)
+
+#### src/app/core/models/sale-detail.model.ts
+```bash
+cat > src/app/core/models/sale-detail.model.ts <<'EOF'
+import { Money, Timestamps } from './api.model';
+
+/** Línea de detalle de una venta. */
+export interface SaleDetail extends Timestamps {
+  id: number;
+  sale_id: number;
+  product_id: number;
+  cantidad: number;
+  precio_unitario: Money;
+  subtotal: Money;
+}
+
+export interface SaleDetailPayload {
+  sale_id: number;
+  product_id: number;
+  cantidad: number;
+  precio_unitario: number;
+  subtotal: number;
+}
+EOF
+```
+![](a/167.png)
+
+#### src/app/core/models/supplier.model.ts
+```bash
+cat > src/app/core/models/supplier.model.ts <<'EOF'
+import { Timestamps } from './api.model';
+
+/** Proveedores de prendas y productos. */
+export interface Supplier extends Timestamps {
+  id: number;
+  name: string;
+  contact_name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  is_active: boolean;
+}
+
+export interface SupplierPayload {
+  name: string;
+  contact_name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  is_active: boolean;
+}
+EOF
+``` 
+![](a/168.png)
+
+#### src/app/core/models/user.model.ts
+```bash
+cat > src/app/core/models/user.model.ts <<'EOF'
+import { Status, Timestamps } from './api.model';
+
+/** Usuario del módulo de autenticación. Nunca incluye la contraseña en la respuesta. */
+export interface User extends Timestamps {
+  id: number;
+  username: string;
+  email: string;
+  avatar?: string | null;
+  status: Status;
+}
+
+export interface UserPayload {
+  username: string;
+  email: string;
+  password?: string;
+  avatar?: string | null;
+  status?: Status;
+}
+EOF
+```
+![](a/169.png)
+
+#### src/app/core/models/business-user.model.ts
+```bash
+cat > src/app/core/models/business-user.model.ts <<'EOF'
+/** Usuario del módulo comercial, según su modelo Sequelize independiente. */
+export interface BusinessUser {
+  id: number;
+  nombre: string;
+  email: string;
+  status: string;
+}
+EOF
+```
+![](a/170.png)
+
+#### src/app/core/models/role.model.ts
+```bash
+cat > src/app/core/models/role.model.ts <<'EOF'
+import { Status, Timestamps } from './api.model';
+
+/** Roles de acceso del sistema. */
+export interface Role extends Timestamps {
+  id: number;
+  name: string;
+  description?: string | null;
+  status: Status;
+}
+
+export interface RolePayload {
+  name: string;
+  description?: string | null;
+  status?: Status;
+}
+EOF
+```
+![](a/171.png)
+
+#### src/app/core/models/resource.model.ts
+```bash
+cat > src/app/core/models/resource.model.ts <<'EOF'
+import { Status, Timestamps } from './api.model';
+
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
+/** Recurso protegido por el sistema de permisos. */
+export interface Resource extends Timestamps {
+  id: number;
+  method: HttpMethod;
+  path: string;
+  description?: string | null;
+  status: Status;
+}
+
+export interface ResourcePayload {
+  method: HttpMethod;
+  path: string;
+  description?: string | null;
+  status?: Status;
+}
+EOF
+```
+![](a/172.png)
+
+#### src/app/core/models/role-user.model.ts
+```bash
+cat > src/app/core/models/role-user.model.ts <<'EOF'
+import { Status, Timestamps } from './api.model';
+
+/** Relación entre usuarios y roles. */
+export interface RoleUser extends Timestamps {
+  id: number;
+  user_id: number;
+  role_id: number;
+  status: Status;
+}
+
+export interface RoleUserPayload {
+  user_id: number;
+  role_id: number;
+  status?: Status;
+}
+EOF
+```
+![](a/173.png)
+
+#### src/app/core/models/resource-role.model.ts
+```bash
+cat > src/app/core/models/resource-role.model.ts <<'EOF'
+import { Status, Timestamps } from './api.model';
+
+/** Relación entre recursos y roles. */
+export interface ResourceRole extends Timestamps {
+  id: number;
+  role_id: number;
+  resource_id: number;
+  status: Status;
+}
+
+export interface ResourceRolePayload {
+  role_id: number;
+  resource_id: number;
+  status?: Status;
+}
+EOF
+```
+![](a/174.png)
+
+####  src/app/core/models/auth.model.ts
+```bash
+cat > src/app/core/models/auth.model.ts <<'EOF'
+import { HttpMethod } from './resource.model';
+import { User } from './user.model';
+
+/** POST /api/sesion/login: el backend recibe username y password. */
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+/** Tokens de sesión. Ajustar los nombres si la respuesta real difiere. */
+export interface SessionTokens {
+  access_token: string;
+  token_type?: string;
+  expires_in?: number;
+  refresh_token?: string;
+  refresh_expires_in?: number;
+}
+
+/** Respuesta de perfil, si el endpoint devuelve el objeto envuelto en user. */
+export interface ProfilePayload {
+  user: User;
+}
+
+/** Permiso efectivo asignado a un rol. */
+export interface EffectivePermission {
+  resource_id: number;
+  method: HttpMethod;
+  path: string;
+  description?: string | null;
+  role_id: number;
+  role_name: string;
+}
+
+export interface PermissionsPayload {
+  permissions: EffectivePermission[];
+}
+
+/** Estado combinado de sesión y permisos en el frontend. */
+export interface AccessPayload {
+  user: User;
+  permissions: EffectivePermission[];
+}
+EOF
+```
+![](a/175.png)
+
+#### src/app/core/models/dashboard.model.ts
+```bash
+cat > src/app/core/models/dashboard.model.ts <<'EOF'
+import { Money } from './api.model';
+
+/**
+ * Modelo de presentación para el panel.
+ * No representa un endpoint existente: sus datos deben calcularse
+ * a partir de las respuestas reales de la API o de un endpoint futuro.
+ */
+export interface Dashboard {
+  totalProductos: number;
+  totalClientes: number;
+  totalVentas: number;
+  valorVentas: Money;
+  productosConBajoStock: number;
+}
+```
+![](a/176.png)
+
+### 2.3 Servicios HTTP por feature
+#### Crear los archivos de configuración
+```bash
+
+cd ~/ia-lab/projects/dw/trama-moda/frontend
+
+mkdir -p src/environments
+
+cat > src/environments/environment.ts <<'EOF'
+export const environment = {
+  production: true,
+  appName: 'TramaModa',
+  apiUrl: 'http://localhost:4000/api',
+  requireAuth: true,
+};
+EOF
+```
+![](a/177.png)
+```bash
+cat > src/environments/environment.development.ts <<'EOF'
+export const environment = {
+  production: false,
+  appName: 'TramaModa',
+  apiUrl: 'http://localhost:4000/api',
+  requireAuth: true,
+};
+EOF
+```
+![](a/178.png)
+
+#### Generar los servicios HTTP con Angular CLI
+```bash
+
+cd ~/ia-lab/projects/dw/trama-moda/frontend
+
+npx ng g service features/clients/client-api --skip-tests --defaults
+npx ng g service features/categories/category-api --skip-tests --defaults
+npx ng g service features/collections/collection-api --skip-tests --defaults
+npx ng g service features/products/product-api --skip-tests --defaults
+npx ng g service features/variants/variant-api --skip-tests --defaults
+npx ng g service features/branches/branch-api --skip-tests --defaults
+npx ng g service features/inventory/inventory-api --skip-tests --defaults
+npx ng g service features/sales/sale-api --skip-tests --defaults
+npx ng g service features/sale-details/sale-detail-api --skip-tests --defaults
+npx ng g service features/suppliers/supplier-api --skip-tests --defaults
+
+npx ng g service features/admin/users/user-api --skip-tests --defaults
+npx ng g service features/admin/roles/role-api --skip-tests --defaults
+npx ng g service features/admin/resources/resource-api --skip-tests --defaults
+npx ng g service features/admin/role-users/role-user-api --skip-tests --defaults
+npx ng g service features/admin/resource-roles/resource-role-api --skip-tests --defaults
+
+npx ng g service core/services/auth --skip-tests --defaults
+npx ng g service core/services/session-store --skip-tests --defaults
+npx ng g service core/services/notification --skip-tests --defaults
+```
+![](a/179.png)
+
+#### `client-api.ts`
+```bash
+cd ~/ia-lab/projects/dw/trama-moda/frontend
+cat > src/app/features/clients/client-api.ts <<'EOF'
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { Client, ClientPayload } from '../../core/models/client.model';
+
+/** Contrato exacto de `features/business/client` en Express. */
+@Service()
+export class ClientApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/clientes`;
+
+  list(): Observable<Client[]> {
+    return this.http
+      .get<{ clients: Client[] }>(this.base)
+      .pipe(map((response) => response.clients));
+  }
+
+  get(id: number): Observable<Client> {
+    return this.http
+      .get<{ client: Client }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.client));
+  }
+
+  create(payload: ClientPayload): Observable<Client> {
+    return this.http
+      .post<{ client: Client }>(this.base, payload)
+      .pipe(map((response) => response.client));
+  }
+
+  /** PATCH /api/clientes/:id — actualización parcial. */
+  update(id: number, payload: Partial<ClientPayload>): Observable<Client> {
+    return this.http
+      .patch<{ client: Client }>(`${this.base}/${id}`, payload)
+      .pipe(map((response) => response.client));
+  }
+
+  /** PUT /api/clientes/:id — reemplazo completo. */
+  replace(id: number, payload: ClientPayload): Observable<Client> {
+    return this.http
+      .put<{ client: Client }>(`${this.base}/${id}`, payload)
+EOF return this.http.delete(`${this.base}/${id}`);ctivate`, {});
+```
+![](a/180.png)
+
+#### 2.4 Utilidades transversales
+`toApiMessage`
+```bash
+mkdir -p src/app/core/utils
+
+cat > src/app/core/utils/api-error.ts <<'EOF'
+import { HttpErrorResponse } from '@angular/common/http';
+
+/**
+ * Traduce el error HTTP del backend a un texto para el usuario.
+ * Express responde `{ error, detail? }`; los 403 de RBAC son opacos a propósito.
+ */
+export function toApiMessage(error: unknown): string {
+  if (error instanceof HttpErrorResponse) {
+    const body = error.error as
+      | { error?: string; detail?: string }
+      | string
+      | null;
+
+    if (error.status === 0) {
+      return 'No se pudo conectar con el backend. Verifica que esté en http://localhost:4000.';
+    }
+
+    if (typeof body === 'string' && body.trim()) {
+      return body;
+    }
+
+    if (body && typeof body === 'object' && body.error) {
+      return body.detail
+        ? `${body.error} — ${body.detail}`
+        : body.error;
+    }
+
+    return error.message;
+  }
+
+  return error instanceof Error
+    ? error.message
+    : 'Error inesperado';
+}
+EOF
+```
+![](a/181.png)
+
+#### `NotificationService`
+```bash
+cat > src/app/core/services/notification.ts <<'EOF'
+import { Service, inject } from '@angular/core';
+import { MessageService } from 'primeng/api';
+
+/** Azúcar sintáctica sobre MessageService. */
+@Service()
+export class NotificationService {
+  private readonly messages = inject(MessageService);
+
+  success(summary: string, detail?: string): void {
+    this.messages.add({
+      severity: 'success',
+      summary,
+      detail,
+      life: 3000,
+    });
+  }
+
+  info(summary: string, detail?: string): void {
+    this.messages.add({
+      severity: 'info',
+      summary,
+      detail,
+      life: 3500,
+    });
+  }
+
+  warn(summary: string, detail?: string): void {
+    this.messages.add({
+      severity: 'warn',
+      summary,
+      detail,
+      life: 4500,
+    });
+  }
+
+  error(summary: string, detail?: string): void {
+    this.messages.add({
+      severity: 'error',
+      summary,
+      detail,
+      life: 6000,
+    });
+  }
+EOF
+```
+![](a/182.png)
+
+#### `CategoryApi`
+```bash
+cat > frontend/src/app/features/categories/category-api.ts <<'EOF'
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import {
+  Category,
+  CategoryPayload,
+} from '../../core/models/category.model';
+
+@Service()
+export class CategoryApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/categorias`;
+
+  list(): Observable<Category[]> {
+    return this.http
+      .get<{ categories: Category[] }>(this.base)
+      .pipe(map((response) => response.categories));
+  }
+
+  get(id: number): Observable<Category> {
+    return this.http
+      .get<{ category: Category }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.category));
+  }
+
+  create(payload: CategoryPayload): Observable<Category> {
+    return this.http
+      .post<{ category: Category }>(this.base, payload)
+      .pipe(map((response) => response.category));
+  }
+
+  update(id: number, payload: CategoryPayload): Observable<Category> {
+    return this.http
+      .put<{ message?: string; category: Category }>(
+        `${this.base}/${id}`,
+        payload,
+      )
+      .pipe(map((response) => response.category));
+  }
+
+  deactivate(id: number): Observable<unknown> {
+    return this.http.patch(`${this.base}/${id}/deactivate`, {});
+  }
+}
+EOF
+```
+![alt text](a/183.png)
+
+#### `CollectionApi`
+```bash
+cat > frontend/src/app/features/collections/collection-api.ts <<'EOF'
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import {
+  Collection,
+  CollectionPayload,
+} from '../../core/models/collection.model';
+
+@Service()
+export class CollectionApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/colecciones`;
+
+  list(): Observable<Collection[]> {
+    return this.http
+      .get<{ collections: Collection[] }>(this.base)
+      .pipe(map((response) => response.collections));
+  }
+
+  get(id: number): Observable<Collection> {
+    return this.http
+      .get<{ collection: Collection }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.collection));
+  }
+
+  create(payload: CollectionPayload): Observable<Collection> {
+    return this.http
+      .post<{ collection: Collection }>(this.base, payload)
+      .pipe(map((response) => response.collection));
+  }
+
+  update(id: number, payload: CollectionPayload): Observable<Collection> {
+    return this.http
+      .put<{ message?: string; collection: Collection }>(
+        `${this.base}/${id}`,
+        payload,
+      )
+      .pipe(map((response) => response.collection));
+  }
+
+  deactivate(id: number): Observable<unknown> {
+    return this.http.patch(`${this.base}/${id}/deactivate`, {});
+  }
+}
+EOF
+```
+![alt text](a/184.png)
+
+#### `VariantApi`
+```bash
+cat > frontend/src/app/features/variants/variant-api.ts <<'EOF'
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import {
+  Variant,
+  VariantPayload,
+} from '../../core/models/variant.model';
+
+@Service()
+export class VariantApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/variantes`;
+
+  list(): Observable<Variant[]> {
+    return this.http
+      .get<{ variants: Variant[] }>(this.base)
+      .pipe(map((response) => response.variants));
+  }
+
+  get(id: number): Observable<Variant> {
+    return this.http
+      .get<{ variant: Variant }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.variant));
+  }
+
+  create(payload: VariantPayload): Observable<Variant> {
+    return this.http
+      .post<{ variant: Variant }>(this.base, payload)
+      .pipe(map((response) => response.variant));
+  }
+
+  update(id: number, payload: VariantPayload): Observable<Variant> {
+    return this.http
+      .put<{ message?: string; variant: Variant }>(
+        `${this.base}/${id}`,
+        payload,
+      )
+      .pipe(map((response) => response.variant));
+  }
+
+  deactivate(id: number): Observable<unknown> {
+    return this.http.patch(`${this.base}/${id}/deactivate`, {});
+  }
+}
+EOF
+```
+![](a/185.png)
+
+#### `branch-api.ts`
+```bash
+cat > frontend/src/app/features/branches/branch-api.ts <<'EOF'
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import {
+  Branch,
+  BranchPayload,
+} from '../../core/models/branch.model';
+
+@Service()
+export class BranchApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/sucursales`;
+
+  list(): Observable<Branch[]> {
+    return this.http
+      .get<{ branches: Branch[] }>(this.base)
+      .pipe(map((response) => response.branches));
+  }
+
+  get(id: number): Observable<Branch> {
+    return this.http
+      .get<{ branch: Branch }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.branch));
+  }
+
+  create(payload: BranchPayload): Observable<Branch> {
+    return this.http
+      .post<{ branch: Branch }>(this.base, payload)
+      .pipe(map((response) => response.branch));
+  }
+
+  update(id: number, payload: BranchPayload): Observable<Branch> {
+    return this.http
+      .put<{ message?: string; branch: Branch }>(
+        `${this.base}/${id}`,
+        payload,
+      )
+      .pipe(map((response) => response.branch));
+  }
+
+  deactivate(id: number): Observable<unknown> {
+    return this.http.patch(`${this.base}/${id}/deactivate`, {});
+  }
+}
+EOF
+```
+![](a/186.png)
+#### `inventory-api.ts` 
+```bash
+cat > frontend/src/app/features/inventory/inventory-api.ts <<'EOF'
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import {
+  Inventory,
+  InventoryPayload,
+} from '../../core/models/inventory.model';
+
+@Service()
+export class InventoryApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/inventarios`;
+
+  list(): Observable<Inventory[]> {
+    return this.http
+      .get<{ inventories: Inventory[] }>(this.base)
+      .pipe(map((response) => response.inventories));
+  }
+
+  get(id: number): Observable<Inventory> {
+    return this.http
+      .get<{ inventory: Inventory }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.inventory));
+  }
+
+  create(payload: InventoryPayload): Observable<Inventory> {
+    return this.http
+      .post<{ inventory: Inventory }>(this.base, payload)
+      .pipe(map((response) => response.inventory));
+  }
+
+  update(id: number, payload: InventoryPayload): Observable<Inventory> {
+    return this.http
+      .put<{ message?: string; inventory: Inventory }>(
+        `${this.base}/${id}`,
+        payload,
+      )
+      .pipe(map((response) => response.inventory));
+  }
+
+  remove(id: number): Observable<unknown> {
+    return this.http.delete(`${this.base}/${id}`);
+  }
+}
+EOF
+```
+![](a/187.png)
+
+#### 
+```bash
+cat > frontend/src/app/features/sales/sale-api.ts <<'EOF'
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import {
+  Sale,
+  SalePayload,
+} from '../../core/models/sale.model';
+
+@Service()
+export class SaleApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/ventas`;
+
+  list(): Observable<Sale[]> {
+    return this.http
+      .get<{ sales: Sale[] }>(this.base)
+      .pipe(map((response) => response.sales));
+  }
+
+  get(id: number): Observable<Sale> {
+    return this.http
+      .get<{ sale: Sale }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.sale));
+  }
+
+  create(payload: SalePayload): Observable<Sale> {
+    return this.http
+      .post<{ sale: Sale }>(this.base, payload)
+      .pipe(map((response) => response.sale));
+  }
+
+  update(id: number, payload: SalePayload): Observable<Sale> {
+    return this.http
+      .put<{ message?: string; sale: Sale }>(
+        `${this.base}/${id}`,
+        payload,
+      )
+      .pipe(map((response) => response.sale));
+  }
+
+  deactivate(id: number): Observable<unknown> {
+    return this.http.patch(`${this.base}/${id}/deactivate`, {});
+  }
+}
+EOF
+```
+![](a/188.png)
+
+#### `le-detail-api.ts`
+```bash
+cat > frontend/src/app/features/sale-details/sale-detail-api.ts <<'EOF'
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import {
+  SaleDetail,
+  SaleDetailPayload,
+} from '../../core/models/sale-detail.model';
+
+@Service()
+export class SaleDetailApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/detalles-venta`;
+
+  list(): Observable<SaleDetail[]> {
+    return this.http
+      .get<{ details: SaleDetail[] }>(this.base)
+      .pipe(map((response) => response.details));
+  }
+
+  get(id: number): Observable<SaleDetail> {
+    return this.http
+      .get<{ detail: SaleDetail }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.detail));
+  }
+
+  create(payload: SaleDetailPayload): Observable<SaleDetail> {
+    return this.http
+      .post<{ detail: SaleDetail }>(this.base, payload)
+      .pipe(map((response) => response.detail));
+  }
+
+  update(id: number, payload: SaleDetailPayload): Observable<SaleDetail> {
+    return this.http
+      .put<{ message?: string; detail: SaleDetail }>(
+        `${this.base}/${id}`,
+        payload,
+      )
+      .pipe(map((response) => response.detail));
+  }
+
+  remove(id: number): Observable<unknown> {
+    return this.http.delete(`${this.base}/${id}`);
+  }
+}
+EOF
+```
+![](a/189.png)
+
+#### `supplier-api.ts`
+```bash
+cat > frontend/src/app/features/suppliers/supplier-api.ts <<'EOF'
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import {
+  Supplier,
+  SupplierPayload,
+} from '../../core/models/supplier.model';
+
+@Service()
+export class SupplierApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/proveedores`;
+
+  list(): Observable<Supplier[]> {
+    return this.http
+      .get<{ suppliers: Supplier[] }>(this.base)
+      .pipe(map((response) => response.suppliers));
+  }
+
+  get(id: number): Observable<Supplier> {
+    return this.http
+      .get<{ supplier: Supplier }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.supplier));
+  }
+
+  create(payload: SupplierPayload): Observable<Supplier> {
+    return this.http
+      .post<{ supplier: Supplier }>(this.base, payload)
+      .pipe(map((response) => response.supplier));
+  }
+
+  update(id: number, payload: SupplierPayload): Observable<Supplier> {
+    return this.http
+      .put<{ message?: string; supplier: Supplier }>(
+        `${this.base}/${id}`,
+        payload,
+      )
+      .pipe(map((response) => response.supplier));
+  }
+
+  deactivate(id: number): Observable<unknown> {
+    return this.http.patch(`${this.base}/${id}/deactivate`, {});
+  }
+}
+EOF
+```
+![](a/190.png)
+
+#### `user-api.ts`
+```bash
+cat > frontend/src/app/features/admin/users/user-api.ts <<'EOF'
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import {
+  User,
+  UserPayload,
+} from '../../../core/models/user.model';
+
+@Service()
+export class UserApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/usuarios`;
+
+  list(): Observable<User[]> {
+    return this.http
+      .get<{ users: User[] }>(this.base)
+      .pipe(map((response) => response.users));
+  }
+
+  get(id: number): Observable<User> {
+    return this.http
+      .get<{ user: User }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.user));
+  }
+
+  create(payload: UserPayload): Observable<User> {
+    return this.http
+      .post<{ user: User }>(this.base, payload)
+      .pipe(map((response) => response.user));
+  }
+
+  update(id: number, payload: UserPayload): Observable<User> {
+    return this.http
+      .put<{ message?: string; user: User }>(
+        `${this.base}/${id}`,
+        payload,
+      )
+      .pipe(map((response) => response.user));
+  }
+
+  deactivate(id: number): Observable<unknown> {
+    return this.http.patch(`${this.base}/${id}/deactivate`, {});
+  }
+}
+EOF
+```
+![](a/191.png)
+
+#### `role-api.ts`
+```bash
+cat > frontend/src/app/features/admin/roles/role-api.ts <<'EOF'
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import {
+  Role,
+  RolePayload,
+} from '../../../core/models/role.model';
+
+@Service()
+export class RoleApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/admin/roles`;
+
+  list(): Observable<Role[]> {
+    return this.http
+      .get<{ roles: Role[] }>(this.base)
+      .pipe(map((response) => response.roles));
+  }
+
+  get(id: number): Observable<Role> {
+    return this.http
+      .get<{ role: Role }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.role));
+  }
+
+  create(payload: RolePayload): Observable<Role> {
+    return this.http
+      .post<{ role: Role }>(this.base, payload)
+      .pipe(map((response) => response.role));
+  }
+
+  update(id: number, payload: RolePayload): Observable<Role> {
+    return this.http
+      .put<{ role: Role }>(`${this.base}/${id}`, payload)
+      .pipe(map((response) => response.role));
+  }
+
+  updateStatus(id: number, status: Role['status']): Observable<Role> {
+    return this.http
+      .patch<{ role: Role }>(`${this.base}/${id}/status`, { status })
+      .pipe(map((response) => response.role));
+  }
+
+  replaceResources(id: number, resourceIds: number[]): Observable<unknown> {
+    return this.http.put(`${this.base}/${id}/resources`, {
+      resource_ids: resourceIds,
+    });
+  }
+}
+EOF
+```
+![](a/192.png)
+
+#### `resource-api.ts`
+```bash
+cat > frontend/src/app/features/admin/resources/resource-api.ts <<'EOF'
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import {
+  Resource,
+  ResourcePayload,
+} from '../../../core/models/resource.model';
+
+@Service()
+export class ResourceApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/admin/resources`;
+
+  list(): Observable<Resource[]> {
+    return this.http
+      .get<{ resources: Resource[] }>(this.base)
+      .pipe(map((response) => response.resources));
+  }
+
+  get(id: number): Observable<Resource> {
+    return this.http
+      .get<{ resource: Resource }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.resource));
+  }
+
+  create(payload: ResourcePayload): Observable<Resource> {
+    return this.http
+      .post<{ resource: Resource }>(this.base, payload)
+      .pipe(map((response) => response.resource));
+  }
+
+  update(id: number, payload: ResourcePayload): Observable<Resource> {
+    return this.http
+      .put<{ resource: Resource }>(`${this.base}/${id}`, payload)
+      .pipe(map((response) => response.resource));
+  }
+
+  updateStatus(
+    id: number,
+    status: Resource['status'],
+  ): Observable<Resource> {
+    return this.http
+      .patch<{ resource: Resource }>(`${this.base}/${id}/status`, {
+        status,
+      })
+      .pipe(map((response) => response.resource));
+  }
+}
+EOF
+```
+![](a/193.png)
+
+#### `role-user-api.ts`
+```bash
+cat > frontend/src/app/features/admin/role-users/role-user-api.ts <<'EOF'
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import {
+  RoleUser,
+  RoleUserPayload,
+} from '../../../core/models/role-user.model';
+
+@Service()
+export class RoleUserApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/admin/role-users`;
+
+  list(): Observable<RoleUser[]> {
+    return this.http
+      .get<{ roleUsers: RoleUser[] }>(this.base)
+      .pipe(map((response) => response.roleUsers));
+  }
+
+  create(payload: RoleUserPayload): Observable<RoleUser> {
+    return this.http
+      .post<{ roleUser: RoleUser }>(this.base, payload)
+      .pipe(map((response) => response.roleUser));
+  }
+}
+EOF
+```
+![](a/194.png)
+
+#### `resource-role-api.ts` 
+
+```bash
+cat > frontend/src/app/features/admin/resource-roles/resource-role-api.ts <<'EOF'
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import { Status } from '../../../core/models/api.model';
+import {
+  ResourceRole,
+  ResourceRolePayload,
+} from '../../../core/models/resource-role.model';
+
+interface ResourceRoleGrant {
+  id: number;
+  roleId: number;
+  resourceId: number;
+  status: Status;
+}
+
+interface ResourceRoleListItem extends ResourceRole {
+  role?: {
+    id: number;
+    name: string;
+    status: Status;
+  };
+  resource?: {
+    id: number;
+    method: string;
+    path: string;
+    status: Status;
+  };
+}
+
+@Service()
+export class ResourceRoleApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/admin/resource-roles`;
+
+  list(filters?: {
+    roleId?: number;
+    resourceId?: number;
+  }): Observable<ResourceRoleListItem[]> {
+    return this.http
+      .get<{ grants: ResourceRoleListItem[] }>(this.base, {
+        params: {
+          ...(filters?.roleId !== undefined
+            ? { roleId: filters.roleId }
+            : {}),
+          ...(filters?.resourceId !== undefined
+            ? { resourceId: filters.resourceId }
+            : {}),
+        },
+      })
+      .pipe(map((response) => response.grants));
+  }
+
+  create(payload: ResourceRolePayload): Observable<ResourceRoleGrant> {
+    return this.http
+      .post<{ grant: ResourceRoleGrant }>(this.base, {
+        roleId: payload.role_id,
+        resourceId: payload.resource_id,
+      })
+      .pipe(map((response) => response.grant));
+  }
+
+  updateStatus(
+    id: number,
+    status: Status,
+  ): Observable<{ id: number; status: Status }> {
+    return this.http
+      .patch<{ grant: { id: number; status: Status } }>(
+        `${this.base}/${id}/status`,
+        { status },
+      )
+      .pipe(map((response) => response.grant));
+  }
+}
+EOF
+```
+![](a/195.png)
+
+#### `session-api.ts`
+```bash
+cat > frontend/src/app/core/services/session-api.ts <<'EOF'
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import {
+  EffectivePermission,
+  LoginRequest,
+  LogoutRequest,
+  RefreshSessionRequest,
+  SessionProfile,
+  SessionTokens,
+} from '../models/auth.model';
+
+@Service()
+export class SessionApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/sesion`;
+
+  login(payload: LoginRequest): Observable<SessionTokens> {
+    return this.http.post<SessionTokens>(
+      `${this.base}/login`,
+      payload,
+    );
+  }
+
+  refresh(payload: RefreshSessionRequest): Observable<SessionTokens> {
+    return this.http.post<SessionTokens>(
+      `${this.base}/refresh`,
+      payload,
+    );
+  }
+
+  logout(payload: LogoutRequest): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.base}/logout`,
+      payload,
+    );
+  }
+
+  me(): Observable<SessionProfile> {
+    return this.http.get<SessionProfile>(`${this.base}/me`);
+  }
+
+  permissions(): Observable<EffectivePermission[]> {
+    return this.http
+      .get<{ permissions: EffectivePermission[] }>(
+        `${this.base}/permissions`,
+      )
+      .pipe(map((response) => response.permissions));
+  }
+
+  sessions(): Observable<unknown[]> {
+    return this.http
+      .get<{ sessions: unknown[] }>(`${this.base}/sessions`)
+      .pipe(map((response) => response.sessions));
+  }
+
+  revokeSessions(): Observable<{ revoked: number }> {
+    return this.http.post<{ revoked: number }>(
+      `${this.base}/sessions/revoke`,
+      {},
+    );
+  }
+}
+EOF
+```
+![](a/196.png)
+#### uso de licencia para `PrimeUILicense`
+```bash
+ cat > src/environments/environment.ts <<'EOF'
+export const environment = {
+  production: true,
+  appName: 'TramaModa',
+  apiUrl: 'http://localhost:4000/api',
+  requireAuth: true,
+  primeUiLicense: 'eyJpZCI6ImU0OWZhNGZlLTIxYTEtNDAxMC04MWExLTRmZTUzYmE4MDIyOSIsInByb2R1Y3QiOiJwcmltZXVpIiwidGllciI6ImNvbW11bml0eSIsInR5cGUiOiJkZXYiLCJpYXQiOjE3OTMxNDIxOTQsImV4cCI6MTgyNDY3ODE5NH0.B87wf-A1cNyXFkGOzkVNQEvJvgUOfSaegVMT8QZIbyg5sMl88ANe5SkDEjKyOAe0zIRVCJRi_Zbs0DgkR6lEDg',
+};
+EOF
+```
+```bash
+cat > src/environments/environment.development.ts <<'EOF'
+export const environment = {
+  production: false,
+  appName: 'TramaModa',
+  apiUrl: 'http://localhost:4000/api',
+  requireAuth: true,
+  primeUiLicense: 'eyJpZCI6ImU0OWZhNGZlLTIxYTEtNDAxMC04MWExLTRmZTUzYmE4MDIyOSIsInByb2R1Y3QiOiJwcmltZXVpIiwidGllciI6ImNvbW11bml0eSIsInR5cGUiOiJkZXYiLCJpYXQiOjE3OTMxNDIxOTQsImV4cCI6MTgyNDY3ODE5NH0.B87wf-A1cNyXFkGOzkVNQEvJvgUOfSaegVMT8QZIbyg5sMl88ANe5SkDEjKyOAe0zIRVCJRi_Zbs0DgkR6lEDg',
+};
+EOF
+```
+#### src/app/core/utils/api-error.ts
+
+```bash
+import { HttpErrorResponse } from '@angular/common/http';
+
+/**
+ * Traduce el error HTTP del backend a un texto para el usuario.
+ * Express responde `{ error, detail? }`; los 403 de RBAC son opacos a propósito.
+ */
+export function toApiMessage(error: unknown): string {
+  if (error instanceof HttpErrorResponse) {
+    const body = error.error as
+      | { error?: string; detail?: string }
+      | string
+      | null;
+
+    if (error.status === 0) {
+      return 'No se pudo conectar con el backend. Verifica que esté en http://localhost:4000.';
+    }
+
+    if (typeof body === 'string' && body.trim()) {
+      return body;
+    }
+
+    if (body && typeof body === 'object' && body.error) {
+      return body.detail
+        ? `${body.error} — ${body.detail}`
+        : body.error;
+    }
+
+    return error.message;
+  }
+
+  return error instanceof Error
+    ? error.message
+    : 'Error inesperado';
+}
+```
+![](a/197.png)
+
+#### src/app/core/services/notification.ts
+```bash
+import { Service, inject } from '@angular/core';
+import { MessageService } from 'primeng/api';
+
+/** Azúcar sintáctica sobre MessageService. */
+@Service()
+export class NotificationService {
+  private readonly messages = inject(MessageService);
+
+  success(summary: string, detail?: string): void {
+    this.messages.add({
+      severity: 'success',
+      summary,
+      detail,
+      life: 3000,
+    });
+  }
+
+  info(summary: string, detail?: string): void {
+    this.messages.add({
+      severity: 'info',
+      summary,
+      detail,
+      life: 3500,
+    });
+  }
+
+  warn(summary: string, detail?: string): void {
+    this.messages.add({
+      severity: 'warn',
+      summary,
+      detail,
+      life: 4500,
+    });
+  }
+
+  error(summary: string, detail?: string): void {
+    this.messages.add({
+      severity: 'error',
+      summary,
+      detail,
+      life: 6000,
+    });
+  }
+}
+```
+![](a/198.png)
+
