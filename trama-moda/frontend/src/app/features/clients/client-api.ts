@@ -28,13 +28,6 @@ export class ClientApi {
       .pipe(map((response) => response.client));
   }
 
-  /** PATCH /api/clientes/:id — actualización parcial. */
-  update(id: number, payload: Partial<ClientPayload>): Observable<Client> {
-    return this.http
-      .patch<{ client: Client }>(`${this.base}/${id}`, payload)
-      .pipe(map((response) => response.client));
-  }
-
   /** PUT /api/clientes/:id — reemplazo completo. */
   replace(id: number, payload: ClientPayload): Observable<Client> {
     return this.http

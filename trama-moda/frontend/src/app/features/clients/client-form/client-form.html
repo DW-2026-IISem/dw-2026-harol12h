@@ -1,0 +1,80 @@
+
+<form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div>
+      <label for="tipo_documento" class="mb-1 block font-medium">Tipo de documento *</label>
+      <select id="tipo_documento" formControlName="tipo_documento"
+        class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2">
+        <option value="">Selecciona una opción</option>
+        <option value="CC">Cédula de ciudadanía</option>
+        <option value="CE">Cédula de extranjería</option>
+        <option value="TI">Tarjeta de identidad</option>
+        <option value="PASAPORTE">Pasaporte</option>
+        <option value="NIT">NIT</option>
+      </select>
+      @if (form.controls.tipo_documento.touched && form.controls.tipo_documento.invalid) {
+        <small class="text-red-600">Selecciona el tipo de documento.</small>
+      }
+    </div>
+
+    <div>
+      <label for="numero_documento" class="mb-1 block font-medium">Número de documento *</label>
+      <input id="numero_documento" formControlName="numero_documento"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+      @if (form.controls.numero_documento.touched && form.controls.numero_documento.invalid) {
+        <small class="text-red-600">El número de documento es obligatorio y admite máximo 30 caracteres.</small>
+      }
+    </div>
+
+    <div class="sm:col-span-2">
+      <label for="nombre" class="mb-1 block font-medium">Nombre completo *</label>
+      <input id="nombre" formControlName="nombre"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+      @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+        <small class="text-red-600">El nombre es obligatorio y admite máximo 120 caracteres.</small>
+      }
+    </div>
+
+    <div>
+      <label for="telefono" class="mb-1 block font-medium">Teléfono</label>
+      <input id="telefono" formControlName="telefono"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+    </div>
+
+    <div>
+      <label for="email" class="mb-1 block font-medium">Correo electrónico</label>
+      <input id="email" type="email" formControlName="email"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+      @if (form.controls.email.touched && form.controls.email.invalid) {
+        <small class="text-red-600">Introduce un correo electrónico válido.</small>
+      }
+    </div>
+
+    @if (client) {
+      <div class="sm:col-span-2">
+        <label for="status" class="mb-1 block font-medium">Estado</label>
+        <select id="status" formControlName="status"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2">
+          <option value="active">Activo</option>
+          <option value="inactive">Inactivo</option>
+        </select>
+      </div>
+    }
+  </div>
+
+  <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
+    <button type="button" (click)="cancel.emit()" [disabled]="saving"
+      class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50">
+      Cancelar
+    </button>
+
+    <button type="submit" [disabled]="saving"
+      class="rounded-lg bg-blue-600 px-5 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
+      @if (saving) {
+        Guardando...
+      } @else {
+        {{ client ? 'Guardar cambios' : 'Guardar cliente' }}
+      }
+    </button>
+  </div>
+</form>

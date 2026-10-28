@@ -1,21 +1,28 @@
-import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+
+import { Component, signal } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DrawerModule } from 'primeng/drawer';
-import { TableModule } from 'primeng/table';
 
 import { watchMediaQuery } from '../../core/utils/media-query';
+import { ClientList } from '../../features/clients/client-list/client-list';
 import { Aside } from '../aside/aside';
 import { Footer } from '../footer/footer';
 import { Header } from '../header/header';
-import { ClientApi } from '../../features/clients/client-api';
-import { Client } from '../../core/models/client.model';
 
 @Component({
   selector: 'app-shell',
-  imports: [Aside, ButtonModule, CardModule, DrawerModule, TableModule, Footer, Header],
+  standalone: true,
+  imports: [
+    Aside,
+    ButtonModule,
+    CardModule,
+    DrawerModule,
+    ClientList,
+    Footer,
+    Header,
+  ],
   templateUrl: './shell.html',
   styleUrl: './shell.css',
   host: { class: 'block' },
@@ -26,12 +33,6 @@ export class Shell {
   readonly sidebarCollapsed = signal(false);
   readonly mobileOpen = signal(false);
   readonly title = signal('Inicio');
-  private readonly clientApi = inject(ClientApi);
-
-  readonly clients = signal<Client[]>([]);
-  readonly loadingClients = signal(false);
-  readonly clientsError = signal('');
-
 
   readonly items: MenuItem[] = [
     {
@@ -137,39 +138,6 @@ export class Shell {
   seleccionar(titulo: string): void {
     this.title.set(titulo);
     this.mobileOpen.set(false);
-
-    if (titulo === 'Clientes') {
-      this.cargarClientes();
-    }
-  }
-
-  private cargarClientes(): void {
-    this.loadingClients.set(true);
-    this.clientsError.set('');
-
-    this.clientApi.list().subscribe({
-      next: (clients) => {
-        this.clients.set(clients);
-        this.loadingClients.set(false);
-      },
-      error: (error: HttpErrorResponse) => {
-        this.loadingClients.set(false);
-
-        if (error.status === 401) {
-          this.clientsError.set(
-            'Tu sesión no está autorizada. Inicia sesión nuevamente.'
-          );
-        } else if (error.status === 403) {
-          this.clientsError.set(
-            'Tu usuario no tiene permisos para consultar los clientes.'
-          );
-        } else {
-          this.clientsError.set(
-            'No fue posible cargar los clientes. Verifica que el backend esté activo e inténtalo de nuevo.'
-          );
-        }
-      }
-    });
   }
 
   onMenuToggle(): void {

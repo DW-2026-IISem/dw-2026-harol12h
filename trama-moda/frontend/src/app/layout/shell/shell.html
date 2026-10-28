@@ -1,3 +1,4 @@
+
 <div class="flex min-h-screen flex-col bg-slate-50">
   <app-header
     appName="TramaModa"
@@ -16,88 +17,13 @@
 
     <main id="contenido" class="min-w-0 flex-1 p-4 sm:p-6">
       @if (title() === 'Clientes') {
-        <p-card>
-          <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 class="text-2xl font-semibold text-slate-900">Clientes</h1>
-              <p class="mt-1 text-sm text-slate-600">
-                Consulta los clientes registrados en TramaModa.
-              </p>
-            </div>
-            <p-button
-              label="Actualizar"
-              icon="pi pi-refresh"
-              [outlined]="true"
-              [loading]="loadingClients()"
-              (onClick)="seleccionar('Clientes')"
-            />
-          </div>
-
-          @if (loadingClients()) {
-            <p class="py-8 text-center text-slate-600">
-              Cargando clientes desde el servidor...
-            </p>
-          } @else if (clientsError()) {
-            <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
-              {{ clientsError() }}
-            </div>
-          } @else {
-            <p class="mb-3 text-sm text-slate-500">
-              Registros encontrados: {{ clients().length }}
-            </p>
-            <p-table
-              [value]="clients()"
-              [paginator]="true"
-              [rows]="10"
-              [rowsPerPageOptions]="[10, 20, 50]"
-              [tableStyle]="{ 'min-width': '48rem' }"
-              [showGridlines]="true"
-            >
-              <ng-template #header>
-                <tr>
-                  <th>ID</th>
-                  <th>Documento</th>
-                  <th>Nombre</th>
-                  <th>Teléfono</th>
-                  <th>Correo electrónico</th>
-                  <th>Estado</th>
-                </tr>
-              </ng-template>
-              <ng-template #body let-client>
-                <tr>
-                  <td>{{ client.id }}</td>
-                  <td>
-                    {{ client.tipo_documento }} {{ client.numero_documento }}
-                  </td>
-                  <td>{{ client.nombre }}</td>
-                  <td>{{ client.telefono || '—' }}</td>
-                  <td>{{ client.email || '—' }}</td>
-                  <td>
-                    <span
-                      class="rounded-full px-2 py-1 text-xs font-medium"
-                      [class.bg-green-100]="client.status === 'active'"
-                      [class.text-green-800]="client.status === 'active'"
-                      [class.bg-slate-100]="client.status !== 'active'"
-                      [class.text-slate-700]="client.status !== 'active'"
-                    >
-                      {{ client.status === 'active' ? 'Activo' : 'Inactivo' }}
-                    </span>
-                  </td>
-                </tr>
-              </ng-template>
-              <ng-template #emptymessage>
-                <tr>
-                  <td colspan="6" class="py-6 text-center text-slate-500">
-                    No hay clientes registrados para mostrar.
-                  </td>
-                </tr>
-              </ng-template>
-            </p-table>
-          }
-        </p-card>
+        <app-client-list />
       } @else if (title() === 'Inicio') {
         <p-card>
-          <h1 class="text-2xl font-semibold text-slate-900">Inicio</h1>
+          <h1 class="text-2xl font-semibold text-slate-900">
+            Inicio
+          </h1>
+
           <p class="mt-3 text-slate-600">
             Bienvenido a TramaModa. Selecciona un módulo del menú para consultar
             la información correspondiente.
@@ -105,7 +31,10 @@
         </p-card>
       } @else {
         <p-card>
-          <h1 class="text-2xl font-semibold text-slate-900">{{ title() }}</h1>
+          <h1 class="text-2xl font-semibold text-slate-900">
+            {{ title() }}
+          </h1>
+
           <p class="mt-3 text-slate-600">
             El módulo está identificado en el menú. Su tabla y operaciones se
             implementarán en los siguientes pasos.

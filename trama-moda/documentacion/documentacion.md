@@ -8793,3 +8793,834 @@ export class NotificationService {
 ```
 ![](a/198.png)
 
+## ISS-03 · CRUD de clientes con Signals
+#### 3.1 Generar componentes con CLI
+```bash
+ng generate component features/clients/client-list --skip-tests --defaults
+ng generate component features/clients/client-form --skip-tests --defaults
+```
+![](a/199.png)
+
+#### 3.2 Utilidad de filtro local
+```bash
+cat > src/app/core/utils/filter-rows.ts <<'EOF'
+/**
+ * Filtro local reutilizable para tablas PrimeNG 22.
+ *
+ * Recibe las filas, el texto de búsqueda y una función que indica
+ * qué valores de cada fila deben buscarse.
+ */
+export function filterRows<T>(
+  rows: readonly T[],
+  query: string,
+  pick: (row: T) => Array<string | number | null | undefined>,
+): T[] {
+  const term = query.trim().toLowerCase();
+
+  // Si no hay búsqueda, devuelve una copia de las filas originales.
+  if (!term) {
+    return [...rows];
+  }
+
+  return rows.filter((row) =>
+    pick(row).some((value) =>
+      (value ?? '').toString().toLowerCase().includes(term),
+    ),
+  );
+}
+EOF
+```
+![](a/200.png)
+#### 3.3 Formulario reactivo reutilizable
+1. reemplazar `client-form.ts`
+```bash
+cat > src/app/features/clients/client-form/client-form.ts <<'EOF'
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
+import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { Client, ClientPayload } from '../../../core/models/client.model';
+
+@Component({
+  selector: 'app-client-form',
+  standalone: true,
+  imports: [ReactiveFormsModule],
+  templateUrl: './client-form.html',
+  styleUrl: './client-form.css',
+})
+export class ClientForm implements OnChanges {
+  private readonly fb = inject(FormBuilder);
+
+  @Input() client: Client | null = null;
+  @Input() saving = false;
+
+  @Output() save = new EventEmitter<ClientPayload>();
+  @Output() cancel = new EventEmitter<void>();
+
+  readonly form = this.fb.group({
+    tipo_documento: ['', [Validators.required]],
+    numero_documento: [
+      '',
+      [Validators.required, Validators.maxLength(30)],
+    ],
+    nombre: ['', [Validators.required, Validators.maxLength(120)]],
+    telefono: ['', [Validators.maxLength(30)]],
+    email: ['', [Validators.email, Validators.maxLength(150)]],
+    status: ['active' as 'active' | 'inactive', [Validators.required]],
+  });
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['client']) {
+      this.form.reset({
+        tipo_documento: this.client?.tipo_documento ?? '',
+        numero_documento: this.client?.numero_documento ?? '',
+        nombre: this.client?.nombre ?? '',
+        telefono: this.client?.telefono ?? '',
+        email: this.client?.email ?? '',
+        status: this.client?.status ?? 'active',
+      });
+    }
+  }
+
+  submit(): void {
+    if (this.form.invalid || this.saving) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    const value = this.form.getRawValue();
+
+    const tipoDocumento = value.tipo_documento?.trim() ?? '';
+    const numeroDocumento = value.numero_documento?.trim() ?? '';
+    const nombre = value.nombre?.trim() ?? '';
+    const telefono = value.telefono?.trim() ?? '';
+    const email = value.email?.trim() ?? '';
+    const status = value.status ?? 'active';
+
+    if (!tipoDocumento || !numeroDocumento || !nombre) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    const payload: ClientPayload = {
+      tipo_documento: tipoDocumento,
+      numero_documento: numeroDocumento,
+      nombre,
+      telefono: telefono || null,
+      email: email || null,
+      status,
+    };
+
+    this.save.emit(payload);
+  }
+}
+EOF
+```
+#### 3.3 Formulario reactivo reutilizable
+2. Crear la plantilla `client-form.html`
+```bash
+cat > src/app/features/clients/client-form/client-form.html <<'EOF'
+<form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-4">
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div class="flex flex-col gap-1">
+      <label for="tipo_documento" class="font-medium">Tipo de documento *</label>
+      <input
+        id="tipo_documento"
+        type="text"
+        formControlName="tipo_documento"
+        placeholder="Ej. CC, CE, NIT"
+        class="w-full rounded-lg border border-surface-300 bg-transparent px-3 py-2"
+      />
+      @if (form.controls.tipo_documento.touched && form.controls.tipo_documento.invalid) {
+        <small class="text-red-600">El tipo de documento es obligatorio.</small>
+      }
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label for="numero_documento" class="font-medium">Número de documento *</label>
+      <input
+        id="numero_documento"
+        type="text"
+        formControlName="numero_documento"
+        placeholder="Número de documento"
+        class="w-full rounded-lg border border-surface-300 bg-transparent px-3 py-2"
+      />
+      @if (form.controls.numero_documento.touched && form.controls.numero_documento.invalid) {
+        <small class="text-red-600">El número es obligatorio y debe tener máximo 30 caracteres.</small>
+      }
+    </div>
+
+    <div class="flex flex-col gap-1 md:col-span-2">
+      <label for="nombre" class="font-medium">Nombre completo *</label>
+      <input
+        id="nombre"
+        type="text"
+        formControlName="nombre"
+        placeholder="Nombre del cliente"
+        class="w-full rounded-lg border border-surface-300 bg-transparent px-3 py-2"
+      />
+      @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+        <small class="text-red-600">El nombre es obligatorio y debe tener máximo 120 caracteres.</small>
+      }
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label for="telefono" class="font-medium">Teléfono</label>
+      <input
+        id="telefono"
+        type="tel"
+        formControlName="telefono"
+        placeholder="Teléfono de contacto"
+        class="w-full rounded-lg border border-surface-300 bg-transparent px-3 py-2"
+      />
+      @if (form.controls.telefono.touched && form.controls.telefono.invalid) {
+        <small class="text-red-600">El teléfono debe tener máximo 30 caracteres.</small>
+      }
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label for="email" class="font-medium">Correo electrónico</label>
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        placeholder="correo@ejemplo.com"
+        class="w-full rounded-lg border border-surface-300 bg-transparent px-3 py-2"
+      />
+      @if (form.controls.email.touched && form.controls.email.invalid) {
+        <small class="text-red-600">Ingresa un correo electrónico válido.</small>
+      }
+    </div>
+
+    @if (client) {
+      <div class="flex flex-col gap-1 md:col-span-2">
+        <label for="status" class="font-medium">Estado</label>
+        <select
+          id="status"
+          formControlName="status"
+          class="w-full rounded-lg border border-surface-300 bg-transparent px-3 py-2"
+        >
+          <option value="active">Activo</option>
+          <option value="inactive">Inactivo</option>
+        </select>
+      </div>
+    }
+  </div>
+
+  <div class="flex flex-wrap justify-end gap-2 border-t border-surface-200 pt-4">
+    <button
+      type="button"
+      (click)="cancel.emit()"
+      [disabled]="saving"
+      class="rounded-lg border border-surface-300 px-4 py-2"
+    >
+      Cancelar
+    </button>
+
+    <button
+      type="submit"
+      [disabled]="saving"
+      class="rounded-lg bg-primary px-4 py-2 text-white disabled:opacity-50"
+    >
+      {{ saving ? 'Guardando...' : (client ? 'Guardar cambios' : 'Crear cliente') }}
+    </button>
+  </div>
+</form>
+EOF
+```
+![](a/202.png)
+
+#### 3.4 Implementación de la lista de clientes `client-list.ts`
+```bash
+nano src/app/features/clients/client-list/client-list.ts
+```
+```bash
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, computed, inject, signal } from '@angular/core';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { TableModule } from 'primeng/table';
+
+import { Client } from '../../../core/models/client.model';
+import { filterRows } from '../../../core/utils/filter-rows';
+import { ClientApi } from '../client-api';
+
+@Component({
+  selector: 'app-client-list',
+  standalone: true,
+  imports: [ButtonModule, CardModule, TableModule],
+  templateUrl: './client-list.html',
+  styleUrl: './client-list.css',
+})
+export class ClientList {
+  private readonly clientApi = inject(ClientApi);
+
+  readonly clients = signal<Client[]>([]);
+  readonly loading = signal(false);
+  readonly error = signal('');
+  readonly search = signal('');
+
+  readonly filteredClients = computed(() =>
+    filterRows(this.clients(), this.search(), (client) => [
+      client.id,
+      client.tipo_documento,
+      client.numero_documento,
+      client.nombre,
+      client.telefono,
+      client.email,
+      client.status,
+    ]),
+  );
+
+  constructor() {
+    this.loadClients();
+  }
+
+  loadClients(): void {
+    this.loading.set(true);
+    this.error.set('');
+
+    this.clientApi.list().subscribe({
+      next: (clients) => {
+        this.clients.set(clients);
+        this.loading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.loading.set(false);
+
+        if (error.status === 401) {
+          this.error.set(
+            'Tu sesión no está autorizada. Inicia sesión nuevamente.',
+          );
+        } else if (error.status === 403) {
+          this.error.set(
+            'Tu usuario no tiene permisos para consultar los clientes.',
+          );
+        } else {
+          this.error.set(
+            'No fue posible cargar los clientes. Verifica que el backend esté activo e inténtalo de nuevo.',
+          );
+        }
+      },
+    });
+  }
+}
+```
+![](a/203.png)
+
+#### 3.5 Plantilla de la lista `cliente`
+```bash
+nano src/app/features/clients/client-list/client-list.html
+```
+```bash
+<p-card>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-900">Clientes</h1>
+      <p class="mt-1 text-sm text-slate-600">
+        Consulta y busca los clientes registrados en TramaModa.
+      </p>
+    </div>
+
+    <p-button
+      label="Actualizar"
+      icon="pi pi-refresh"
+      [outlined]="true"
+      [loading]="loading()"
+      (onClick)="loadClients()"
+    />
+  </div>
+
+  <div class="mb-4">
+    <label
+      for="buscar-cliente"
+      class="mb-2 block text-sm font-medium text-slate-700"
+    >
+      Buscar cliente
+    </label>
+
+    <input
+      id="buscar-cliente"
+      type="search"
+      placeholder="Documento, nombre, teléfono o correo..."
+      class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm outline-none focus:border-indigo-500 sm:max-w-md"
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+  </div>
+
+  @if (loading()) {
+    <p class="py-8 text-center text-slate-600">
+      Cargando clientes desde el servidor...
+    </p>
+  } @else if (error()) {
+    <div
+      class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700"
+      role="alert"
+    >
+      {{ error() }}
+    </div>
+
+    <div class="mt-3">
+      <p-button
+        label="Intentar nuevamente"
+        icon="pi pi-refresh"
+        (onClick)="loadClients()"
+      />
+    </div>
+  } @else {
+    <p class="mb-3 text-sm text-slate-500">
+      Clientes encontrados: {{ filteredClients().length }}
+    </p>
+
+    <p-table
+      [value]="filteredClients()"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [tableStyle]="{ 'min-width': '48rem' }"
+      [showGridlines]="true"
+      [stripedRows]="true"
+    >
+      <ng-template #header>
+        <tr>
+          <th>ID</th>
+          <th>Documento</th>
+          <th>Nombre</th>
+          <th>Teléfono</th>
+          <th>Correo electrónico</th>
+          <th>Estado</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-client>
+        <tr>
+          <td>{{ client.id }}</td>
+          <td>
+            {{ client.tipo_documento }} {{ client.numero_documento }}
+          </td>
+          <td>{{ client.nombre }}</td>
+          <td>{{ client.telefono || '—' }}</td>
+          <td>{{ client.email || '—' }}</td>
+          <td>
+            <span
+              class="rounded-full px-2 py-1 text-xs font-medium"
+              [class.bg-green-100]="client.status === 'active'"
+              [class.text-green-800]="client.status === 'active'"
+              [class.bg-slate-100]="client.status !== 'active'"
+              [class.text-slate-700]="client.status !== 'active'"
+            >
+              {{ client.status === 'active' ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="6" class="py-6 text-center text-slate-500">
+            @if (search().trim()) {
+              No se encontraron clientes que coincidan con la búsqueda.
+            } @else {
+              No hay clientes registrados para mostrar.
+            }
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  }
+</p-card>
+```
+![](a/204.png)
+
+#### Actualizar  `client-list.ts`
+```bash
+nano src/app/features/clients/client-list/client-list.ts
+```
+```bash
+
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, computed, inject, signal } from '@angular/core';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { DialogModule } from 'primeng/dialog';
+import { TableModule } from 'primeng/table';
+
+import { Client, ClientPayload } from '../../../core/models/client.model';
+import { NotificationService } from '../../../core/services/notification';
+import { toApiMessage } from '../../../core/utils/api-error';
+import { filterRows } from '../../../core/utils/filter-rows';
+import { ClientApi } from '../client-api';
+import { ClientForm } from '../client-form/client-form';
+
+@Component({
+  selector: 'app-client-list',
+  standalone: true,
+  imports: [
+    ButtonModule,
+    CardModule,
+    DialogModule,
+    TableModule,
+    ClientForm,
+  ],
+  templateUrl: './client-list.html',
+  styleUrl: './client-list.css',
+})
+export class ClientList {
+  private readonly clientApi = inject(ClientApi);
+  private readonly notifications = inject(NotificationService);
+
+  readonly clients = signal<Client[]>([]);
+  readonly loading = signal(false);
+  readonly saving = signal(false);
+  readonly error = signal('');
+  readonly search = signal('');
+
+  readonly dialogVisible = signal(false);
+  readonly selectedClient = signal<Client | null>(null);
+
+  readonly filteredClients = computed(() =>
+    filterRows(this.clients(), this.search(), (client) => [
+      client.id,
+      client.tipo_documento,
+      client.numero_documento,
+      client.nombre,
+      client.telefono,
+      client.email,
+      client.status,
+    ]),
+  );
+
+  constructor() {
+    this.loadClients();
+  }
+
+  loadClients(): void {
+    this.loading.set(true);
+    this.error.set('');
+
+    this.clientApi.list().subscribe({
+      next: (clients) => {
+        this.clients.set(clients);
+        this.loading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.error.set(toApiMessage(error));
+      },
+    });
+  }
+
+  openCreate(): void {
+    this.selectedClient.set(null);
+    this.dialogVisible.set(true);
+  }
+
+  openEdit(client: Client): void {
+    this.selectedClient.set(client);
+    this.dialogVisible.set(true);
+  }
+
+  closeDialog(): void {
+    if (this.saving()) {
+      return;
+    }
+
+    this.dialogVisible.set(false);
+    this.selectedClient.set(null);
+  }
+
+  saveClient(payload: ClientPayload): void {
+    if (this.saving()) {
+      return;
+    }
+
+    this.saving.set(true);
+
+    const client = this.selectedClient();
+    const request = client
+      ? this.clientApi.update(client.id, payload)
+      : this.clientApi.create(payload);
+
+    request.subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.dialogVisible.set(false);
+        this.selectedClient.set(null);
+
+        this.notifications.success(
+          client ? 'Cliente actualizado' : 'Cliente creado',
+          client
+            ? 'Los cambios se guardaron correctamente.'
+            : 'El cliente se registró correctamente.',
+        );
+
+        this.loadClients();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.saving.set(false);
+
+        this.notifications.error(
+          'No se pudo guardar el cliente',
+          toApiMessage(error),
+        );
+      },
+    });
+  }
+}
+```
+![](a/205.png)
+
+#### Actualizar `client-list.html`
+```bash
+nano src/app/features/clients/client-list/client-list.html
+```
+```bash
+
+<p-card>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-900">Clientes</h1>
+      <p class="mt-1 text-sm text-slate-600">
+        Administra los clientes registrados en TramaModa.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <p-button
+        label="Actualizar"
+        icon="pi pi-refresh"
+        [outlined]="true"
+        [loading]="loading()"
+        (onClick)="loadClients()"
+      />
+
+      <p-button
+        label="Nuevo cliente"
+        icon="pi pi-plus"
+        (onClick)="openCreate()"
+      />
+    </div>
+  </div>
+
+  <div class="mb-4">
+    <label
+      for="buscar-cliente"
+      class="mb-2 block text-sm font-medium text-slate-700"
+    >
+      Buscar cliente
+    </label>
+
+    <input
+      id="buscar-cliente"
+      type="search"
+      placeholder="Documento, nombre, teléfono o correo..."
+      class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm outline-none focus:border-indigo-500 sm:max-w-md"
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+  </div>
+
+  @if (loading()) {
+    <p class="py-8 text-center text-slate-600">
+      Cargando clientes desde el servidor...
+    </p>
+  } @else if (error()) {
+    <div
+      class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700"
+      role="alert"
+    >
+      {{ error() }}
+    </div>
+
+    <div class="mt-3">
+      <p-button
+        label="Intentar nuevamente"
+        icon="pi pi-refresh"
+        (onClick)="loadClients()"
+      />
+    </div>
+  } @else {
+    <p class="mb-3 text-sm text-slate-500">
+      Clientes encontrados: {{ filteredClients().length }}
+    </p>
+
+    <p-table
+      [value]="filteredClients()"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [tableStyle]="{ 'min-width': '58rem' }"
+      [showGridlines]="true"
+      [stripedRows]="true"
+    >
+      <ng-template #header>
+        <tr>
+          <th>ID</th>
+          <th>Documento</th>
+          <th>Nombre</th>
+          <th>Teléfono</th>
+          <th>Correo electrónico</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-client>
+        <tr>
+          <td>{{ client.id }}</td>
+
+          <td>
+            {{ client.tipo_documento }} {{ client.numero_documento }}
+          </td>
+
+          <td>{{ client.nombre }}</td>
+          <td>{{ client.telefono || '—' }}</td>
+          <td>{{ client.email || '—' }}</td>
+
+          <td>
+            <span
+              class="rounded-full px-2 py-1 text-xs font-medium"
+              [class.bg-green-100]="client.status === 'active'"
+              [class.text-green-800]="client.status === 'active'"
+              [class.bg-slate-100]="client.status !== 'active'"
+              [class.text-slate-700]="client.status !== 'active'"
+            >
+              {{ client.status === 'active' ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+
+          <td>
+            <p-button
+              label="Editar"
+              icon="pi pi-pencil"
+              size="small"
+              [outlined]="true"
+              (onClick)="openEdit(client)"
+            />
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="7" class="py-6 text-center text-slate-500">
+            @if (search().trim()) {
+              No se encontraron clientes que coincidan con la búsqueda.
+            } @else {
+              No hay clientes registrados para mostrar.
+            }
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  }
+</p-card>
+
+<p-dialog
+  [header]="selectedClient() ? 'Editar cliente' : 'Nuevo cliente'"
+  [(visible)]="dialogVisible"
+  [modal]="true"
+  [closable]="!saving()"
+  [closeOnEscape]="!saving()"
+  [style]="{ width: 'min(42rem, 95vw)' }"
+  [breakpoints]="{ '640px': '95vw' }"
+  (onHide)="closeDialog()"
+>
+  <app-client-form
+    [client]="selectedClient()"
+    [saving]="saving()"
+    (save)="saveClient($event)"
+    (cancel)="closeDialog()"
+  />
+</p-dialog>
+```
+![](a/206.png)
+
+#### 3.6 Servicio de comunicación con la API
+```bash
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { Client, ClientPayload } from '../../core/models/client.model';
+
+/** Contrato exacto de `features/business/client` en Express. */
+@Service()
+export class ClientApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/clientes`;
+
+  list(): Observable<Client[]> {
+    return this.http
+      .get<{ clients: Client[] }>(this.base)
+      .pipe(map((response) => response.clients));
+  }
+
+  get(id: number): Observable<Client> {
+    return this.http
+      .get<{ client: Client }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.client));
+  }
+
+  create(payload: ClientPayload): Observable<Client> {
+    return this.http
+      .post<{ client: Client }>(this.base, payload)
+      .pipe(map((response) => response.client));
+  }
+
+  /** PATCH /api/clientes/:id — actualización parcial. */
+  update(id: number, payload: Partial<ClientPayload>): Observable<Client> {
+    return this.http
+      .patch<{ client: Client }>(`${this.base}/${id}`, payload)
+      .pipe(map((response) => response.client));
+  }
+
+  /** PUT /api/clientes/:id — reemplazo completo. */
+  replace(id: number, payload: ClientPayload): Observable<Client> {
+    return this.http
+      .put<{ client: Client }>(`${this.base}/${id}`, payload)
+      .pipe(map((response) => response.client));
+  }
+
+  /** Baja lógica: status = inactive. */
+  deactivate(id: number): Observable<unknown> {
+    return this.http.patch(`${this.base}/${id}/deactivate`, {});
+  }
+
+  /** Baja física: DELETE. */
+  remove(id: number): Observable<unknown> {
+    return this.http.delete(`${this.base}/${id}`);
+  }
+}
+```
+![](a/207.png)
+
+#### 3.7 Verificación de compilación
+![](a/208.png)
+
+#### Comprobacion de funcionamiento 
+**Crear cliente** 
+![](a/209.png)
+![](a/210.png)
+
+**Editar Cliente**
+![](a/211.png)
+![](a/212.png)
+**baja logica**
+![](a/213.png)
+**baja fisica**
+![](a/214.png)
+**comprobacion de ambas**
+![](a/215.png)
+![](a/216.png)
