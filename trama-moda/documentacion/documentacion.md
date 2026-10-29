@@ -9845,5 +9845,5 @@ readonly filteredCategories = computed(() =>
 **Eliminar**
 ![](a/227.png)
 ![](a/228.png)
-**Buscar**
+Buscar
 ![](a/229.png)
