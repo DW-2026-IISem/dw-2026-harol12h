@@ -18,6 +18,8 @@
     <main id="contenido" class="min-w-0 flex-1 p-4 sm:p-6">
       @if (title() === 'Clientes') {
         <app-client-list />
+      } @else if (title() === 'Categorías') {
+        <app-category-list />
       } @else if (title() === 'Inicio') {
         <p-card>
           <h1 class="text-2xl font-semibold text-slate-900">

@@ -9624,3 +9624,226 @@ export class ClientApi {
 **comprobacion de ambas**
 ![](a/215.png)
 ![](a/216.png)
+
+## ISS · CRUD de Category
+#### 4.1 Endpoint y contrato
+```bash
+cat src/app/core/models/category.model.ts
+```
+```bash
+import { Timestamps } from './api.model';
+
+/** Categorías comerciales de TramaModa. */
+export interface Category extends Timestamps {
+  id: number;
+  name: string;
+  description?: string;
+  is_active: boolean;
+}
+
+export interface CategoryPayload {
+  name: string;
+  description?: string;
+  is_active: boolean;
+}
+```
+![](a/217.png)
+![](a/218.png)
+#### 4.2 Generar con CLI
+```bash
+npx ng generate component features/categories/category-form --standalone --skip-tests
+npx ng generate component features/categories/category-list --standalone --skip-tests
+```
+![](a/219.png)
+![](a/220.png)
+
+#### Punto 4.3 — Servicio
+```bash
+cat src/app/features/categories/category-api.ts
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import {
+  Category,
+  CategoryPayload,
+} from '../../core/models/category.model';
+
+@Service()
+export class CategoryApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/categorias`;
+
+  list(): Observable<Category[]> {
+    return this.http
+      .get<{ categories: Category[] }>(this.base)
+      .pipe(map((response) => response.categories));
+  }
+
+  get(id: number): Observable<Category> {
+    return this.http
+      .get<{ category: Category }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.category));
+  }
+
+  create(payload: CategoryPayload): Observable<Category> {
+    return this.http
+      .post<{ category: Category }>(this.base, payload)
+      .pipe(map((response) => response.category));
+  }
+
+  update(id: number, payload: CategoryPayload): Observable<Category> {
+    return this.http
+      .put<{ message?: string; category: Category }>(
+        `${this.base}/${id}`,
+        payload,
+      )
+      .pipe(map((response) => response.category));
+  }
+
+  deactivate(id: number): Observable<unknown> {
+    return this.http.patch(`${this.base}/${id}/deactivate`, {});
+  }
+}
+```
+#### 4.4 Formulario `category-api.html`
+```bash
+<p-toast />
+<p-confirmdialog />
+
+<p-card>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800">Categorías</h1>
+      <p class="mt-1 text-sm text-slate-500">
+        Administra las categorías comerciales de TramaModa.
+      </p>
+    </div>
+
+    <p-button
+      label="Nueva categoría"
+      icon="pi pi-plus"
+      (onClick)="openCreate()"
+    />
+  </div>
+
+  <div class="mb-4">
+    <input
+      pInputText
+      type="text"
+      placeholder="Buscar por nombre o descripción..."
+      aria-label="Buscar categorías"
+      class="w-full"
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+  </div>
+
+  @if (error()) {
+  <div
+    class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+    role="alert"
+  >
+    {{ error() }}
+  </div>
+}
+
+  <p-table
+    [value]="filteredCategories()"
+    [loading]="loading()"
+    [tableStyle]="{ 'min-width': '40rem' }"
+    [rowHover]="true"
+    dataKey="id"
+    responsiveLayout="scroll"
+    emptyMessage="No hay categorías para mostrar."
+  >
+    <ng-template #header>
+      <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Estado</th>
+        <th class="text-right">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-category>
+      <tr>
+        <td class="font-medium">{{ category.name }}</td>
+        <td>{{ category.description || 'Sin descripción' }}</td>
+        <td>
+          <span
+            class="rounded-full px-3 py-1 text-xs font-semibold"
+            [class.bg-green-100]="category.is_active"
+            [class.text-green-700]="category.is_active"
+          >
+            {{ category.is_active ? 'Activa' : 'Inactiva' }}
+          </span>
+        </td>
+        <td>
+          <div class="flex justify-end gap-2">
+            <p-button
+              icon="pi pi-pencil"
+              severity="secondary"
+              [text]="true"
+              ariaLabel="Editar categoría"
+              (onClick)="openEdit(category)"
+            />
+            <p-button
+              icon="pi pi-ban"
+              severity="danger"
+              [text]="true"
+              ariaLabel="Desactivar categoría"
+              [disabled]="!category.is_active"
+              (onClick)="deactivate(category)"
+            />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-dialog
+  [header]="selectedCategory() ? 'Editar categoría' : 'Nueva categoría'"
+  [visible]="dialogVisible()"
+  (visibleChange)="!$event && closeDialog()"
+  [modal]="true"
+  [closable]="!saving()"
+  [style]="{ width: 'min(95vw, 36rem)' }"
+>
+  <app-category-form
+    [category]="selectedCategory()"
+    [saving]="saving()"
+    (save)="saveCategory($event)"
+    (cancel)="closeDialog()"
+  />
+</p-dialog>
+```
+
+#### 4.5 Lista
+Estado:
+```bash
+readonly categories = signal<Category[]>([]);
+readonly search = signal('');
+
+readonly filteredCategories = computed(() =>
+  filterRows(this.categories(), this.search(), (category) => [
+    category.name,
+    category.description,
+  ]),
+);
+```
+![](a/222.png)
+
+#### Verificacion de uso
+**Creacion de categoria**
+![](a/223.png)
+![](a/224.png)
+**Editar**
+![](a/225.png)
+![](a/226.png)
+**Eliminar**
+![](a/227.png)
+![](a/228.png)
+**Buscar**
+![](a/229.png)

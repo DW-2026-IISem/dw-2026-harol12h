@@ -1,0 +1,62 @@
+
+<form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+  <div>
+    <label for="category-name" class="mb-1 block font-medium">
+      Nombre *
+    </label>
+
+    <input
+      id="category-name"
+      type="text"
+      formControlName="name"
+      maxlength="120"
+      required
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      placeholder="Ej. Camisas"
+    />
+
+    @if (form.controls.name.touched && form.controls.name.invalid) {
+      <small class="text-red-600">
+        El nombre es obligatorio y admite máximo 120 caracteres.
+      </small>
+    }
+  </div>
+
+  <div>
+    <label for="category-description" class="mb-1 block font-medium">
+      Descripción
+    </label>
+
+    <textarea
+      id="category-description"
+      formControlName="description"
+      maxlength="255"
+      rows="3"
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      placeholder="Describe la categoría (opcional)"
+    ></textarea>
+  </div>
+
+  <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
+    <button
+      type="button"
+      (click)="cancel.emit()"
+      [disabled]="saving"
+      class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+    >
+      Cancelar
+    </button>
+
+    <button
+      type="submit"
+      [disabled]="saving"
+      class="rounded-lg bg-blue-600 px-5 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      @if (saving) {
+        Guardando...
+      } @else {
+        {{ category ? 'Guardar cambios' : 'Crear categoría' }}
+      }
+    </button>
+  </div>
+</form>

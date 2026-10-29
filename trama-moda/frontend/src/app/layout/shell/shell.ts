@@ -10,6 +10,7 @@ import { ClientList } from '../../features/clients/client-list/client-list';
 import { Aside } from '../aside/aside';
 import { Footer } from '../footer/footer';
 import { Header } from '../header/header';
+import { CategoryList } from '../../features/categories/category-list/category-list';
 
 @Component({
   selector: 'app-shell',
@@ -22,6 +23,7 @@ import { Header } from '../header/header';
     ClientList,
     Footer,
     Header,
+    CategoryList,
   ],
   templateUrl: './shell.html',
   styleUrl: './shell.css',

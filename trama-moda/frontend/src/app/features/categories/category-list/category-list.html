@@ -1,0 +1,111 @@
+
+<p-toast />
+<p-confirmdialog />
+
+<p-card>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800">Categorías</h1>
+      <p class="mt-1 text-sm text-slate-500">
+        Administra las categorías comerciales de TramaModa.
+      </p>
+    </div>
+
+    <p-button
+      label="Nueva categoría"
+      icon="pi pi-plus"
+      (onClick)="openCreate()"
+    />
+  </div>
+
+  <div class="mb-4">
+    <input
+      pInputText
+      type="text"
+      placeholder="Buscar por nombre o descripción..."
+      aria-label="Buscar categorías"
+      class="w-full"
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+  </div>
+
+  @if (error()) {
+  <div
+    class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+    role="alert"
+  >
+    {{ error() }}
+  </div>
+}
+
+  <p-table
+    [value]="filteredCategories()"
+    [loading]="loading()"
+    [tableStyle]="{ 'min-width': '40rem' }"
+    [rowHover]="true"
+    dataKey="id"
+    responsiveLayout="scroll"
+    emptyMessage="No hay categorías para mostrar."
+  >
+    <ng-template #header>
+      <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Estado</th>
+        <th class="text-right">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-category>
+      <tr>
+        <td class="font-medium">{{ category.name }}</td>
+        <td>{{ category.description || 'Sin descripción' }}</td>
+        <td>
+          <span
+            class="rounded-full px-3 py-1 text-xs font-semibold"
+            [class.bg-green-100]="category.is_active"
+            [class.text-green-700]="category.is_active"
+          >
+            {{ category.is_active ? 'Activa' : 'Inactiva' }}
+          </span>
+        </td>
+        <td>
+          <div class="flex justify-end gap-2">
+            <p-button
+              icon="pi pi-pencil"
+              severity="secondary"
+              [text]="true"
+              ariaLabel="Editar categoría"
+              (onClick)="openEdit(category)"
+            />
+            <p-button
+              icon="pi pi-ban"
+              severity="danger"
+              [text]="true"
+              ariaLabel="Desactivar categoría"
+              [disabled]="!category.is_active"
+              (onClick)="deactivate(category)"
+            />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-dialog
+  [header]="selectedCategory() ? 'Editar categoría' : 'Nueva categoría'"
+  [visible]="dialogVisible()"
+  (visibleChange)="!$event && closeDialog()"
+  [modal]="true"
+  [closable]="!saving()"
+  [style]="{ width: 'min(95vw, 36rem)' }"
+>
+  <app-category-form
+    [category]="selectedCategory()"
+    [saving]="saving()"
+    (save)="saveCategory($event)"
+    (cancel)="closeDialog()"
+  />
+</p-dialog>
