@@ -15,6 +15,13 @@ Variant.init({
         type: sequelize_1.DataTypes.TEXT,
         allowNull: true
     },
+    product_id: {
+        type: sequelize_1.DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: "products", key: "id" },
+        onUpdate: "CASCADE",
+        onDelete: "SET NULL"
+    },
     is_active: {
         type: sequelize_1.DataTypes.BOOLEAN,
         defaultValue: true

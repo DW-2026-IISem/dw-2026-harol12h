@@ -25,11 +25,17 @@ Inventory.init(
   {
     branchId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      references: { model: "branches", key: "id" },
+      onUpdate: "CASCADE",
+      onDelete: "RESTRICT"
     },
     variantId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      references: { model: "variants", key: "id" },
+      onUpdate: "CASCADE",
+      onDelete: "RESTRICT"
     },
     stock: {
       type: DataTypes.INTEGER,

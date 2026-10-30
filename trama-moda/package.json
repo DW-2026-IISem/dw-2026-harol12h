@@ -8,6 +8,8 @@
     "dev": "nodemon --watch src --ext ts --exec ts-node -- src/server.ts",
     "init-admin": "ts-node src/database/init-admin.ts",
     "seed:auth-test": "ts-node src/database/seeders/auth-test.seeder.ts",
+    "db:migrate:relations": "ts-node src/database/migrations/20261029-add-business-relations.ts",
+    "db:migrate:product-description": "ts-node src/database/migrations/20261030-add-product-description.ts",
     "seed": "ts-node src/database/seed.ts"
   },
   "keywords": [],

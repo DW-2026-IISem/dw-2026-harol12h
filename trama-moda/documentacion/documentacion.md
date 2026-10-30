@@ -9625,7 +9625,7 @@ export class ClientApi {
 ![](a/215.png)
 ![](a/216.png)
 
-## ISS · CRUD de Category
+## ISS4 · CRUD de Category
 #### 4.1 Endpoint y contrato
 ```bash
 cat src/app/core/models/category.model.ts
@@ -9847,3 +9847,543 @@ readonly filteredCategories = computed(() =>
 ![](a/228.png)
 Buscar
 ![](a/229.png)
+
+## ISS-05 CRUD de Product
+#### 5.2 Generar con CLI
+```bash
+npx ng generate component features/products/product-list --standalone
+
+npx ng generate component features/products/product-form --standalone
+``` 
+![](a/230.png)
+
+#### 5.3 Servicio
+
+```bash
+cat > src/app/features/products/product-api.ts <<'EOF'
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { Product, ProductPayload } from '../../core/models/product.model';
+
+/** Servicio HTTP para el módulo de productos de TramaModa. */
+@Service()
+export class ProductApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/productos`;
+
+  list(): Observable<Product[]> {
+    return this.http
+      .get<{ products: Product[] }>(this.base)
+      .pipe(map((response) => response.products));
+  }
+
+  get(id: number): Observable<Product> {
+    return this.http
+      .get<{ product: Product }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.product));
+  }
+
+  create(payload: ProductPayload): Observable<Product> {
+    return this.http
+      .post<{ product: Product }>(this.base, payload)
+      .pipe(map((response) => response.product));
+  }
+
+  /** Actualiza el producto mediante PUT, según las rutas del backend. */
+  update(id: number, payload: ProductPayload): Observable<Product> {
+    return this.http
+      .put<{ message?: string; product: Product }>(
+        `${this.base}/${id}`,
+        payload,
+      )
+      .pipe(map((response) => response.product));
+  }
+
+  /** Desactivación lógica mediante PATCH. */
+  deactivate(id: number): Observable<unknown> {
+    return this.http.patch(`${this.base}/${id}/deactivate`, {});
+  }
+}
+EOF
+```
+![](a/231.png)
+
+#### 5.4. Cargar productos y categorías en paralelo
+```bash
+cat src/app/features/products/product-list/product-list.ts
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, computed, inject, signal } from '@angular/core';
+import { ConfirmationService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { ConfirmDialog } from 'primeng/confirmdialog';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { TableModule } from 'primeng/table';
+import { ToastModule } from 'primeng/toast';
+
+import { Product, ProductPayload } from '../../../core/models/product.model';
+import { NotificationService } from '../../../core/services/notification';
+import { toApiMessage } from '../../../core/utils/api-error';
+import { filterRows } from '../../../core/utils/filter-rows';
+import { ProductApi } from '../product-api';
+import { ProductForm } from '../product-form/product-form';
+import { forkJoin } from 'rxjs';
+import { Category } from '../../../core/models/category.model';
+import { CategoryApi } from '../../categories/category-api';
+import { CurrencyPipe } from '@angular/common';
+import { Tag } from 'primeng/tag';
+
+@Component({
+  selector: 'app-product-list',
+  standalone: true,
+  imports: [
+    ButtonModule,
+    CardModule,
+    ConfirmDialog,
+    DialogModule,
+    InputTextModule,
+    TableModule,
+    ToastModule,
+    ProductForm,
+    CurrencyPipe,
+    Tag,
+  ],
+  providers: [ConfirmationService],
+  templateUrl: './product-list.html',
+  styleUrl: './product-list.css',
+})
+export class ProductList {
+  private readonly api = inject(ProductApi);
+  private readonly notifications = inject(NotificationService);
+  private readonly confirmations = inject(ConfirmationService);
+
+  readonly products = signal<Product[]>([]);
+  readonly loading = signal(false);
+  readonly saving = signal(false);
+  readonly error = signal('');
+  readonly search = signal('');
+  readonly dialogVisible = signal(false);
+  readonly selectedProduct = signal<Product | null>(null);
+  private readonly categoryApi = inject(CategoryApi);
+
+readonly categories = signal<Category[]>([]);
+readonly LOW_STOCK_LIMIT = 20;
+
+readonly lowStockCount = computed(
+  () =>
+    this.products().filter(
+      (product) => product.stock <= this.LOW_STOCK_LIMIT,
+    ).length,
+);
+
+readonly categoryName = computed(() => {
+  const categoryMap = new Map(
+    this.categories().map((category) => [
+      category.id,
+      category.name,
+    ]),
+  );
+
+  return (id: number | null) =>
+    id === null
+      ? 'Sin categoría'
+      : categoryMap.get(id) ?? `Categoría #${id}`;
+});
+
+  readonly filteredProducts = computed(() =>
+    filterRows(this.products(), this.search(), (product) => [
+      product.nombre,
+      product.descripcion ?? '',
+    ]),
+  );
+
+  constructor() {
+    this.loadProducts();
+  }
+
+  // ISS-05 — Punto 5.4: cargar productos y categorías en paralelo.
+loadProducts(): void {
+  this.loading.set(true);
+  this.error.set('');
+
+  forkJoin({
+    products: this.api.list(),
+    categories: this.categoryApi.list(),
+  }).subscribe({
+    next: ({ products, categories }) => {
+      this.products.set(products);
+      this.categories.set(
+        categories.filter((category) => category.is_active),
+      );
+      this.loading.set(false);
+    },
+    error: (error: HttpErrorResponse) => {
+      this.products.set([]);
+      this.categories.set([]);
+      this.error.set(toApiMessage(error));
+      this.loading.set(false);
+    },
+  });
+}
+
+  openCreate(): void {
+    this.selectedProduct.set(null);
+    this.dialogVisible.set(true);
+  }
+
+  openEdit(product: Product): void {
+    this.selectedProduct.set(product);
+    this.dialogVisible.set(true);
+  }
+
+  saveProduct(payload: ProductPayload): void {
+    this.saving.set(true);
+
+    const request = this.selectedProduct()
+      ? this.api.update(this.selectedProduct()!.id, payload)
+      : this.api.create(payload);
+
+    request.subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.dialogVisible.set(false);
+        this.notifications.success(
+          this.selectedProduct()
+            ? 'Producto actualizado correctamente.'
+            : 'Producto creado correctamente.',
+        );
+        this.loadProducts();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.saving.set(false);
+        this.notifications.error(toApiMessage(error));
+      },
+    });
+  }
+
+  deactivate(product: Product): void {
+    this.confirmations.confirm({
+      header: 'Desactivar producto',
+      message: `¿Deseas desactivar el producto "${product.nombre}"?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, desactivar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.api.deactivate(product.id).subscribe({
+          next: () => {
+            this.notifications.success(
+              'Producto desactivado correctamente.',
+            );
+            this.loadProducts();
+          },
+          error: (error: HttpErrorResponse) => {
+            this.notifications.error(toApiMessage(error));
+          },
+        });
+      },
+    });
+  }
+
+  closeDialog(): void {
+    if (this.saving()) {
+      return;
+    }
+
+    this.dialogVisible.set(false);
+    this.selectedProduct.set(null);
+  }
+```
+![](a/232.png)
+
+#### 5.5. Indicador de productos con stock bajo
+`src/app/features/products/product-list/product-list.ts`
+```bash
+// ISS-05 — Punto 5.5: Stock bajo con computed
+
+readonly LOW_STOCK_LIMIT = 20;
+
+readonly lowStockCount = computed(
+  () =>
+    this.products().filter(
+      (product) => product.stock <= this.LOW_STOCK_LIMIT,
+    ).length,
+);
+```
+![](a/233.png)
+
+`src/app/features/products/product-list/product-list.html`
+```bash
+<!-- ISS-05 — Punto 5.5: indicador de stock bajo -->
+@if (lowStockCount() > 0) {
+  <p-tag
+    [value]="lowStockCount() + ' productos con stock bajo'"
+    severity="warn"
+    [rounded]="true"
+  />
+}
+```
+![](a/234.png)
+
+#### 5.6. Formulario de productos
+`cat src/app/features/products/product-form/product-form.ts`
+```bash
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  inject,
+  signal,
+} from '@angular/core';
+
+import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+
+import { HttpErrorResponse } from '@angular/common/http';
+
+import { Product, ProductPayload } from '../../../core/models/product.model';
+import { Category } from '../../../core/models/category.model';
+import { Supplier } from '../../../core/models/supplier.model';
+
+import { CategoryApi } from '../../categories/category-api';
+import { SupplierApi } from '../../suppliers/supplier-api';
+
+import { toApiMessage } from '../../../core/utils/api-error';
+
+@Component({
+  selector: 'app-product-form',
+  standalone: true,
+  imports: [ReactiveFormsModule],
+  templateUrl: './product-form.html',
+  styleUrl: './product-form.css',
+})
+export class ProductForm implements OnChanges {
+  private readonly fb = inject(FormBuilder);
+  private readonly categoryApi = inject(CategoryApi);
+  private readonly supplierApi = inject(SupplierApi);
+
+  @Input() product: Product | null = null;
+  @Input() saving = false;
+
+  @Output() save = new EventEmitter<ProductPayload>();
+  @Output() cancel = new EventEmitter<void>();
+
+  readonly categories = signal<Category[]>([]);
+  readonly suppliers = signal<Supplier[]>([]);
+  readonly loadingRelations = signal(false);
+  readonly relationError = signal('');
+
+  readonly form = this.fb.group({
+    nombre: ['', [Validators.required, Validators.maxLength(120)]],
+    descripcion: ['', [Validators.maxLength(500)]],
+    precio: [0, [Validators.required, Validators.min(0.01)]],
+    stock: [
+      0,
+      [
+        Validators.required,
+        Validators.min(0),
+        Validators.pattern(/^\d+$/),
+      ],
+    ],
+    category_id: [null as number | null],
+    supplier_id: [null as number | null],
+  });
+
+  constructor() {
+    this.loadRelations();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['product']) {
+      this.form.reset({
+        nombre: this.product?.nombre ?? '',
+        descripcion: this.product?.descripcion ?? '',
+        precio: Number(this.product?.precio ?? 0),
+        stock: this.product?.stock ?? 0,
+        category_id: this.product?.category_id ?? null,
+        supplier_id: this.product?.supplier_id ?? null,
+      });
+    }
+  }
+
+  loadRelations(): void {
+    this.loadingRelations.set(true);
+    this.relationError.set('');
+
+    let completed = 0;
+
+    const finishLoading = (): void => {
+      completed++;
+
+      if (completed === 2) {
+        this.loadingRelations.set(false);
+      }
+    };
+
+    this.categoryApi.list().subscribe({
+      next: (categories) => {
+        this.categories.set(
+          categories.filter((category) => category.is_active),
+        );
+        finishLoading();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.relationError.set(toApiMessage(error));
+        finishLoading();
+      },
+    });
+
+    this.supplierApi.list().subscribe({
+      next: (suppliers) => {
+        this.suppliers.set(
+          suppliers.filter((supplier) => supplier.is_active),
+        );
+        finishLoading();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.relationError.set(toApiMessage(error));
+        finishLoading();
+      },
+    });
+  }
+
+  submit(): void {
+    if (this.form.invalid || this.saving) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    const value = this.form.getRawValue();
+
+    const nombre = (value.nombre ?? '').trim();
+    const descripcion = value.descripcion?.trim() ?? '';
+
+    if (!nombre) {
+      this.form.controls.nombre.markAsTouched();
+      return;
+    }
+
+    const payload: ProductPayload = {
+      nombre,
+      descripcion: descripcion || null,
+      precio: Number(value.precio),
+      stock: Number(value.stock),
+      category_id: value.category_id,
+      supplier_id: value.supplier_id,
+    };
+
+    this.save.emit(payload);
+  }
+}
+```
+![](a/235.png)
+
+**Plantilla clave** 
+```bash
+<!-- ISS-05 — Punto 5.6: seleccionar categoría -->
+<select
+  id="category_id"
+  formControlName="category_id"
+>
+  <option [ngValue]="null">Selecciona una categoría</option>
+
+  @for (category of categories(); track category.id) {
+    <option [ngValue]="category.id">
+      {{ category.name }}
+    </option>
+  }
+</select>
+```
+Campo de precio
+```bash
+<!-- ISS-05 — Punto 5.6: ingresar precio -->
+<input
+  id="precio"
+  type="number"
+  formControlName="precio"
+  min="0.01"
+  step="0.01"
+/>
+```
+
+#### 
+```bash
+import { CurrencyPipe } from '@angular/common';
+@Component({
+  selector: 'app-product-list',
+  standalone: true,
+  imports: [
+    ButtonModule,
+    CardModule,
+    ConfirmDialog,
+    DialogModule,
+    InputTextModule,
+    TableModule,
+    ToastModule,
+    ProductForm,
+    CurrencyPipe, ----- agregada 
+    Tag,
+  ],
+  providers: [ConfirmationService],
+  templateUrl: './product-list.html',
+  styleUrl: './product-list.css',
+})
+```
+![](a/236.png)
+
+semaforo de stock
+```bash
+        <td>
+            <p-tag
+                [value]="product.stock.toString()"
+                [severity]="
+                product.stock === 0
+                ? 'danger'
+                : product.stock <= LOW_STOCK_LIMIT
+                ? 'warn'
+                : 'success'"
+                [rounded]="true"
+                />
+        </td>
+```
+#### 5.8 Ruta
+Archivo: `src/app/layout/shell/shell.ts`
+```bash
+import { ProductList } from '../../features/products/product-list/product-list';
+
+// ISS-05 — Punto 5.8: opción Productos en el menú de Catálogo.
+{
+  label: 'Productos',
+  icon: 'pi pi-box',
+  command: () => this.seleccionar('Productos'),
+},
+```
+![](a/238.png)
+
+`src/app/layout/shell/shell.html`
+```bash
+<!-- ISS-05 — Punto 5.8: cargar el componente de productos -->
+@else if (title() === 'Productos') {
+  <app-product-list />
+}
+```
+#### Verificacion de funciones 
+**crear nuevo Producto** 
+![](a/239.png)
+![](a/240.png)
+**Buscar Producto**
+![](a/243.png)
+**Editar Producto**
+![](a/241.png)
+![](a/242.png)
+**Eliminar Producto**
+![](a/244.png)
+![](a/245.png)

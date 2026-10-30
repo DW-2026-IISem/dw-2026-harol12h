@@ -15,12 +15,24 @@ import { checkRole, verifyToken } from "../../../middlewares/auth.middleware";
  *         nombre:
  *           type: string
  *           example: "Camiseta de Algodón"
+ *         descripcion:
+ *           type: string
+ *           nullable: true
+ *           example: "Camiseta de algodón suave, cuello redondo y manga corta."
  *         precio:
  *           type: number
  *           example: 45000.00
  *         stock:
  *           type: integer
  *           example: 50
+ *         category_id:
+ *           type: integer
+ *           nullable: true
+ *           example: 1
+ *         supplier_id:
+ *           type: integer
+ *           nullable: true
+ *           example: 1
  *         status:
  *           type: string
  *           enum: [active, inactive]
@@ -34,12 +46,24 @@ import { checkRole, verifyToken } from "../../../middlewares/auth.middleware";
  *         nombre:
  *           type: string
  *           example: "Camiseta de Algodón"
+ *         descripcion:
+ *           type: string
+ *           nullable: true
+ *           example: "Camiseta de algodón suave, cuello redondo y manga corta."
  *         precio:
  *           type: number
  *           example: 45000.00
  *         stock:
  *           type: integer
  *           example: 50
+ *         category_id:
+ *           type: integer
+ *           nullable: true
+ *           example: 1
+ *         supplier_id:
+ *           type: integer
+ *           nullable: true
+ *           example: 1
  */
 
 export class ProductRoutes {

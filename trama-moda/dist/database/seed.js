@@ -35,7 +35,7 @@ async function runSeed() {
             throw new Error("Set ADMIN_USERNAME (3+ characters), ADMIN_EMAIL, and ADMIN_PASSWORD (12+ characters) in .env before seeding.");
         }
         console.log("🌱 Sincronizando base de datos antes de sembrar...");
-        await (0, db_1.syncDatabase)({ force: true });
+        await (0, db_1.syncDatabase)();
         console.log("⏳ Poblando Auth y RBAC...");
         const [adminUser] = await user_model_1.User.findOrCreate({
             where: { username: adminUsername },
@@ -83,7 +83,6 @@ async function runSeed() {
         const getStreet = () => faker.location?.streetAddress ? faker.location.streetAddress() : "Calle 50 #12-34";
         const getPhone = () => faker.phone?.number ? faker.phone.number() : "3001234567";
         const getFirstName = () => faker.person?.firstName ? faker.person.firstName() : "Juan";
-        const getLastName = () => faker.person?.lastName ? faker.person.lastName() : "Pérez";
         const getFullName = () => faker.person?.fullName ? faker.person.fullName() : "Juan Pérez";
         const getEmail = () => faker.internet?.email ? faker.internet.email() : `user_${Math.random().toString(36).substring(7)}@trama.com`;
         const getCompany = () => faker.company?.name ? faker.company.name() : "Trama Corp";
@@ -91,7 +90,6 @@ async function runSeed() {
         const getProductDesc = () => faker.commerce?.productDescription ? faker.commerce.productDescription() : "Descripción de prueba";
         const getPrice = (min, max) => faker.commerce?.price ? parseFloat(faker.commerce.price({ min, max })) : 45000;
         const getRandomInt = (min, max) => faker.number?.int ? faker.number.int({ min, max }) : Math.floor(Math.random() * (max - min + 1)) + min;
-        const getSKU = () => faker.string?.alphanumeric ? faker.string.alphanumeric({ length: 8, casing: "upper" }) : Math.random().toString(36).substring(2, 10).toUpperCase();
         const getColor = () => faker.color?.human ? faker.color.human() : "Azul";
         const getElement = (arr) => faker.helpers?.arrayElement ? faker.helpers.arrayElement(arr) : arr[Math.floor(Math.random() * arr.length)];
         const getElements = (arr, count) => faker.helpers?.arrayElements ? faker.helpers.arrayElements(arr, count) : arr.slice(0, count);
@@ -102,15 +100,14 @@ async function runSeed() {
                 nombre: `Sucursal ${getCity()}`,
                 direccion: getStreet(),
                 telefono: getPhone(),
-                status: "active",
+                is_active: true,
             }));
         }
         // Clientes
         const clients = [];
         for (let i = 0; i < 10; i++) {
             clients.push(await client_model_1.Client.create({
-                nombre: getFirstName(),
-                apellido: getLastName(),
+                nombre: getFullName(),
                 tipo_documento: "CC",
                 numero_documento: `${getRandomInt(1000000000, 9999999999)}`,
                 email: getEmail(),
@@ -123,31 +120,32 @@ async function runSeed() {
         const catNames = ["Camisas", "Pantalones", "Chaquetas", "Calzado", "Accesorios"];
         for (const name of catNames) {
             categories.push(await category_model_1.Category.create({
-                nombre: name,
-                descripcion: `Categoría de ${name}`,
-                status: "active",
+                name,
+                description: `Categoría de ${name}`,
+                is_active: true,
             }));
         }
         // Proveedores
         const suppliers = [];
         for (let i = 0; i < 5; i++) {
             suppliers.push(await supplier_model_1.Supplier.create({
-                nombre: getCompany(),
-                contacto: getFullName(),
-                telefono: getPhone(),
+                name: getCompany(),
+                contact_name: getFullName(),
+                phone: getPhone(),
                 email: getEmail(),
-                status: "active",
+                address: getStreet(),
+                is_active: true,
             }));
         }
         // Productos y Variantes
         const products = [];
-        const variants = [];
         for (let i = 0; i < 15; i++) {
             const category = getElement(categories);
             const supplier = getElement(suppliers);
             const product = await product_model_1.Product.create({
                 nombre: getProductName(),
-                descripcion: getProductDesc(),
+                precio: getPrice(20000, 200000),
+                stock: 100,
                 category_id: category.id,
                 supplier_id: supplier.id,
                 status: "active",
@@ -155,22 +153,20 @@ async function runSeed() {
             products.push(product);
             // Crear 3 variantes por producto
             for (const talla of ["S", "M", "L"]) {
+                const color = getColor();
                 const variant = await variant_model_1.Variant.create({
                     product_id: product.id,
-                    sku: getSKU(),
-                    talla: talla,
-                    color: getColor(),
-                    precio: getPrice(20000, 200000),
-                    status: "active",
+                    nombre: `Talla ${talla} - ${color}`,
+                    descripcion: getProductDesc(),
+                    is_active: true,
                 });
-                variants.push(variant);
                 // Inventario por Variante y Sucursal
                 for (const branch of branches) {
                     await inventory_model_1.Inventory.create({
-                        variant_id: variant.id,
-                        branch_id: branch.id,
+                        variantId: variant.id,
+                        branchId: branch.id,
                         stock: getRandomInt(10, 100),
-                        status: "active",
+                        is_active: true,
                     });
                 }
             }
@@ -180,39 +176,35 @@ async function runSeed() {
             await collection_model_1.Collection.create({
                 nombre: `Colección ${getFirstName()} 2026`,
                 descripcion: "Colección de temporada alta",
-                status: "active",
+                is_active: true,
             });
         }
         // Ventas y Detalles de Venta
         for (let i = 0; i < 8; i++) {
             const client = getElement(clients);
-            const branch = getElement(branches);
             const sale = await sale_model_1.Sale.create({
                 client_id: client.id,
-                branch_id: branch.id,
-                user_id: adminUser.id,
-                total: 0,
+                monto_total: 0,
                 fecha: new Date(),
                 status: "active",
             });
             let totalVenta = 0;
-            const randomVariants = getElements(variants, getRandomInt(1, 3));
-            for (const variant of randomVariants) {
+            const randomProducts = getElements(products, getRandomInt(1, 3));
+            for (const product of randomProducts) {
                 const cantidad = getRandomInt(1, 4);
-                const precioUnitario = variant.precio || 50000;
+                const precioUnitario = Number(product.precio);
                 const subtotal = cantidad * precioUnitario;
                 totalVenta += subtotal;
                 await sale_detail_model_1.SaleDetail.create({
                     sale_id: sale.id,
-                    variant_id: variant.id,
+                    product_id: product.id,
                     cantidad: cantidad,
                     precio_unitario: precioUnitario,
                     subtotal: subtotal,
-                    status: "active",
                 });
+                await product.update({ stock: product.stock - cantidad });
             }
-            sale.total = totalVenta;
-            await sale.save();
+            await sale.update({ monto_total: totalVenta });
         }
         console.log("✅ ¡Base de datos poblada exitosamente!");
         process.exit(0);

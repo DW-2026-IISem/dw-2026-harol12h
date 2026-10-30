@@ -1,0 +1,168 @@
+<form
+  [formGroup]="form"
+  (ngSubmit)="submit()"
+  class="space-y-4"
+>
+  @if (relationError()) {
+    <div
+      class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+      role="alert"
+    >
+      {{ relationError() }}
+    </div>
+  }
+
+  <div>
+    <label for="product-name" class="mb-1 block font-medium">
+      Nombre del producto *
+    </label>
+
+    <input
+      id="product-name"
+      type="text"
+      formControlName="nombre"
+      maxlength="120"
+      required
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      placeholder="Ej. Camiseta de algodón"
+    />
+
+    @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+      <small class="text-red-600">
+        El nombre es obligatorio y admite máximo 120 caracteres.
+      </small>
+    }
+  </div>
+
+  <div>
+    <label for="product-description" class="mb-1 block font-medium">
+      Descripción
+    </label>
+
+    <textarea
+      id="product-description"
+      formControlName="descripcion"
+      maxlength="500"
+      rows="3"
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      placeholder="Describe el producto (opcional)"
+    ></textarea>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div>
+      <label for="product-price" class="mb-1 block font-medium">
+        Precio *
+      </label>
+
+      <input
+        id="product-price"
+        type="number"
+        formControlName="precio"
+        min="0.01"
+        step="0.01"
+        required
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+        placeholder="Ej. 45000"
+      />
+
+      @if (form.controls.precio.touched && form.controls.precio.invalid) {
+        <small class="text-red-600">
+          El precio debe ser mayor que cero.
+        </small>
+      }
+    </div>
+
+    <div>
+      <label for="product-stock" class="mb-1 block font-medium">
+        Stock *
+      </label>
+
+      <input
+        id="product-stock"
+        type="number"
+        formControlName="stock"
+        min="0"
+        step="1"
+        required
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+        placeholder="Ej. 48"
+      />
+
+      @if (form.controls.stock.touched && form.controls.stock.invalid) {
+        <small class="text-red-600">
+          El stock debe ser un número entero igual o mayor que cero.
+        </small>
+      }
+    </div>
+  </div>
+
+  <div>
+    <label for="product-category" class="mb-1 block font-medium">
+      Categoría
+    </label>
+
+    <select
+      id="product-category"
+      formControlName="category_id"
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+    >
+      <option [ngValue]="null">Sin categoría</option>
+
+      @for (category of categories(); track category.id) {
+        <option [ngValue]="category.id">
+          {{ category.name }}
+        </option>
+      }
+    </select>
+  </div>
+
+  <div>
+    <label for="product-supplier" class="mb-1 block font-medium">
+      Proveedor
+    </label>
+
+    <select
+      id="product-supplier"
+      formControlName="supplier_id"
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+    >
+      <option [ngValue]="null">Sin proveedor</option>
+
+      @for (supplier of suppliers(); track supplier.id) {
+        <option [ngValue]="supplier.id">
+          {{ supplier.name }}
+        </option>
+      }
+    </select>
+  </div>
+
+  @if (loadingRelations()) {
+    <p class="text-sm text-slate-500">
+      Cargando categorías y proveedores...
+    </p>
+  }
+
+  <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
+    <button
+      type="button"
+      (click)="cancel.emit()"
+      [disabled]="saving"
+      class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+    >
+      Cancelar
+    </button>
+
+    <button
+      type="submit"
+      [disabled]="saving"
+      class="rounded-lg bg-blue-600 px-5 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      @if (saving) {
+        Guardando...
+      } @else {
+        {{ product ? 'Guardar cambios' : 'Crear producto' }}
+      }
+    </button>
+  </div>
+</form>

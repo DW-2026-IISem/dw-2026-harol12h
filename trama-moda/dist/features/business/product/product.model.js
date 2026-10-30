@@ -11,6 +11,10 @@ Product.init({
         type: sequelize_1.DataTypes.STRING,
         allowNull: false
     },
+    descripcion: {
+        type: sequelize_1.DataTypes.TEXT,
+        allowNull: true
+    },
     precio: {
         type: sequelize_1.DataTypes.DECIMAL(10, 2),
         allowNull: false
@@ -19,6 +23,20 @@ Product.init({
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 0
+    },
+    category_id: {
+        type: sequelize_1.DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: "categories", key: "id" },
+        onUpdate: "CASCADE",
+        onDelete: "SET NULL"
+    },
+    supplier_id: {
+        type: sequelize_1.DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: "suppliers", key: "id" },
+        onUpdate: "CASCADE",
+        onDelete: "SET NULL"
     },
     status: {
         type: sequelize_1.DataTypes.ENUM("active", "inactive"),

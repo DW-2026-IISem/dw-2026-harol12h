@@ -54,9 +54,7 @@ export const testConnection = async (): Promise<boolean> => {
   }
 };
 
-export const syncDatabase = async (options: { force?: boolean } = {}): Promise<void> => {
-  const force = options.force === true;
-
+export const syncDatabase = async (): Promise<void> => {
   try {
     // Cargar Modelos de Negocio
     require("../features/business/user/user.model");
@@ -71,9 +69,6 @@ export const syncDatabase = async (options: { force?: boolean } = {}): Promise<v
     require("../features/business/category/category.model");
     require("../features/business/supplier/supplier.model");
 
-    const { setupAssociations } = require("./associations");
-    setupAssociations();
-
     // Cargar Modelos de Auth / RBAC
     require("../features/auth/users/user.model");
     require("../features/auth/roles/role.model");
@@ -83,23 +78,19 @@ export const syncDatabase = async (options: { force?: boolean } = {}): Promise<v
     require("../features/auth/refresh-tokens/refresh-token.model");
     require("../features/auth/rbac.associations");
 
-    if (force) {
-      await sequelize.query("SET FOREIGN_KEY_CHECKS = 0;");
-    }
-    await sequelize.sync({ force });
+    const { setupAssociations } = require("./associations");
+    setupAssociations();
+
+    await sequelize.sync();
 
     const { Role } = require("../features/auth/roles/role.model");
     const { syncRbacResources } = require("./sync-rbac-resources");
     const activeRoles = await Role.findAll({ where: { status: "active" } });
     await syncRbacResources(activeRoles);
 
-    console.log("✅ Tablas y relaciones (Business + Auth RBAC) sincronizadas correctamente en MySQL");
+    console.log("✅ Modelos y tablas (Business + Auth RBAC) sincronizados sin alterar tablas existentes");
   } catch (error) {
     console.error("❌ Error al sincronizar las tablas:", error);
     throw error;
-  } finally {
-    if (force) {
-      await sequelize.query("SET FOREIGN_KEY_CHECKS = 1;");
-    }
   }
 };

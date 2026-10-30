@@ -40,7 +40,7 @@ async function runSeed() {
     }
 
     console.log("🌱 Sincronizando base de datos antes de sembrar...");
-    await syncDatabase({ force: true });
+    await syncDatabase();
 
     console.log("⏳ Poblando Auth y RBAC...");
 
@@ -96,7 +96,6 @@ async function runSeed() {
     const getStreet = () => faker.location?.streetAddress ? faker.location.streetAddress() : "Calle 50 #12-34";
     const getPhone = () => faker.phone?.number ? faker.phone.number() : "3001234567";
     const getFirstName = () => faker.person?.firstName ? faker.person.firstName() : "Juan";
-    const getLastName = () => faker.person?.lastName ? faker.person.lastName() : "Pérez";
     const getFullName = () => faker.person?.fullName ? faker.person.fullName() : "Juan Pérez";
     const getEmail = () => faker.internet?.email ? faker.internet.email() : `user_${Math.random().toString(36).substring(7)}@trama.com`;
     const getCompany = () => faker.company?.name ? faker.company.name() : "Trama Corp";
@@ -104,7 +103,6 @@ async function runSeed() {
     const getProductDesc = () => faker.commerce?.productDescription ? faker.commerce.productDescription() : "Descripción de prueba";
     const getPrice = (min: number, max: number) => faker.commerce?.price ? parseFloat(faker.commerce.price({ min, max })) : 45000;
     const getRandomInt = (min: number, max: number) => faker.number?.int ? faker.number.int({ min, max }) : Math.floor(Math.random() * (max - min + 1)) + min;
-    const getSKU = () => faker.string?.alphanumeric ? faker.string.alphanumeric({ length: 8, casing: "upper" }) : Math.random().toString(36).substring(2, 10).toUpperCase();
     const getColor = () => faker.color?.human ? faker.color.human() : "Azul";
     const getElement = (arr: any[]) => faker.helpers?.arrayElement ? faker.helpers.arrayElement(arr) : arr[Math.floor(Math.random() * arr.length)];
     const getElements = (arr: any[], count: number) => faker.helpers?.arrayElements ? faker.helpers.arrayElements(arr, count) : arr.slice(0, count);
@@ -117,7 +115,7 @@ async function runSeed() {
           nombre: `Sucursal ${getCity()}`,
           direccion: getStreet(),
           telefono: getPhone(),
-          status: "active",
+          is_active: true,
         })
       );
     }
@@ -127,8 +125,7 @@ async function runSeed() {
     for (let i = 0; i < 10; i++) {
       clients.push(
         await Client.create({
-          nombre: getFirstName(),
-          apellido: getLastName(),
+          nombre: getFullName(),
           tipo_documento: "CC",
           numero_documento: `${getRandomInt(1000000000, 9999999999)}`,
           email: getEmail(),
@@ -144,9 +141,9 @@ async function runSeed() {
     for (const name of catNames) {
       categories.push(
         await Category.create({
-          nombre: name,
-          descripcion: `Categoría de ${name}`,
-          status: "active",
+          name,
+          description: `Categoría de ${name}`,
+          is_active: true,
         })
       );
     }
@@ -156,25 +153,26 @@ async function runSeed() {
     for (let i = 0; i < 5; i++) {
       suppliers.push(
         await Supplier.create({
-          nombre: getCompany(),
-          contacto: getFullName(),
-          telefono: getPhone(),
+          name: getCompany(),
+          contact_name: getFullName(),
+          phone: getPhone(),
           email: getEmail(),
-          status: "active",
+          address: getStreet(),
+          is_active: true,
         })
       );
     }
 
     // Productos y Variantes
     const products = [];
-    const variants = [];
     for (let i = 0; i < 15; i++) {
       const category = getElement(categories);
       const supplier = getElement(suppliers);
 
       const product = await Product.create({
         nombre: getProductName(),
-        descripcion: getProductDesc(),
+        precio: getPrice(20000, 200000),
+        stock: 100,
         category_id: category.id,
         supplier_id: supplier.id,
         status: "active",
@@ -183,23 +181,21 @@ async function runSeed() {
 
       // Crear 3 variantes por producto
       for (const talla of ["S", "M", "L"]) {
+        const color = getColor();
         const variant = await Variant.create({
           product_id: product.id,
-          sku: getSKU(),
-          talla: talla,
-          color: getColor(),
-          precio: getPrice(20000, 200000),
-          status: "active",
+          nombre: `Talla ${talla} - ${color}`,
+          descripcion: getProductDesc(),
+          is_active: true,
         });
-        variants.push(variant as any);
 
         // Inventario por Variante y Sucursal
         for (const branch of branches) {
           await Inventory.create({
-            variant_id: (variant as any).id,
-            branch_id: branch.id,
+            variantId: variant.id,
+            branchId: branch.id,
             stock: getRandomInt(10, 100),
-            status: "active",
+            is_active: true,
           });
         }
       }
@@ -210,45 +206,40 @@ async function runSeed() {
       await Collection.create({
         nombre: `Colección ${getFirstName()} 2026`,
         descripcion: "Colección de temporada alta",
-        status: "active",
+        is_active: true,
       });
     }
 
     // Ventas y Detalles de Venta
     for (let i = 0; i < 8; i++) {
       const client = getElement(clients);
-      const branch = getElement(branches);
-
       const sale = await Sale.create({
         client_id: client.id,
-        branch_id: branch.id,
-        user_id: adminUser.id,
-        total: 0,
+        monto_total: 0,
         fecha: new Date(),
         status: "active",
       });
 
       let totalVenta = 0;
-      const randomVariants = getElements(variants, getRandomInt(1, 3));
+      const randomProducts = getElements(products, getRandomInt(1, 3));
 
-      for (const variant of randomVariants) {
+      for (const product of randomProducts) {
         const cantidad = getRandomInt(1, 4);
-        const precioUnitario = (variant as any).precio || 50000;
+        const precioUnitario = Number(product.precio);
         const subtotal = cantidad * precioUnitario;
         totalVenta += subtotal;
 
         await SaleDetail.create({
           sale_id: sale.id,
-          variant_id: (variant as any).id,
+          product_id: product.id,
           cantidad: cantidad,
           precio_unitario: precioUnitario,
           subtotal: subtotal,
-          status: "active",
         });
+        await product.update({ stock: product.stock - cantidad });
       }
 
-      (sale as any).total = totalVenta;
-      await sale.save();
+      await sale.update({ monto_total: totalVenta });
     }
 
     console.log("✅ ¡Base de datos poblada exitosamente!");

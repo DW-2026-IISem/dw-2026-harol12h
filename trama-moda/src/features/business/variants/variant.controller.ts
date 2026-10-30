@@ -33,10 +33,11 @@ export class VariantController {
 
   public async create(req: Request, res: Response) {
     try {
-      const { nombre, descripcion } = req.body;
+      const { nombre, descripcion, product_id } = req.body;
       const variant = await Variant.create({
         nombre,
         descripcion,
+        product_id: product_id ?? null,
         is_active: true
       });
       res.status(201).json({ variant });

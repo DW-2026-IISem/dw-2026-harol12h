@@ -9,11 +9,17 @@ exports.Inventory = Inventory;
 Inventory.init({
     branchId: {
         type: sequelize_1.DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        references: { model: "branches", key: "id" },
+        onUpdate: "CASCADE",
+        onDelete: "RESTRICT"
     },
     variantId: {
         type: sequelize_1.DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        references: { model: "variants", key: "id" },
+        onUpdate: "CASCADE",
+        onDelete: "RESTRICT"
     },
     stock: {
         type: sequelize_1.DataTypes.INTEGER,

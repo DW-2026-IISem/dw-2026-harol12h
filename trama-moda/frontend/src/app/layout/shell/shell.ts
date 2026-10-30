@@ -11,6 +11,8 @@ import { Aside } from '../aside/aside';
 import { Footer } from '../footer/footer';
 import { Header } from '../header/header';
 import { CategoryList } from '../../features/categories/category-list/category-list';
+// ISS-05 — Punto 5.8: importar el listado de productos.
+import { ProductList } from '../../features/products/product-list/product-list';
 
 @Component({
   selector: 'app-shell',
@@ -24,6 +26,7 @@ import { CategoryList } from '../../features/categories/category-list/category-l
     Footer,
     Header,
     CategoryList,
+    ProductList,
   ],
   templateUrl: './shell.html',
   styleUrl: './shell.css',
