@@ -164,7 +164,7 @@ async function runSeed() {
     }
 
     // Productos y Variantes
-    const products = [];
+    const saleOptions = [];
     for (let i = 0; i < 15; i++) {
       const category = getElement(categories);
       const supplier = getElement(suppliers);
@@ -177,8 +177,6 @@ async function runSeed() {
         supplier_id: supplier.id,
         status: "active",
       });
-      products.push(product);
-
       // Crear 3 variantes por producto
       for (const talla of ["S", "M", "L"]) {
         const color = getColor();
@@ -191,12 +189,13 @@ async function runSeed() {
 
         // Inventario por Variante y Sucursal
         for (const branch of branches) {
-          await Inventory.create({
+          const inventory = await Inventory.create({
             variantId: variant.id,
             branchId: branch.id,
             stock: getRandomInt(10, 100),
             is_active: true,
           });
+          saleOptions.push({ product, variant, branch, inventory });
         }
       }
     }
@@ -213,6 +212,13 @@ async function runSeed() {
     // Ventas y Detalles de Venta
     for (let i = 0; i < 8; i++) {
       const client = getElement(clients);
+      const selectedOptions = getElements(
+        saleOptions.filter((option) => option.inventory.stock > 0),
+        getRandomInt(1, 3),
+      );
+      if (selectedOptions.length === 0) {
+        continue;
+      }
       const sale = await Sale.create({
         client_id: client.id,
         monto_total: 0,
@@ -221,10 +227,13 @@ async function runSeed() {
       });
 
       let totalVenta = 0;
-      const randomProducts = getElements(products, getRandomInt(1, 3));
 
-      for (const product of randomProducts) {
-        const cantidad = getRandomInt(1, 4);
+      for (const option of selectedOptions) {
+        const cantidad = Math.min(
+          getRandomInt(1, 4),
+          option.inventory.stock,
+        );
+        const product = option.product;
         const precioUnitario = Number(product.precio);
         const subtotal = cantidad * precioUnitario;
         totalVenta += subtotal;
@@ -232,11 +241,15 @@ async function runSeed() {
         await SaleDetail.create({
           sale_id: sale.id,
           product_id: product.id,
+          variantId: option.variant.id,
+          branchId: option.branch.id,
           cantidad: cantidad,
           precio_unitario: precioUnitario,
           subtotal: subtotal,
         });
-        await product.update({ stock: product.stock - cantidad });
+        await option.inventory.update({
+          stock: option.inventory.stock - cantidad,
+        });
       }
 
       await sale.update({ monto_total: totalVenta });

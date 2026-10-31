@@ -1,0 +1,230 @@
+<p-toast />
+
+<section class="space-y-5">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800">Registrar venta</h1>
+      <p class="mt-1 text-sm text-slate-500">
+        El inventario se descuenta por variante y sucursal al confirmar la venta.
+      </p>
+    </div>
+    <p-button
+      label="Volver a ventas"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="cancel()"
+    />
+  </div>
+
+  @if (error()) {
+    <p-message severity="error">{{ error() }}</p-message>
+  }
+
+  @if (loading()) {
+    <p-card>
+      <p class="text-slate-500">Cargando clientes e inventario disponible...</p>
+    </p-card>
+  } @else {
+    <div class="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
+      <div class="space-y-5">
+        <p-card>
+          <h2 class="mb-4 text-lg font-semibold text-slate-800">1. Cliente</h2>
+          <label for="sale-client" class="mb-2 block text-sm font-medium text-slate-700">
+            Cliente activo *
+          </label>
+          <p-select
+            inputId="sale-client"
+            [fluid]="true"
+            [options]="clientOptions()"
+            optionLabel="label"
+            optionValue="id"
+            [ngModel]="clientId()"
+            (ngModelChange)="clientId.set($event)"
+            [filter]="true"
+            [loading]="loading()"
+            placeholder="Selecciona un cliente"
+          />
+          @if (clientOptions().length === 0) {
+            <p class="mt-2 text-sm text-amber-700">No hay clientes activos disponibles.</p>
+          }
+        </p-card>
+
+        <p-card>
+          <h2 class="mb-4 text-lg font-semibold text-slate-800">2. Variantes e inventario</h2>
+          <div class="grid grid-cols-1 items-end gap-4 md:grid-cols-[minmax(0,1fr)_10rem_auto]">
+            <div>
+              <label for="sale-item" class="mb-2 block text-sm font-medium text-slate-700">
+                Variante y sucursal *
+              </label>
+              <p-select
+                inputId="sale-item"
+                [fluid]="true"
+                [options]="catalogOptions()"
+                optionLabel="label"
+                optionValue="key"
+                optionDisabled="disabled"
+                [ngModel]="selectedCatalogKey()"
+                (ngModelChange)="selectedCatalogKey.set($event)"
+                [filter]="true"
+                placeholder="Selecciona una opción disponible"
+              />
+            </div>
+            <div>
+              <label for="sale-quantity" class="mb-2 block text-sm font-medium text-slate-700">
+                Cantidad *
+              </label>
+              <p-inputnumber
+                inputId="sale-quantity"
+                [fluid]="true"
+                [ngModel]="quantity()"
+                (ngModelChange)="quantity.set($event)"
+                [min]="1"
+                [showButtons]="true"
+                [useGrouping]="false"
+              />
+            </div>
+            <p-button
+              label="Agregar"
+              icon="pi pi-plus"
+              [disabled]="!selectedCatalogItem()"
+              (onClick)="addLine()"
+            />
+          </div>
+          @if (hasUnavailableCatalogOptions()) {
+            <p class="mt-3 text-sm text-amber-700">
+              Algunas variantes aparecen deshabilitadas porque no tienen un producto activo asociado.
+              Asígnales el producto correcto para poder venderlas.
+            </p>
+          }
+          @if (!error() && catalogOptions().length === 0) {
+            <p class="mt-3 text-sm text-amber-700">
+              No hay inventario vendible. Verifica que las variantes tengan un producto activo
+              asociado y existencias en una sucursal activa.
+            </p>
+          }
+          @if (selectedCatalogItem(); as selected) {
+            @if (selected.product; as product) {
+              <p class="mt-3 text-sm text-slate-500">
+                Precio unitario:
+                <strong>{{ product.precio | currency: 'COP' : 'symbol' : '1.0-0' }}</strong>
+                · Disponible en esta sucursal: <strong>{{ selected.stock }}</strong>
+              </p>
+            }
+          }
+
+          <div class="mt-5 overflow-x-auto">
+            <p-table
+              [value]="draftLines()"
+              [tableStyle]="{ 'min-width': '42rem' }"
+              emptyMessage="Agrega una variante para iniciar la venta."
+            >
+              <ng-template #header>
+                <tr>
+                  <th>Producto · variante · sucursal</th>
+                  <th class="text-right">Precio unitario</th>
+                  <th class="text-right">Cantidad</th>
+                  <th class="text-right">Subtotal</th>
+                  <th class="w-16"></th>
+                </tr>
+              </ng-template>
+              <ng-template #body let-line let-rowIndex="rowIndex">
+                <tr>
+                  <td>{{ line.label }}</td>
+                  <td class="text-right">
+                    {{ line.unitPrice | currency: 'COP' : 'symbol' : '1.0-0' }}
+                  </td>
+                  <td class="text-right">{{ line.quantity }}</td>
+                  <td class="text-right">
+                    {{ line.lineTotal | currency: 'COP' : 'symbol' : '1.0-0' }}
+                  </td>
+                  <td class="text-right">
+                    <p-button
+                      icon="pi pi-trash"
+                      severity="danger"
+                      [text]="true"
+                      [rounded]="true"
+                      ariaLabel="Retirar línea"
+                      (onClick)="removeLine(rowIndex)"
+                    />
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </p-card>
+      </div>
+
+      <p-card styleClass="h-fit xl:sticky xl:top-5">
+        <h2 class="mb-4 text-lg font-semibold text-slate-800">3. Totales</h2>
+        <div class="space-y-4">
+          <div>
+            <label for="sale-tax" class="mb-2 block text-sm font-medium text-slate-700">
+              Impuesto (%)
+            </label>
+            <p-inputnumber
+              inputId="sale-tax"
+              [fluid]="true"
+              [ngModel]="taxRate()"
+              (ngModelChange)="taxRate.set($event)"
+              [min]="0"
+              [max]="100"
+              [maxFractionDigits]="2"
+              suffix="%"
+            />
+          </div>
+          <div>
+            <label for="sale-discount" class="mb-2 block text-sm font-medium text-slate-700">
+              Descuento (COP)
+            </label>
+            <p-inputnumber
+              inputId="sale-discount"
+              [fluid]="true"
+              [ngModel]="discounts()"
+              (ngModelChange)="discounts.set($event)"
+              [min]="0"
+              mode="currency"
+              currency="COP"
+              locale="es-CO"
+            />
+          </div>
+
+          <dl class="space-y-3 border-t border-slate-200 pt-4 text-sm">
+            <div class="flex justify-between gap-3">
+              <dt class="text-slate-500">Subtotal</dt>
+              <dd class="font-medium">{{ subtotal() | currency: 'COP' : 'symbol' : '1.0-0' }}</dd>
+            </div>
+            <div class="flex justify-between gap-3">
+              <dt class="text-slate-500">Impuesto ({{ taxRate() || 0 }}%)</dt>
+              <dd>{{ taxAmount() | currency: 'COP' : 'symbol' : '1.0-0' }}</dd>
+            </div>
+            <div class="flex justify-between gap-3">
+              <dt class="text-slate-500">Descuento</dt>
+              <dd>-{{ (discounts() ?? 0) | currency: 'COP' : 'symbol' : '1.0-0' }}</dd>
+            </div>
+            <div class="flex justify-between gap-3 border-t border-slate-200 pt-3 text-base">
+              <dt class="font-semibold">Total</dt>
+              <dd class="font-bold text-slate-900">
+                {{ total() | currency: 'COP' : 'symbol' : '1.0-0' }}
+              </dd>
+            </div>
+          </dl>
+
+          @if ((discounts() ?? 0) > subtotal() + taxAmount()) {
+            <p-message severity="warn">
+              El descuento supera el subtotal más el impuesto.
+            </p-message>
+          }
+          <p-button
+            label="Registrar venta"
+            icon="pi pi-check"
+            styleClass="w-full"
+            [loading]="saving()"
+            [disabled]="saving() || !canSave()"
+            (onClick)="save()"
+          />
+        </div>
+      </p-card>
+    </div>
+  }
+</section>

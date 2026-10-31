@@ -18,6 +18,30 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'ventas',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./layout/shell/shell').then(
+        (module) => module.Shell,
+      ),
+  },
+  {
+    path: 'ventas/nueva',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./layout/shell/shell').then(
+        (module) => module.Shell,
+      ),
+  },
+  {
+    path: 'detalle-ventas',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./layout/shell/shell').then(
+        (module) => module.Shell,
+      ),
+  },
+  {
     path: 'construir',
     pathMatch: 'full',
     redirectTo: 'dashboard',

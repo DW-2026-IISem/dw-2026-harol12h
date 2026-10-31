@@ -1,0 +1,75 @@
+@let currentSale = sale();
+<section class="space-y-5">
+  <dl class="grid gap-4 sm:grid-cols-2">
+    <div>
+      <dt class="text-sm text-slate-500">Cliente</dt>
+      <dd class="font-medium text-slate-800">
+        {{ currentSale.client?.nombre || ('Cliente #' + currentSale.client_id) }}
+      </dd>
+    </div>
+    <div>
+      <dt class="text-sm text-slate-500">Fecha</dt>
+      <dd class="font-medium text-slate-800">{{ currentSale.fecha | date: 'medium' }}</dd>
+    </div>
+    <div>
+      <dt class="text-sm text-slate-500">Estado</dt>
+      <dd>
+        <p-tag
+          [value]="currentSale.status === 'active' ? 'Activa' : 'Inactiva'"
+          [severity]="currentSale.status === 'active' ? 'success' : 'secondary'"
+        />
+      </dd>
+    </div>
+    <div>
+      <dt class="text-sm text-slate-500">Total</dt>
+      <dd class="text-lg font-bold text-slate-900">
+        {{ amount(currentSale.monto_total) | currency: 'COP' : 'symbol' : '1.0-0' }}
+      </dd>
+    </div>
+  </dl>
+
+  <div>
+    <h3 class="mb-3 font-semibold text-slate-800">Líneas de venta</h3>
+    @if (currentSale.details?.length) {
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[38rem] text-sm">
+          <thead class="border-b border-slate-200 text-left text-slate-500">
+            <tr>
+              <th class="py-2 pr-3">Producto / variante</th>
+              <th class="py-2 pr-3">Sucursal</th>
+              <th class="py-2 pr-3 text-right">Cantidad</th>
+              <th class="py-2 pr-3 text-right">Precio</th>
+              <th class="py-2 text-right">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (line of currentSale.details; track line.id) {
+              <tr class="border-b border-slate-100">
+                <td class="py-3 pr-3">
+                  <span class="font-medium text-slate-800">
+                    {{ line.product?.nombre || ('Producto #' + line.product_id) }}
+                  </span>
+                  @if (line.variant?.nombre) {
+                    <span class="block text-xs text-slate-500">{{ line.variant.nombre }}</span>
+                  }
+                </td>
+                <td class="py-3 pr-3">{{ line.branch?.nombre || 'Sin sucursal histórica' }}</td>
+                <td class="py-3 pr-3 text-right">{{ line.cantidad }}</td>
+                <td class="py-3 pr-3 text-right">
+                  {{ amount(line.precio_unitario) | currency: 'COP' : 'symbol' : '1.0-0' }}
+                </td>
+                <td class="py-3 text-right font-medium">
+                  {{ amount(line.subtotal) | currency: 'COP' : 'symbol' : '1.0-0' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">
+        Esta venta no tiene líneas activas.
+      </p>
+    }
+  </div>
+</section>

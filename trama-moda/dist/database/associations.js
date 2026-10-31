@@ -5,6 +5,7 @@ const branch_model_1 = require("../features/business/branch/branch.model");
 const category_model_1 = require("../features/business/category/category.model");
 const inventory_model_1 = require("../features/business/inventory/inventory.model");
 const product_model_1 = require("../features/business/product/product.model");
+const sale_detail_model_1 = require("../features/business/sale-detail/sale-detail.model");
 const supplier_model_1 = require("../features/business/supplier/supplier.model");
 const variant_model_1 = require("../features/business/variants/variant.model");
 const setupAssociations = () => {
@@ -82,6 +83,22 @@ const setupAssociations = () => {
     }
     if (!inventory_model_1.Inventory.associations.branch) {
         inventory_model_1.Inventory.belongsTo(branch_model_1.Branch, {
+            foreignKey: "branchId",
+            as: "branch",
+            onUpdate: "CASCADE",
+            onDelete: "RESTRICT"
+        });
+    }
+    if (!sale_detail_model_1.SaleDetail.associations.variant) {
+        sale_detail_model_1.SaleDetail.belongsTo(variant_model_1.Variant, {
+            foreignKey: "variantId",
+            as: "variant",
+            onUpdate: "CASCADE",
+            onDelete: "RESTRICT"
+        });
+    }
+    if (!sale_detail_model_1.SaleDetail.associations.branch) {
+        sale_detail_model_1.SaleDetail.belongsTo(branch_model_1.Branch, {
             foreignKey: "branchId",
             as: "branch",
             onUpdate: "CASCADE",

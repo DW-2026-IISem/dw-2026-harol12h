@@ -7,7 +7,16 @@ import { AppError } from "../shared/errors/app-error";
 import { sendError } from "../shared/http/error-response";
 import "../shared/auth/auth-user";
 
+function authEnabled(): boolean {
+  return process.env.AUTH_ENABLED?.trim().toLowerCase() !== "false";
+}
+
 export async function verifyToken(req: Request, res: Response, next: NextFunction): Promise<void> {
+  if (!authEnabled()) {
+    next();
+    return;
+  }
+
   try {
     await attachAuthenticatedUser(req);
     await authorize(req, res, next);
@@ -23,6 +32,11 @@ function normalizeRoleName(role: string): string {
 
 export const checkRole = (allowedRoles: string[]) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    if (!authEnabled()) {
+      next();
+      return;
+    }
+
     if (!req.auth) {
       sendError(res, new AppError(401, "Authentication required"));
       return;

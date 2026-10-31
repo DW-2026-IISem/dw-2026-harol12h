@@ -1,0 +1,126 @@
+<p-toast />
+<p-confirmdialog />
+
+<p-card>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800">Detalles de venta</h1>
+      <p class="mt-1 text-sm text-slate-500">
+        Administra líneas; los cambios actualizan inventario y total de la venta.
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <p-button
+        label="Actualizar"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [outlined]="true"
+        [loading]="loading()"
+        (onClick)="load()"
+      />
+      <p-button label="Nueva línea" icon="pi pi-plus" (onClick)="newDetail()" />
+    </div>
+  </div>
+
+  @if (error()) {
+    <p-message severity="error">{{ error() }}</p-message>
+  }
+
+  <p-table
+    [value]="details()"
+    [loading]="loading()"
+    [tableStyle]="{ 'min-width': '70rem' }"
+    [rowHover]="true"
+    dataKey="id"
+    responsiveLayout="scroll"
+    emptyMessage="No hay líneas de venta."
+  >
+    <ng-template #header>
+      <tr>
+        <th>Detalle</th>
+        <th>Venta / cliente</th>
+        <th>Producto / variante</th>
+        <th>Sucursal</th>
+        <th class="text-right">Cantidad</th>
+        <th class="text-right">Precio unitario</th>
+        <th class="text-right">Subtotal</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-detail>
+      <tr>
+        <td>#{{ detail.id }}</td>
+        <td>
+          #{{ detail.sale_id }}
+          <span class="block text-xs text-slate-500">
+            {{ detail.sale?.client?.nombre || ('Cliente #' + detail.sale?.client_id) }}
+          </span>
+        </td>
+        <td>
+          {{ detail.product?.nombre || ('Producto #' + detail.product_id) }}
+          <span class="block text-xs text-slate-500">
+            {{ detail.variant?.nombre || 'Variante histórica' }}
+          </span>
+        </td>
+        <td>{{ detail.branch?.nombre || 'Sin sucursal histórica' }}</td>
+        <td class="text-right">{{ detail.cantidad }}</td>
+        <td class="text-right">
+          {{ amount(detail.precio_unitario) | currency: 'COP' : 'symbol' : '1.0-0' }}
+        </td>
+        <td class="text-right font-medium">
+          {{ amount(detail.subtotal) | currency: 'COP' : 'symbol' : '1.0-0' }}
+        </td>
+        <td>
+          <p-tag
+            [value]="detail.status === 'active' ? 'Activo' : 'Inactivo'"
+            [severity]="detail.status === 'active' ? 'success' : 'secondary'"
+          />
+        </td>
+        <td>
+          @if (detail.status === 'active') {
+            <div class="flex gap-1">
+              <p-button
+                icon="pi pi-pencil"
+                severity="secondary"
+                [text]="true"
+                ariaLabel="Editar cantidad"
+                (onClick)="edit(detail)"
+              />
+              <p-button
+                icon="pi pi-ban"
+                severity="danger"
+                [text]="true"
+                ariaLabel="Dar de baja"
+                (onClick)="deactivate(detail)"
+              />
+            </div>
+          }
+          <p-button
+            icon="pi pi-trash"
+            severity="danger"
+            [text]="true"
+            ariaLabel="Eliminar detalle permanentemente"
+            (onClick)="remove(detail)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-dialog
+  [visible]="formVisible()"
+  (visibleChange)="formVisible.set($event)"
+  [header]="editingDetail() ? 'Editar cantidad' : 'Agregar línea de venta'"
+  [modal]="true"
+  [style]="{ width: 'min(36rem, calc(100vw - 2rem))' }"
+>
+  @if (formVisible()) {
+    <app-sale-detail-form
+      [detail]="editingDetail()"
+      (saved)="onSaved()"
+      (cancelled)="closeForm()"
+    />
+  }
+</p-dialog>

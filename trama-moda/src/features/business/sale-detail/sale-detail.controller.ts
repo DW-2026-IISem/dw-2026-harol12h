@@ -1,24 +1,185 @@
 import { Request, Response } from "express";
+import { Transaction } from "sequelize";
 import { sequelize } from "../../../database/db";
-import { SaleDetail } from "./sale-detail.model";
-import { Sale } from "../sale/sale.model";
+import { Branch } from "../branch/branch.model";
+import { Client } from "../client/client.model";
+import { Inventory } from "../inventory/inventory.model";
 import { Product } from "../product/product.model";
+import { Sale } from "../sale/sale.model";
+import { SaleDetail } from "./sale-detail.model";
+import { Variant } from "../variants/variant.model";
 
-function paramId(req: Request): number {
+type HttpError = { status: number; message: string };
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function positiveInteger(value: unknown): number | null {
+  if (
+    (typeof value !== "number" && typeof value !== "string") ||
+    (typeof value === "string" && value.trim() === "")
+  ) {
+    return null;
+  }
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
+function routeId(req: Request): number | null {
   const raw = req.params.id;
-  const value = Array.isArray(raw) ? raw[0] : raw;
-  return Number(value);
+  return positiveInteger(Array.isArray(raw) ? raw[0] : raw);
+}
+
+function roundMoney(value: number): number {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+function detailIncludes() {
+  return [
+    {
+      model: Sale,
+      as: "sale",
+      include: [{ model: Client, as: "client", attributes: ["id", "nombre"] }],
+    },
+    { model: Product, as: "product", attributes: ["id", "nombre", "precio"] },
+    { model: Variant, as: "variant", attributes: ["id", "nombre"] },
+    { model: Branch, as: "branch", attributes: ["id", "nombre"] },
+  ];
+}
+
+async function activeSubtotal(
+  saleId: number,
+  transaction: Transaction,
+): Promise<number> {
+  const result = await SaleDetail.sum("subtotal", {
+    where: { sale_id: saleId, status: "active" },
+    transaction,
+  });
+  return Number(result ?? 0);
+}
+
+async function lockInventory(
+  variantId: number,
+  branchId: number,
+  transaction: Transaction,
+): Promise<Inventory[]> {
+  return Inventory.findAll({
+    where: { variantId, branchId, is_active: true },
+    order: [["id", "ASC"]],
+    transaction,
+    lock: transaction.LOCK.UPDATE,
+  });
+}
+
+async function adjustInventory(
+  rows: Inventory[],
+  delta: number,
+  transaction: Transaction,
+): Promise<void> {
+  if (delta === 0) {
+    return;
+  }
+  if (rows.length === 0) {
+    throw {
+      status: delta > 0 ? 400 : 409,
+      message: "No hay inventario activo para ajustar esta línea.",
+    } satisfies HttpError;
+  }
+
+  if (delta < 0) {
+    const available = rows.reduce((sum, row) => sum + row.stock, 0);
+    if (available < -delta) {
+      throw {
+        status: 400,
+        message: `Inventario insuficiente. Disponible: ${available}, solicitado: ${-delta}.`,
+      } satisfies HttpError;
+    }
+
+    let remaining = -delta;
+    for (const row of rows) {
+      if (remaining === 0) {
+        break;
+      }
+      const taken = Math.min(row.stock, remaining);
+      await row.update({ stock: row.stock - taken }, { transaction });
+      remaining -= taken;
+    }
+    return;
+  }
+
+  await rows[0].update(
+    { stock: rows[0].stock + delta },
+    { transaction },
+  );
+}
+
+async function updateSaleTotal(
+  sale: Sale,
+  previousLinesTotal: number,
+  nextLinesTotal: number,
+  transaction: Transaction,
+): Promise<void> {
+  const existingAdjustments = Number(sale.monto_total) - previousLinesTotal;
+  await sale.update(
+    { monto_total: roundMoney(nextLinesTotal + existingAdjustments) },
+    { transaction },
+  );
+}
+
+function sendFailure(
+  res: Response,
+  error: unknown,
+  fallback: string,
+): void {
+  if (isRecord(error) && typeof error.status === "number" && typeof error.message === "string") {
+    res.status(error.status).json({ error: error.message });
+    return;
+  }
+  res.status(500).json({ error: fallback, detail: String(error) });
+}
+
+async function finishTransaction(
+  transaction: Transaction | undefined,
+  error: unknown,
+  res: Response,
+  fallback: string,
+): Promise<void> {
+  if (transaction) {
+    await transaction.rollback();
+  }
+  sendFailure(res, error, fallback);
+}
+
+async function loadEditableInventory(
+  detail: SaleDetail,
+  transaction: Transaction,
+): Promise<Inventory[]> {
+  if (detail.variantId === null || detail.branchId === null) {
+    throw {
+      status: 409,
+      message: "Esta línea histórica no tiene variante y sucursal asociadas; no se puede ajustar inventario de forma segura.",
+    } satisfies HttpError;
+  }
+  const variant = await Variant.findByPk(detail.variantId, {
+    transaction,
+    lock: transaction.LOCK.UPDATE,
+  });
+  if (!variant || variant.product_id !== detail.product_id) {
+    throw {
+      status: 409,
+      message: "La variante ya no está asociada al producto registrado en esta línea.",
+    } satisfies HttpError;
+  }
+  return lockInventory(detail.variantId, detail.branchId, transaction);
 }
 
 export class SaleDetailController {
-  // GET ALL DETAILS
-  public async getAll(req: Request, res: Response) {
+  public async getAll(_req: Request, res: Response): Promise<void> {
     try {
       const details = await SaleDetail.findAll({
-        include: [
-          { model: Sale, as: "sale" },
-          { model: Product, as: "product", attributes: ["id", "nombre", "precio"] }
-        ]
+        include: detailIncludes(),
+        order: [["id", "DESC"]],
       });
       res.status(200).json({ details });
     } catch (error) {
@@ -26,16 +187,14 @@ export class SaleDetailController {
     }
   }
 
-  // GET ONE DETAIL BY ID
-  public async getOne(req: Request, res: Response) {
+  public async getOne(req: Request, res: Response): Promise<void> {
     try {
-      const id = paramId(req);
-      const detail = await SaleDetail.findByPk(id, {
-        include: [
-          { model: Sale, as: "sale" },
-          { model: Product, as: "product" }
-        ]
-      });
+      const id = routeId(req);
+      if (id === null) {
+        res.status(400).json({ error: "El id del detalle debe ser un entero positivo." });
+        return;
+      }
+      const detail = await SaleDetail.findByPk(id, { include: detailIncludes() });
       if (!detail) {
         res.status(404).json({ error: "Sale detail not found" });
         return;
@@ -46,169 +205,265 @@ export class SaleDetailController {
     }
   }
 
-  // CREATE SALE DETAIL WITH TRANSACTION & STOCK DISCOUNT
-  public async create(req: Request, res: Response) {
-    const transaction = await sequelize.transaction();
+  public async create(req: Request, res: Response): Promise<void> {
+    let transaction: Transaction | undefined;
     try {
-      const body = req.body && typeof req.body === "object" ? req.body : {};
-      const { sale_id, product_id, cantidad } = body;
-      const saleId = Number(sale_id);
-      const productId = Number(product_id);
-      const quantity = Number(cantidad);
-
-      if (
-        !Number.isInteger(saleId) || saleId < 1 ||
-        !Number.isInteger(productId) || productId < 1 ||
-        !Number.isInteger(quantity) || quantity < 1
-      ) {
-        res.status(400).json({ error: "sale_id, product_id, and cantidad must be positive integers" });
-        await transaction.rollback();
+      const body = isRecord(req.body) ? req.body : null;
+      if (!body) {
+        res.status(400).json({ error: "El cuerpo de la solicitud debe ser un objeto." });
+        return;
+      }
+      const allowedKeys = new Set(["sale_id", "variantId", "branchId", "quantity"]);
+      if (Object.keys(body).some((key) => !allowedKeys.has(key))) {
+        res.status(400).json({ error: "Solo se permiten sale_id, variantId, branchId y quantity." });
+        return;
+      }
+      const saleId = positiveInteger(body.sale_id);
+      const variantId = positiveInteger(body.variantId);
+      const branchId = positiveInteger(body.branchId);
+      const quantity = positiveInteger(body.quantity);
+      if (saleId === null || variantId === null || branchId === null || quantity === null) {
+        res.status(400).json({ error: "sale_id, variantId, branchId y quantity deben ser enteros positivos." });
         return;
       }
 
-      // Validar Venta
-      const sale = await Sale.findByPk(saleId, { transaction, lock: transaction.LOCK.UPDATE });
-      if (!sale) {
-        res.status(404).json({ error: "Sale not found" });
-        await transaction.rollback();
-        return;
+      transaction = await sequelize.transaction();
+      const sale = await Sale.findByPk(saleId, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+      if (!sale || sale.status !== "active") {
+        throw { status: 400, message: "La venta no existe o está inactiva." } satisfies HttpError;
       }
-
-      // Validar Producto y Stock
-      const product = await Product.findByPk(productId, { transaction, lock: transaction.LOCK.UPDATE });
+      const variant = await Variant.findByPk(variantId, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+      if (!variant || !variant.is_active || variant.product_id === null) {
+        throw { status: 400, message: "La variante no existe, está inactiva o no tiene producto." } satisfies HttpError;
+      }
+      const product = await Product.findOne({
+        where: { id: variant.product_id, status: "active" },
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
       if (!product) {
-        res.status(404).json({ error: "Product not found" });
-        await transaction.rollback();
-        return;
+        throw { status: 400, message: "El producto de la variante no existe o está inactivo." } satisfies HttpError;
+      }
+      const branch = await Branch.findByPk(branchId, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+      if (!branch || !branch.is_active) {
+        throw { status: 400, message: "La sucursal no existe o está inactiva." } satisfies HttpError;
+      }
+      const inventory = await lockInventory(variantId, branchId, transaction);
+      const available = inventory.reduce((sum, row) => sum + row.stock, 0);
+      if (inventory.length === 0 || available < quantity) {
+        throw {
+          status: 400,
+          message: `Inventario insuficiente. Disponible: ${available}, solicitado: ${quantity}.`,
+        } satisfies HttpError;
       }
 
-      if (product.stock < quantity) {
-        res.status(400).json({
-          error: `Stock insuficiente. Disponible: ${product.stock}, solicitado: ${quantity}`
-        });
-        await transaction.rollback();
-        return;
-      }
-
-      const precio_unitario = Number(product.precio);
-      const subtotal = precio_unitario * quantity;
-
-      // Crear Detalle
+      const previousLinesTotal = await activeSubtotal(saleId, transaction);
+      const unitPrice = Number(product.precio);
+      const subtotal = roundMoney(unitPrice * quantity);
       const detail = await SaleDetail.create(
         {
           sale_id: saleId,
-          product_id: productId,
+          product_id: product.id,
+          variantId,
+          branchId,
           cantidad: quantity,
-          precio_unitario,
-          subtotal
+          precio_unitario: unitPrice,
+          subtotal,
+          status: "active",
         },
-        { transaction }
+        { transaction },
       );
-
-      // Descontar Stock del Producto
-      await product.update({ stock: product.stock - quantity }, { transaction });
-
-      // Actualizar Monto Total de la Venta Maestra
-      const nuevoMontoTotal = Number(sale.monto_total) + subtotal;
-      await sale.update({ monto_total: nuevoMontoTotal }, { transaction });
-
+      await adjustInventory(inventory, -quantity, transaction);
+      await updateSaleTotal(
+        sale,
+        previousLinesTotal,
+        previousLinesTotal + subtotal,
+        transaction,
+      );
+      const created = await SaleDetail.findByPk(detail.id, {
+        include: detailIncludes(),
+        transaction,
+      });
       await transaction.commit();
-
-      res.status(201).json({ detail });
+      transaction = undefined;
+      res.status(201).json({ detail: created });
     } catch (error) {
-      await transaction.rollback();
-      res.status(500).json({ error: "Error creating sale detail", detail: String(error) });
+      await finishTransaction(transaction, error, res, "Error creating sale detail");
     }
   }
 
-  public async update(req: Request, res: Response) {
-      const transaction = await sequelize.transaction();
-      try {
-        const id = paramId(req);
-        const cantidad = Number(req.body?.cantidad);
-        if (!Number.isInteger(id) || id < 1 || !Number.isInteger(cantidad) || cantidad < 1) {
-          res.status(400).json({ error: "A valid id and positive integer cantidad are required" });
-          await transaction.rollback();
-          return;
-        }
-
-        const detail = await SaleDetail.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
-        if (!detail) {
-          res.status(404).json({ error: "Sale detail not found" });
-          await transaction.rollback();
-          return;
-        }
-        const [sale, product] = await Promise.all([
-          Sale.findByPk(detail.sale_id, { transaction, lock: transaction.LOCK.UPDATE }),
-          Product.findByPk(detail.product_id, { transaction, lock: transaction.LOCK.UPDATE }),
-        ]);
-        if (!sale || !product) {
-          res.status(409).json({ error: "Sale detail has no associated sale or product" });
-          await transaction.rollback();
-          return;
-        }
-
-        const availableStock = product.stock + detail.cantidad;
-        if (cantidad > availableStock) {
-          res.status(400).json({
-            error: `Stock insuficiente. Disponible: ${availableStock}, solicitado: ${cantidad}`,
-          });
-          await transaction.rollback();
-          return;
-        }
-
-        const subtotal = Number(detail.precio_unitario) * cantidad;
-        const totalDelta = subtotal - Number(detail.subtotal);
-        await product.update({ stock: availableStock - cantidad }, { transaction });
-        await sale.update({ monto_total: Number(sale.monto_total) + totalDelta }, { transaction });
-        await detail.update({ cantidad, subtotal }, { transaction });
-        await transaction.commit();
-        res.status(200).json({ message: "Sale detail updated", detail });
-      } catch (error) {
-        await transaction.rollback();
-        res.status(500).json({ error: "Error updating sale detail", detail: String(error) });
+  public async update(req: Request, res: Response): Promise<void> {
+    let transaction: Transaction | undefined;
+    try {
+      const id = routeId(req);
+      const body = isRecord(req.body) ? req.body : null;
+      if (id === null || !body) {
+        res.status(400).json({ error: "El id y el cuerpo de la solicitud son inválidos." });
+        return;
       }
+      if (
+        Object.keys(body).length !== 1 ||
+        !Object.prototype.hasOwnProperty.call(body, "quantity")
+      ) {
+        res.status(400).json({ error: "Solo se permite modificar quantity." });
+        return;
+      }
+      const quantity = positiveInteger(body.quantity);
+      if (quantity === null) {
+        res.status(400).json({ error: "quantity debe ser un entero mayor o igual a 1." });
+        return;
+      }
+
+      transaction = await sequelize.transaction();
+      const detail = await SaleDetail.findByPk(id, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+      if (!detail) {
+        throw { status: 404, message: "Sale detail not found" } satisfies HttpError;
+      }
+      if (detail.status !== "active") {
+        throw { status: 409, message: "No se puede editar un detalle inactivo." } satisfies HttpError;
+      }
+      const sale = await Sale.findByPk(detail.sale_id, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+      if (!sale || sale.status !== "active") {
+        throw { status: 409, message: "La venta no existe o está inactiva." } satisfies HttpError;
+      }
+      const inventory = await loadEditableInventory(detail, transaction);
+      const delta = quantity - detail.cantidad;
+      await adjustInventory(inventory, -delta, transaction);
+
+      const previousLinesTotal = await activeSubtotal(sale.id, transaction);
+      const previousDetailSubtotal = Number(detail.subtotal);
+      const subtotal = roundMoney(Number(detail.precio_unitario) * quantity);
+      await detail.update({ cantidad: quantity, subtotal }, { transaction });
+      await updateSaleTotal(
+        sale,
+        previousLinesTotal,
+        previousLinesTotal - previousDetailSubtotal + subtotal,
+        transaction,
+      );
+      const updated = await SaleDetail.findByPk(detail.id, {
+        include: detailIncludes(),
+        transaction,
+      });
+      await transaction.commit();
+      transaction = undefined;
+      res.status(200).json({ detail: updated });
+    } catch (error) {
+      await finishTransaction(transaction, error, res, "Error updating sale detail");
     }
+  }
 
-  public async remove(req: Request, res: Response) {
-      const transaction = await sequelize.transaction();
-      try {
-        const id = paramId(req);
-        if (!Number.isInteger(id) || id < 1) {
-          res.status(400).json({ error: "Invalid sale detail id" });
-          await transaction.rollback();
-          return;
-        }
-        const detail = await SaleDetail.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
-        if (!detail) {
-          res.status(404).json({ error: "Sale detail not found" });
-          await transaction.rollback();
-          return;
-        }
-        const [sale, product] = await Promise.all([
-          Sale.findByPk(detail.sale_id, { transaction, lock: transaction.LOCK.UPDATE }),
-          Product.findByPk(detail.product_id, { transaction, lock: transaction.LOCK.UPDATE }),
-        ]);
-        if (!sale || !product) {
-          res.status(409).json({ error: "Sale detail has no associated sale or product" });
-          await transaction.rollback();
-          return;
-        }
+  public async deactivate(req: Request, res: Response): Promise<void> {
+    let transaction: Transaction | undefined;
+    try {
+      const id = routeId(req);
+      if (id === null) {
+        res.status(400).json({ error: "El id del detalle debe ser un entero positivo." });
+        return;
+      }
+      transaction = await sequelize.transaction();
+      const detail = await SaleDetail.findByPk(id, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+      if (!detail) {
+        throw { status: 404, message: "Sale detail not found" } satisfies HttpError;
+      }
+      if (detail.status !== "active") {
+        throw { status: 409, message: "El detalle ya está inactivo." } satisfies HttpError;
+      }
+      const sale = await Sale.findByPk(detail.sale_id, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+      if (!sale || sale.status !== "active") {
+        throw { status: 409, message: "La venta no existe o está inactiva." } satisfies HttpError;
+      }
+      const inventory = await loadEditableInventory(detail, transaction);
+      const previousLinesTotal = await activeSubtotal(sale.id, transaction);
+      await adjustInventory(inventory, detail.cantidad, transaction);
+      await detail.update({ status: "inactive" }, { transaction });
+      await updateSaleTotal(
+        sale,
+        previousLinesTotal,
+        previousLinesTotal - Number(detail.subtotal),
+        transaction,
+      );
+      const updated = await SaleDetail.findByPk(detail.id, {
+        include: detailIncludes(),
+        transaction,
+      });
+      await transaction.commit();
+      transaction = undefined;
+      res.status(200).json({ detail: updated });
+    } catch (error) {
+      await finishTransaction(transaction, error, res, "Error deactivating sale detail");
+    }
+  }
 
-        await product.update({ stock: product.stock + detail.cantidad }, { transaction });
-        await detail.destroy({ transaction });
-        const remainingDetails = await SaleDetail.findAll({
-          where: { sale_id: sale.id },
-          attributes: ["subtotal"],
+  public async remove(req: Request, res: Response): Promise<void> {
+    let transaction: Transaction | undefined;
+    try {
+      const id = routeId(req);
+      if (id === null) {
+        res.status(400).json({ error: "El id del detalle debe ser un entero positivo." });
+        return;
+      }
+      transaction = await sequelize.transaction();
+      const detail = await SaleDetail.findByPk(id, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+      if (!detail) {
+        throw { status: 404, message: "Sale detail not found" } satisfies HttpError;
+      }
+      if (detail.variantId === null || detail.branchId === null) {
+        throw {
+          status: 409,
+          message: "Esta línea histórica no tiene variante y sucursal asociadas; no se puede eliminar de forma segura.",
+        } satisfies HttpError;
+      }
+      const sale = await Sale.findByPk(detail.sale_id, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+      if (!sale) {
+        throw { status: 409, message: "La venta asociada no existe." } satisfies HttpError;
+      }
+      if (detail.status === "active") {
+        if (sale.status !== "active") {
+          throw { status: 409, message: "La venta está inactiva y no permite modificar sus líneas." } satisfies HttpError;
+        }
+        const inventory = await loadEditableInventory(detail, transaction);
+        const previousLinesTotal = await activeSubtotal(sale.id, transaction);
+        await adjustInventory(inventory, detail.cantidad, transaction);
+        await updateSaleTotal(
+          sale,
+          previousLinesTotal,
+          previousLinesTotal - Number(detail.subtotal),
           transaction,
-        });
-        const total = remainingDetails.reduce((sum, item) => sum + Number(item.subtotal), 0);
-        await sale.update({ monto_total: total }, { transaction });
-        await transaction.commit();
-        res.status(200).json({ message: "Sale detail deleted and stock restored" });
-      } catch (error) {
-        await transaction.rollback();
-        res.status(500).json({ error: "Error deleting sale detail", detail: String(error) });
+        );
+      }
+      await detail.destroy({ transaction });
+      await transaction.commit();
+      transaction = undefined;
+      res.status(200).json({ message: "Detalle eliminado", id });
+    } catch (error) {
+      await finishTransaction(transaction, error, res, "Error deleting sale detail");
     }
   }
 }

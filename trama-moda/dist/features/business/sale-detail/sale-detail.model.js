@@ -25,6 +25,20 @@ SaleDetail.init({
             key: "id"
         }
     },
+    variantId: {
+        type: sequelize_1.DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: "variants", key: "id" },
+        onUpdate: "CASCADE",
+        onDelete: "RESTRICT"
+    },
+    branchId: {
+        type: sequelize_1.DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: "branches", key: "id" },
+        onUpdate: "CASCADE",
+        onDelete: "RESTRICT"
+    },
     cantidad: {
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false
@@ -36,6 +50,11 @@ SaleDetail.init({
     subtotal: {
         type: sequelize_1.DataTypes.DECIMAL(10, 2),
         allowNull: false
+    },
+    status: {
+        type: sequelize_1.DataTypes.ENUM("active", "inactive"),
+        allowNull: false,
+        defaultValue: "active"
     }
 }, {
     sequelize: db_1.sequelize,

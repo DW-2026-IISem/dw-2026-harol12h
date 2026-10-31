@@ -8,15 +8,35 @@ import { checkRole, verifyToken } from "../../../middlewares/auth.middleware";
  *   schemas:
  *     SaleInput:
  *       type: object
- *       required:
- *         - client_id
+ *       required: [client_id, items]
  *       properties:
  *         client_id:
  *           type: integer
  *           example: 1
- *         monto_total:
+ *         tax:
  *           type: number
- *           example: 150000
+ *           description: Porcentaje de impuesto a aplicar al subtotal.
+ *           minimum: 0
+ *           maximum: 100
+ *           example: 19
+ *         discounts:
+ *           type: number
+ *           description: Descuento monetario aplicado después del impuesto.
+ *           minimum: 0
+ *           example: 0
+ *         items:
+ *           type: array
+ *           minItems: 1
+ *           items:
+ *             type: object
+ *             required: [variantId, branchId, quantity]
+ *             properties:
+ *               variantId:
+ *                 type: integer
+ *               branchId:
+ *                 type: integer
+ *               quantity:
+ *                 type: integer
  */
 export class SaleRoutes {
   public saleController: SaleController = new SaleController();
@@ -36,7 +56,7 @@ export class SaleRoutes {
      *       401:
      *         description: No autorizado
      *   post:
-     *     summary: Registrar una nueva venta (Requiere Autenticación)
+     *     summary: Registrar una venta completa con sus detalles e inventario (Requiere Autenticación)
      *     tags: [Sales]
      *     security:
      *       - bearerAuth: []
@@ -48,12 +68,28 @@ export class SaleRoutes {
      *             $ref: '#/components/schemas/SaleInput'
      *     responses:
      *       201:
-     *         description: Venta creada exitosamente
+     *         description: Venta, detalles y descuento de inventario confirmados
      */
     app
       .route("/api/ventas")
       .get(verifyToken, this.saleController.getAll.bind(this.saleController))
       .post(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.saleController.create.bind(this.saleController));
+
+    /**
+     * @openapi
+     * /api/ventas/catalogo:
+     *   get:
+     *     summary: Obtener variantes activas con existencias por sucursal
+     *     tags: [Sales]
+     *     security:
+     *       - bearerAuth: []
+     *     responses:
+     *       200:
+     *         description: Opciones disponibles para crear una venta
+     */
+    app
+      .route("/api/ventas/catalogo")
+      .get(verifyToken, checkRole(["ADMINISTRADOR", "VENDEDOR"]), this.saleController.getCatalog.bind(this.saleController));
 
     /**
      * @openapi

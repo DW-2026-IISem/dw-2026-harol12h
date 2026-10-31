@@ -1,18 +1,25 @@
 
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DrawerModule } from 'primeng/drawer';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { watchMediaQuery } from '../../core/utils/media-query';
 import { ClientList } from '../../features/clients/client-list/client-list';
+import { SaleForm } from '../../features/sales/sale-form/sale-form';
+import { SaleList } from '../../features/sales/sale-list/sale-list';
 import { Aside } from '../aside/aside';
 import { Footer } from '../footer/footer';
 import { Header } from '../header/header';
 import { CategoryList } from '../../features/categories/category-list/category-list';
 // ISS-05 — Punto 5.8: importar el listado de productos.
 import { ProductList } from '../../features/products/product-list/product-list';
+import { Dashboard } from '../../features/dashboard/dashboard';
+import { SaleDetailList } from '../../features/sale-details/sale-detail-list/sale-detail-list';
 
 @Component({
   selector: 'app-shell',
@@ -27,12 +34,17 @@ import { ProductList } from '../../features/products/product-list/product-list';
     Header,
     CategoryList,
     ProductList,
+    SaleForm,
+    SaleDetailList,
+    SaleList,
+    Dashboard,
   ],
   templateUrl: './shell.html',
   styleUrl: './shell.css',
   host: { class: 'block' },
 })
 export class Shell {
+  private readonly router = inject(Router);
   private readonly isDesktop = watchMediaQuery('(min-width: 1024px)');
 
   readonly sidebarCollapsed = signal(false);
@@ -140,9 +152,61 @@ export class Shell {
     },
   ];
 
+  constructor() {
+    this.syncTitleFromRoute();
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.syncTitleFromRoute());
+  }
+
   seleccionar(titulo: string): void {
+    if (titulo === 'Inicio') {
+      void this.router.navigateByUrl('/dashboard');
+      this.mobileOpen.set(false);
+      return;
+    }
+
+    if (titulo === 'Ventas') {
+      void this.router.navigateByUrl('/ventas');
+      this.mobileOpen.set(false);
+      return;
+    }
+
+    if (titulo === 'Detalles de venta') {
+      void this.router.navigateByUrl('/detalle-ventas');
+      this.mobileOpen.set(false);
+      return;
+    }
+
+    if (
+      this.router.url.startsWith('/ventas') ||
+      this.router.url.startsWith('/detalle-ventas')
+    ) {
+      void this.router.navigateByUrl('/dashboard').then(() => {
+        this.title.set(titulo);
+      });
+      this.mobileOpen.set(false);
+      return;
+    }
+
     this.title.set(titulo);
     this.mobileOpen.set(false);
+  }
+
+  private syncTitleFromRoute(): void {
+    const path = this.router.url.split('?')[0].replace(/\/+$/, '') || '/';
+    if (path === '/ventas/nueva') {
+      this.title.set('Nueva venta');
+    } else if (path === '/ventas') {
+      this.title.set('Ventas');
+    } else if (path === '/detalle-ventas') {
+      this.title.set('Detalles de venta');
+    } else if (path === '/dashboard') {
+      this.title.set('Inicio');
+    }
   }
 
   onMenuToggle(): void {

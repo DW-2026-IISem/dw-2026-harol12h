@@ -1,8 +1,47 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SaleController = void 0;
+const db_1 = require("../../../database/db");
+const branch_model_1 = require("../branch/branch.model");
 const sale_model_1 = require("./sale.model");
 const client_model_1 = require("../client/client.model");
+const inventory_model_1 = require("../inventory/inventory.model");
+const product_model_1 = require("../product/product.model");
+const sale_detail_model_1 = require("../sale-detail/sale-detail.model");
+const variant_model_1 = require("../variants/variant.model");
+function positiveInteger(value) {
+    if ((typeof value !== "number" && typeof value !== "string") ||
+        (typeof value === "string" && value.trim() === "")) {
+        return null;
+    }
+    const parsed = Number(value);
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+function nonNegativeNumber(value) {
+    if ((typeof value !== "number" && typeof value !== "string") ||
+        (typeof value === "string" && value.trim() === "")) {
+        return null;
+    }
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+}
+function roundMoney(value) {
+    return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+function saleDetailsInclude() {
+    return {
+        model: sale_detail_model_1.SaleDetail,
+        as: "details",
+        where: { status: "active" },
+        required: false,
+        attributes: ["id", "product_id", "variantId", "branchId", "cantidad", "precio_unitario", "subtotal", "status"],
+        include: [
+            { model: product_model_1.Product, as: "product", attributes: ["id", "nombre", "precio"] },
+            { model: variant_model_1.Variant, as: "variant", attributes: ["id", "nombre"] },
+            { model: branch_model_1.Branch, as: "branch", attributes: ["id", "nombre"] },
+        ],
+    };
+}
 function paramId(req) {
     const raw = req.params.id;
     const value = Array.isArray(raw) ? raw[0] : raw;
@@ -14,7 +53,11 @@ class SaleController {
         try {
             const sales = await sale_model_1.Sale.findAll({
                 where: { status: "active" },
-                include: [{ model: client_model_1.Client, as: "client", attributes: ["id", "nombre", "numero_documento"] }]
+                include: [
+                    { model: client_model_1.Client, as: "client", attributes: ["id", "nombre", "numero_documento"] },
+                    saleDetailsInclude(),
+                ],
+                order: [["fecha", "DESC"], ["id", "DESC"]],
             });
             res.status(200).json({ sales });
         }
@@ -27,7 +70,10 @@ class SaleController {
         try {
             const id = paramId(req);
             const sale = await sale_model_1.Sale.findByPk(id, {
-                include: [{ model: client_model_1.Client, as: "client" }]
+                include: [
+                    { model: client_model_1.Client, as: "client" },
+                    saleDetailsInclude(),
+                ],
             });
             if (!sale) {
                 res.status(404).json({ error: "Sale not found" });
@@ -39,28 +85,248 @@ class SaleController {
             res.status(500).json({ error: "Error fetching sale", detail: String(error) });
         }
     }
-    // CREATE SALE (MAESTRO)
-    async create(req, res) {
+    async getCatalog(req, res) {
         try {
-            const { client_id, monto_total } = req.body;
-            if (!client_id) {
-                res.status(400).json({ error: "client_id is required" });
-                return;
-            }
-            const client = await client_model_1.Client.findByPk(client_id);
-            if (!client) {
-                res.status(404).json({ error: "Client not found" });
-                return;
-            }
-            const sale = await sale_model_1.Sale.create({
-                client_id,
-                monto_total: monto_total || 0,
-                fecha: new Date(),
-                status: "active"
+            const inventories = await inventory_model_1.Inventory.findAll({
+                where: { is_active: true },
+                include: [
+                    {
+                        model: variant_model_1.Variant,
+                        as: "variant",
+                        where: { is_active: true },
+                        required: true,
+                        attributes: ["id", "nombre", "product_id"],
+                        include: [
+                            {
+                                model: product_model_1.Product,
+                                as: "product",
+                                where: { status: "active" },
+                                required: false,
+                                attributes: ["id", "nombre", "precio"],
+                            },
+                        ],
+                    },
+                    {
+                        model: branch_model_1.Branch,
+                        as: "branch",
+                        where: { is_active: true },
+                        required: true,
+                        attributes: ["id", "nombre"],
+                    },
+                ],
+                order: [["branchId", "ASC"], ["variantId", "ASC"], ["id", "ASC"]],
             });
-            res.status(201).json({ sale });
+            const catalog = new Map();
+            for (const inventory of inventories) {
+                const row = inventory.get({ plain: true });
+                const variant = row.variant;
+                const branch = row.branch;
+                const product = variant.product;
+                if (!branch || row.stock < 0) {
+                    continue;
+                }
+                const available = Boolean(variant.product_id && product);
+                const key = `${variant.id}:${branch.id}`;
+                const existing = catalog.get(key);
+                if (existing) {
+                    existing.stock += row.stock;
+                }
+                else {
+                    catalog.set(key, {
+                        variantId: variant.id,
+                        branchId: branch.id,
+                        stock: row.stock,
+                        available,
+                        variant: { id: variant.id, nombre: variant.nombre },
+                        branch: { id: branch.id, nombre: branch.nombre },
+                        product: product
+                            ? {
+                                id: product.id,
+                                nombre: product.nombre,
+                                precio: product.precio,
+                            }
+                            : null,
+                    });
+                }
+            }
+            res.status(200).json({ items: [...catalog.values()] });
         }
         catch (error) {
+            res.status(500).json({ error: "Error fetching sales catalog", detail: String(error) });
+        }
+    }
+    // Creates the header, details, and variant/branch inventory changes atomically.
+    async create(req, res) {
+        let transaction;
+        let transactionSettled = false;
+        try {
+            transaction = await db_1.sequelize.transaction();
+            const body = req.body;
+            const clientId = positiveInteger(body?.client_id);
+            if (clientId === null) {
+                await transaction.rollback();
+                res.status(400).json({ error: "client_id debe ser un entero positivo." });
+                return;
+            }
+            if (!Array.isArray(body?.items) || body.items.length === 0) {
+                await transaction.rollback();
+                res.status(400).json({ error: "La venta requiere al menos una línea de detalle." });
+                return;
+            }
+            const taxRate = body.tax === undefined ? 0 : nonNegativeNumber(body.tax);
+            const discounts = body.discounts === undefined ? 0 : nonNegativeNumber(body.discounts);
+            if (taxRate === null || taxRate > 100) {
+                await transaction.rollback();
+                res.status(400).json({ error: "El impuesto debe ser un porcentaje entre 0 y 100." });
+                return;
+            }
+            if (discounts === null) {
+                await transaction.rollback();
+                res.status(400).json({ error: "El descuento debe ser un valor numérico mayor o igual a cero." });
+                return;
+            }
+            const requestedItems = [];
+            for (const [index, rawItem] of body.items.entries()) {
+                const variantId = positiveInteger(rawItem?.variantId);
+                const branchId = positiveInteger(rawItem?.branchId);
+                const quantity = positiveInteger(rawItem?.quantity);
+                if (variantId === null || branchId === null || quantity === null) {
+                    await transaction.rollback();
+                    res.status(400).json({
+                        error: `La línea ${index + 1} requiere variantId, branchId y quantity como enteros positivos.`,
+                    });
+                    return;
+                }
+                requestedItems.push({ variantId, branchId, quantity });
+            }
+            const client = await client_model_1.Client.findOne({
+                where: { id: clientId, status: "active" },
+                transaction,
+                lock: transaction.LOCK.UPDATE,
+            });
+            if (!client) {
+                await transaction.rollback();
+                res.status(400).json({ error: "El cliente no existe o está inactivo." });
+                return;
+            }
+            const groupedItems = new Map();
+            for (const item of requestedItems) {
+                const key = `${item.variantId}:${item.branchId}`;
+                const existing = groupedItems.get(key);
+                if (existing) {
+                    existing.quantity += item.quantity;
+                }
+                else {
+                    groupedItems.set(key, { ...item });
+                }
+            }
+            const inventoryGroups = [];
+            for (const item of [...groupedItems.values()].sort((left, right) => left.variantId - right.variantId || left.branchId - right.branchId)) {
+                const variant = await variant_model_1.Variant.findOne({
+                    where: { id: item.variantId, is_active: true },
+                    transaction,
+                    lock: transaction.LOCK.UPDATE,
+                });
+                if (!variant || variant.product_id === null) {
+                    await transaction.rollback();
+                    res.status(400).json({ error: `La variante ${item.variantId} no existe, está inactiva o no tiene producto.` });
+                    return;
+                }
+                const product = await product_model_1.Product.findOne({
+                    where: { id: variant.product_id, status: "active" },
+                    transaction,
+                    lock: transaction.LOCK.UPDATE,
+                });
+                if (!product) {
+                    await transaction.rollback();
+                    res.status(400).json({ error: `El producto de la variante ${item.variantId} no existe o está inactivo.` });
+                    return;
+                }
+                const branch = await branch_model_1.Branch.findOne({
+                    where: { id: item.branchId, is_active: true },
+                    transaction,
+                    lock: transaction.LOCK.UPDATE,
+                });
+                if (!branch) {
+                    await transaction.rollback();
+                    res.status(400).json({ error: `La sucursal ${item.branchId} no existe o está inactiva.` });
+                    return;
+                }
+                const inventoryRows = await inventory_model_1.Inventory.findAll({
+                    where: {
+                        variantId: item.variantId,
+                        branchId: item.branchId,
+                        is_active: true,
+                    },
+                    order: [["id", "ASC"]],
+                    transaction,
+                    lock: transaction.LOCK.UPDATE,
+                });
+                const available = inventoryRows.reduce((sum, inventory) => sum + inventory.stock, 0);
+                if (inventoryRows.length === 0 || available < item.quantity) {
+                    await transaction.rollback();
+                    res.status(400).json({
+                        error: `Inventario insuficiente para ${variant.nombre} en ${branch.nombre}. Disponible: ${available}, solicitado: ${item.quantity}.`,
+                    });
+                    return;
+                }
+                inventoryGroups.push({ ...item, inventoryRows, product });
+            }
+            const lines = inventoryGroups.map((group) => {
+                const unitPrice = Number(group.product.precio);
+                return {
+                    ...group,
+                    unitPrice,
+                    subtotal: roundMoney(unitPrice * group.quantity),
+                };
+            });
+            const subtotal = roundMoney(lines.reduce((sum, line) => sum + line.subtotal, 0));
+            const tax = roundMoney((subtotal * taxRate) / 100);
+            if (discounts > subtotal + tax) {
+                await transaction.rollback();
+                res.status(400).json({ error: "El descuento no puede superar el subtotal más los impuestos." });
+                return;
+            }
+            const total = roundMoney(subtotal + tax - discounts);
+            const sale = await sale_model_1.Sale.create({
+                client_id: clientId,
+                monto_total: total,
+                fecha: new Date(),
+                status: "active",
+            }, { transaction });
+            const details = [];
+            for (const line of lines) {
+                details.push(await sale_detail_model_1.SaleDetail.create({
+                    sale_id: sale.id,
+                    product_id: line.product.id,
+                    variantId: line.variantId,
+                    branchId: line.branchId,
+                    cantidad: line.quantity,
+                    precio_unitario: line.unitPrice,
+                    subtotal: line.subtotal,
+                }, { transaction }));
+                let remaining = line.quantity;
+                for (const inventory of line.inventoryRows) {
+                    if (remaining === 0) {
+                        break;
+                    }
+                    const deducted = Math.min(inventory.stock, remaining);
+                    await inventory.update({ stock: inventory.stock - deducted }, { transaction });
+                    remaining -= deducted;
+                }
+            }
+            await transaction.commit();
+            transactionSettled = true;
+            res.status(201).json({
+                sale,
+                details,
+                totals: { subtotal, taxRate, tax, discounts, total },
+            });
+        }
+        catch (error) {
+            if (transaction && !transactionSettled) {
+                await transaction.rollback();
+            }
             res.status(500).json({ error: "Error creating sale", detail: String(error) });
         }
     }

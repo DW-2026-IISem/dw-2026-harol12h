@@ -1,0 +1,124 @@
+@if (loading()) {
+  <p class="text-sm text-slate-500">Cargando ventas e inventario...</p>
+} @else {
+  <form class="space-y-4" (ngSubmit)="save()">
+    @if (error()) {
+      <p-message severity="error">{{ error() }}</p-message>
+    }
+
+    @if (isEditing()) {
+      @if (detail(); as current) {
+        <div class="grid gap-3 rounded-lg bg-slate-50 p-4 sm:grid-cols-3">
+          <div>
+            <p class="text-xs text-slate-500">Venta</p>
+            <p class="font-medium">#{{ current.sale_id }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500">Producto / variante</p>
+            <p class="font-medium">
+              {{ current.product?.nombre || ('Producto #' + current.product_id) }}
+              · {{ current.variant?.nombre || 'Variante histórica' }}
+            </p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500">Estado</p>
+            <p class="font-medium">{{ current.status === 'active' ? 'Activa' : 'Inactiva' }}</p>
+          </div>
+        </div>
+      }
+      <label for="detail-edit-quantity" class="block text-sm font-medium text-slate-700">
+        Cantidad *
+      </label>
+      <p-inputnumber
+        inputId="detail-edit-quantity"
+        [fluid]="true"
+        [ngModel]="quantity()"
+        (ngModelChange)="quantity.set($event)"
+        [ngModelOptions]="{ standalone: true }"
+        [min]="1"
+        [showButtons]="true"
+        [useGrouping]="false"
+      />
+      <p class="text-xs text-slate-500">
+        En edición solo se modifica la cantidad. El estado se administra con la baja lógica.
+      </p>
+    } @else {
+      <div>
+        <label for="detail-sale" class="mb-2 block text-sm font-medium text-slate-700">
+          Venta *
+        </label>
+        <p-select
+          inputId="detail-sale"
+          [fluid]="true"
+          [options]="saleOptions()"
+          optionLabel="label"
+          optionValue="id"
+          [ngModel]="saleId()"
+          (ngModelChange)="saleId.set($event)"
+          [ngModelOptions]="{ standalone: true }"
+          [filter]="true"
+          placeholder="Selecciona una venta activa"
+        />
+      </div>
+      <div>
+        <label for="detail-catalog" class="mb-2 block text-sm font-medium text-slate-700">
+          Variante y sucursal *
+        </label>
+        <p-select
+          inputId="detail-catalog"
+          [fluid]="true"
+          [options]="catalogOptions()"
+          optionLabel="label"
+          optionValue="key"
+          optionDisabled="disabled"
+          [ngModel]="catalogKey()"
+          (ngModelChange)="catalogKey.set($event)"
+          [ngModelOptions]="{ standalone: true }"
+          [filter]="true"
+          placeholder="Selecciona inventario disponible"
+        />
+      </div>
+      @if (selectedItem(); as item) {
+        @if (item.product) {
+          <p class="text-sm text-slate-500">
+            Precio unitario:
+            {{ item.product.precio | currency: 'COP' : 'symbol' : '1.0-0' }}
+            · Stock: {{ item.stock }}
+          </p>
+        }
+      }
+      <div>
+        <label for="detail-create-quantity" class="mb-2 block text-sm font-medium text-slate-700">
+          Cantidad *
+        </label>
+        <p-inputnumber
+          inputId="detail-create-quantity"
+          [fluid]="true"
+          [ngModel]="quantity()"
+          (ngModelChange)="quantity.set($event)"
+          [ngModelOptions]="{ standalone: true }"
+          [min]="1"
+          [showButtons]="true"
+          [useGrouping]="false"
+        />
+      </div>
+    }
+
+    <div class="flex justify-end gap-2">
+      <p-button
+        type="button"
+        label="Cancelar"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="cancelled.emit()"
+      />
+      <p-button
+        type="submit"
+        [label]="isEditing() ? 'Guardar cantidad' : 'Agregar línea'"
+        icon="pi pi-check"
+        [loading]="saving()"
+        [disabled]="saving() || !canSave()"
+      />
+    </div>
+  </form>
+}

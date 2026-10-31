@@ -22,17 +22,14 @@
         <app-category-list />
       } @else if (title() === 'Productos') {
         <app-product-list />  
+      } @else if (title() === 'Ventas') {
+        <app-sale-list />
+      } @else if (title() === 'Nueva venta') {
+        <app-sale-form />
+      } @else if (title() === 'Detalles de venta') {
+        <app-sale-detail-list />
       } @else if (title() === 'Inicio') {
-        <p-card>
-          <h1 class="text-2xl font-semibold text-slate-900">
-            Inicio
-          </h1>
-
-          <p class="mt-3 text-slate-600">
-            Bienvenido a TramaModa. Selecciona un módulo del menú para consultar
-            la información correspondiente.
-          </p>
-        </p-card>
+        <app-dashboard />
       } @else {
         <p-card>
           <h1 class="text-2xl font-semibold text-slate-900">

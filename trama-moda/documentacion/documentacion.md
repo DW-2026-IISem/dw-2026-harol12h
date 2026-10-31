@@ -269,6 +269,8 @@ npm install -D @types/sequelize@^6.12.0
 : > .env
 cat >> .env << 'EOF'
 PORT=4000
+# Fase I: false desactiva JWT/RBAC para pruebas; mantener true (o ausente) fuera de desarrollo.
+AUTH_ENABLED=true
 
 # Variable para seleccionar el motor de base de datos
 DB_ENGINE=mysql
@@ -10387,3 +10389,412 @@ import { ProductList } from '../../features/products/product-list/product-list';
 **Eliminar Producto**
 ![](a/244.png)
 ![](a/245.png)
+
+## ISS-06 CRUD de ventas
+#### 6.1 Generar con CLI
+```bash
+ng generate component features/sales/sale-list --skip-tests --defaults
+ng generate component features/sales/sale-form --skip-tests --defaults
+```
+![](a/246.png)
+
+#### 6.2 Servicio
+```bash
+cat src/app/features/sales/sale-api.ts
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import type {
+  Sale,
+  SaleCatalogItem,
+  SaleCreatePayload,
+  SalePayload,
+  SaleTotals,
+} from '../../core/models/sale.model';
+import type { SaleDetail } from '../../core/models/sale-detail.model';
+
+@Injectable({ providedIn: 'root' })
+export class SaleApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/ventas`;
+
+  list(): Observable<Sale[]> {
+    return this.http
+      .get<{ sales: Sale[] }>(this.base)
+      .pipe(map((response) => response.sales));
+  }
+
+  get(id: number): Observable<Sale> {
+    return this.http
+      .get<{ sale: Sale }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.sale));
+  }
+
+  catalog(): Observable<SaleCatalogItem[]> {
+    return this.http
+      .get<{ items: SaleCatalogItem[] }>(`${this.base}/catalogo`)
+      .pipe(map((response) => response.items));
+  }
+
+  create(payload: SaleCreatePayload): Observable<Sale> {
+    return this.http
+      .post<{
+        sale: Sale;
+        details: SaleDetail[];
+        totals: SaleTotals;
+      }>(this.base, payload)
+      .pipe(
+        map(({ sale, details, totals }) => ({ ...sale, details, totals })),
+      );
+  }
+
+  update(id: number, payload: Pick<SalePayload, 'client_id'>): Observable<Sale> {
+    return this.http
+      .put<{ message?: string; sale: Sale }>(`${this.base}/${id}`, payload)
+      .pipe(map((response) => response.sale));
+  }
+
+  /** DELETE lógico: desactiva la venta sin modificar sus detalles históricos. */
+  deactivate(id: number): Observable<unknown> {
+    return this.http.patch(`${this.base}/${id}/deactivate`, {});
+  }
+
+  remove(id: number): Observable<unknown> {
+    return this.http.delete(`${this.base}/${id}`);
+  }
+}
+```
+![](a/247.png)
+
+#### 6.3 Formulario de venta con Signals
+```bash
+cat frontend/src/app/features/sales/sale-form/sale-form.ts
+```
+```bash
+export class SaleForm {
+  private readonly clientApi = inject(ClientApi);
+  private readonly saleApi = inject(SaleApi);
+  private readonly notifications = inject(NotificationService);
+  private readonly router = inject(Router);
+
+  readonly clients = signal<Client[]>([]);
+  readonly catalog = signal<SaleCatalogItem[]>([]);
+  readonly loading = signal(false);
+  readonly saving = signal(false);
+  readonly error = signal('');
+  readonly clientId = signal<number | null>(null);
+  readonly selectedCatalogKey = signal<string | null>(null);
+  readonly quantity = signal<number | null>(1);
+  readonly taxRate = signal<number | null>(0);
+  readonly discounts = signal<number | null>(0);
+  readonly lines = signal<SaleCreateItem[]>([]);
+
+  readonly clientOptions = computed<ClientOption[]>(() =>
+    this.clients().map((client) => ({
+      id: client.id,
+      label: `${client.nombre} (${client.tipo_documento} ${client.numero_documento})`,
+    })),
+  );
+```
+![](a/248.png)
+
+**Mapas y totales derivados**
+```bash
+  readonly draftLines = computed<DraftLineView[]>(() => {
+    const catalogByKey = new Map(
+      this.catalogOptions().map((item) => [item.key, item]),
+    );
+    return this.lines().map((line) => {
+      const key = this.catalogKey(line.variantId, line.branchId);
+      const item = catalogByKey.get(key);
+      const unitPrice = Number(item?.product?.precio ?? 0);
+      return {
+        ...line,
+        key,
+        label: item?.label ?? `Variante #${line.variantId}`,
+        stock: item?.stock ?? 0,
+        unitPrice,
+        lineTotal: unitPrice * line.quantity,
+      };
+    });
+  });
+
+  readonly subtotal = computed(() =>
+    this.draftLines().reduce((sum, line) => sum + line.lineTotal, 0),
+  );
+
+  readonly taxAmount = computed(
+    () => this.subtotal() * (Number(this.taxRate()) || 0) / 100,
+  );
+
+  readonly total = computed(
+    () =>
+      this.subtotal() +
+      this.taxAmount() -
+      (Number(this.discounts()) || 0),
+  );
+```
+![](a/249.png)
+
+**Cargar catalogo**
+```bash
+  load(): void {
+    this.loading.set(true);
+    this.error.set('');
+    forkJoin({
+      clients: this.clientApi.list(),
+      catalog: this.saleApi.catalog(),
+    }).subscribe({
+      next: ({ clients, catalog }) => {
+        this.clients.set(clients.filter((client) => client.status === 'active'));
+        this.catalog.set(catalog.filter((item) => item.stock > 0));
+        this.loading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.clients.set([]);
+        this.catalog.set([]);
+        this.loading.set(false);
+        this.error.set(toApiMessage(error));
+      },
+    });
+  }
+```
+![](a/250.png)
+
+**Añadir línea con validación de stoc**
+```bash
+  addLine(): void {
+    this.error.set('');
+    const item = this.selectedCatalogItem();
+    const requested = Number(this.quantity());
+
+    if (!item || !item.available || !item.product) {
+      this.error.set('Selecciona una variante y sucursal disponibles.');
+      return;
+    }
+    if (!Number.isInteger(requested) || requested < 1) {
+      this.error.set('La cantidad debe ser un entero mayor o igual a 1.');
+      return;
+    }
+
+    const existingQuantity = this.lines()
+      .filter(
+        (line) =>
+          line.variantId === item.variantId && line.branchId === item.branchId,
+      )
+      .reduce((sum, line) => sum + line.quantity, 0);
+    if (existingQuantity + requested > item.stock) {
+      this.error.set(
+        `Stock insuficiente para ${item.label}. Disponible: ${item.stock - existingQuantity}.`,
+      );
+      return;
+    }
+```
+![](a/251.png)
+
+**Guardar**
+```bash
+  save(): void {
+    this.error.set('');
+    const clientId = this.clientId();
+    const taxRate = Number(this.taxRate());
+    const discounts = Number(this.discounts());
+
+    if (clientId === null) {
+      this.error.set('Selecciona un cliente activo.');
+      return;
+    }
+    if (this.lines().length === 0) {
+      this.error.set('Agrega al menos una línea a la venta.');
+      return;
+    }
+    if (!Number.isFinite(taxRate) || taxRate < 0 || taxRate > 100) {
+      this.error.set('El impuesto debe ser un porcentaje entre 0 y 100.');
+      return;
+    }
+    if (
+      !Number.isFinite(discounts) ||
+      discounts < 0 ||
+      discounts > this.subtotal() + this.taxAmount()
+    ) {
+      this.error.set('El descuento no puede superar el subtotal más el impuesto.');
+      return;
+    }
+
+    this.saving.set(true);
+    this.saleApi
+      .create({
+        client_id: clientId,
+        tax: taxRate,
+        discounts,
+        items: this.lines(),
+      })
+      .subscribe({
+        next: (sale) => {
+          this.saving.set(false);
+          this.notifications.success(
+            `Venta #${sale.id} registrada`,
+            'La venta y el inventario se actualizaron correctamente.',
+          );
+          void this.router.navigateByUrl('/ventas');
+        },
+        error: (error: HttpErrorResponse) => {
+          this.saving.set(false);
+          const message = toApiMessage(error);
+          this.error.set(message);
+          this.notifications.error('No se pudo registrar la venta', message);
+        },
+      });
+  }
+```
+![](a/252.png)
+
+#### 6.4 Plantilla: tres bloques
+`frontend/src/app/features/sales/sale-form/sale-form.html`
+**Bloque 1. Cliente**
+```bash
+          <p-select
+            inputId="sale-client"
+            [fluid]="true"
+            [options]="clientOptions()"
+            optionLabel="label"
+            optionValue="id"
+            [ngModel]="clientId()"
+            (ngModelChange)="clientId.set($event)"
+            [filter]="true"
+            [loading]="loading()"
+            placeholder="Selecciona un cliente"
+          />
+```
+![](a/253.png)
+
+**Bloque 2. Agregar productos y tabla de borrador**
+
+```bash
+              <p-select
+                inputId="sale-item"
+                [fluid]="true"
+                [options]="catalogOptions()"
+                optionLabel="label"
+                optionValue="key"
+                optionDisabled="disabled"
+                [ngModel]="selectedCatalogKey()"
+                (ngModelChange)="selectedCatalogKey.set($event)"
+                [filter]="true"
+                placeholder="Selecciona una opción disponible"
+              />
+```
+```bash
+              <p-inputnumber
+                inputId="sale-quantity"
+                [fluid]="true"
+                [ngModel]="quantity()"
+                (ngModelChange)="quantity.set($event)"
+                [min]="1"
+                [showButtons]="true"
+                [useGrouping]="false"
+              />
+```
+![](a/254.png)
+
+**Tabla de borrador**
+```bash
+            <p-table
+              [value]="draftLines()"
+              [tableStyle]="{ 'min-width': '42rem' }"
+              emptyMessage="Agrega una variante para iniciar la venta."
+            >
+              <ng-template #header>
+                <tr>
+                  <th>Producto · variante · sucursal</th>
+                  <th class="text-right">Precio unitario</th>
+                  <th class="text-right">Cantidad</th>
+                  <th class="text-right">Subtotal</th>
+                  <th class="w-16"></th>
+                </tr>
+              </ng-template>
+              <ng-template #body let-line let-rowIndex="rowIndex">
+                <tr>
+                  <td>{{ line.label }}</td>
+                  <td class="text-right">
+                    {{ line.unitPrice | currency: 'COP' : 'symbol' : '1.0-0' }}
+                  </td>
+                  <td class="text-right">{{ line.quantity }}</td>
+                  <td class="text-right">
+                    {{ line.lineTotal | currency: 'COP' : 'symbol' : '1.0-0' }}
+                  </td>
+                  <td class="text-right">
+                    <p-button
+                      icon="pi pi-trash"
+                      severity="danger"
+                      [text]="true"
+                      [rounded]="true"
+                      ariaLabel="Retirar línea"
+                      (onClick)="removeLine(rowIndex)"
+                    />
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+```
+![](a/255.png)
+
+**Totales**
+```bash
+          <dl class="space-y-3 border-t border-slate-200 pt-4 text-sm">
+            <div class="flex justify-between gap-3">
+              <dt class="text-slate-500">Subtotal</dt>
+              <dd class="font-medium">{{ subtotal() | currency: 'COP' : 'symbol' : '1.0-0' }}</dd>
+            </div>
+            <div class="flex justify-between gap-3">
+              <dt class="text-slate-500">Impuesto ({{ taxRate() || 0 }}%)</dt>
+              <dd>{{ taxAmount() | currency: 'COP' : 'symbol' : '1.0-0' }}</dd>
+            </div>
+            <div class="flex justify-between gap-3">
+              <dt class="text-slate-500">Descuento</dt>
+              <dd>-{{ (discounts() ?? 0) | currency: 'COP' : 'symbol' : '1.0-0' }}</dd>
+            </div>
+            <div class="flex justify-between gap-3 border-t border-slate-200 pt-3 text-base">
+              <dt class="font-semibold">Total</dt>
+              <dd class="font-bold text-slate-900">
+                {{ total() | currency: 'COP' : 'symbol' : '1.0-0' }}
+              </dd>
+            </div>
+          </dl>
+```
+![](a/256.png)
+
+#### 6.5 Listado de ventas
+```bash
+readonly clientName = computed(() => {
+  const map = new Map(this.clients().map((client) => [client.id, client.name]));
+  return (id: number) => map.get(id) ?? `Cliente #${id}`;
+});
+
+items(sale: Sale): number {
+  return (sale.items ?? []).reduce((sum, item) => sum + item.quantity, 0);
+}
+```
+
+#### 6.6 Rutas
+```bash
+import { SaleForm } from '../../features/sales/sale-form/sale-form';
+import { SaleList } from '../../features/sales/sale-list/sale-list';
+```
+de bajo de proveedores:
+```bash
+        {
+          label: 'Ventas',
+          icon: 'pi pi-receipt',
+          command: () => this.seleccionar('Ventas'),
+        },
+```
+#### Evidencias
+**Crear venta**
+![](a/257.png)
+![](a/258.png)
+**Listar ventas**
+![](a/259.png)
+**Detalle ventas**
+![](a/260.png)

@@ -2,23 +2,131 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SaleDetailController = void 0;
 const db_1 = require("../../../database/db");
-const sale_detail_model_1 = require("./sale-detail.model");
-const sale_model_1 = require("../sale/sale.model");
+const branch_model_1 = require("../branch/branch.model");
+const client_model_1 = require("../client/client.model");
+const inventory_model_1 = require("../inventory/inventory.model");
 const product_model_1 = require("../product/product.model");
-function paramId(req) {
+const sale_model_1 = require("../sale/sale.model");
+const sale_detail_model_1 = require("./sale-detail.model");
+const variant_model_1 = require("../variants/variant.model");
+function isRecord(value) {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function positiveInteger(value) {
+    if ((typeof value !== "number" && typeof value !== "string") ||
+        (typeof value === "string" && value.trim() === "")) {
+        return null;
+    }
+    const parsed = Number(value);
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+function routeId(req) {
     const raw = req.params.id;
-    const value = Array.isArray(raw) ? raw[0] : raw;
-    return Number(value);
+    return positiveInteger(Array.isArray(raw) ? raw[0] : raw);
+}
+function roundMoney(value) {
+    return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+function detailIncludes() {
+    return [
+        {
+            model: sale_model_1.Sale,
+            as: "sale",
+            include: [{ model: client_model_1.Client, as: "client", attributes: ["id", "nombre"] }],
+        },
+        { model: product_model_1.Product, as: "product", attributes: ["id", "nombre", "precio"] },
+        { model: variant_model_1.Variant, as: "variant", attributes: ["id", "nombre"] },
+        { model: branch_model_1.Branch, as: "branch", attributes: ["id", "nombre"] },
+    ];
+}
+async function activeSubtotal(saleId, transaction) {
+    const result = await sale_detail_model_1.SaleDetail.sum("subtotal", {
+        where: { sale_id: saleId, status: "active" },
+        transaction,
+    });
+    return Number(result ?? 0);
+}
+async function lockInventory(variantId, branchId, transaction) {
+    return inventory_model_1.Inventory.findAll({
+        where: { variantId, branchId, is_active: true },
+        order: [["id", "ASC"]],
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+    });
+}
+async function adjustInventory(rows, delta, transaction) {
+    if (delta === 0) {
+        return;
+    }
+    if (rows.length === 0) {
+        throw {
+            status: delta > 0 ? 400 : 409,
+            message: "No hay inventario activo para ajustar esta línea.",
+        };
+    }
+    if (delta < 0) {
+        const available = rows.reduce((sum, row) => sum + row.stock, 0);
+        if (available < -delta) {
+            throw {
+                status: 400,
+                message: `Inventario insuficiente. Disponible: ${available}, solicitado: ${-delta}.`,
+            };
+        }
+        let remaining = -delta;
+        for (const row of rows) {
+            if (remaining === 0) {
+                break;
+            }
+            const taken = Math.min(row.stock, remaining);
+            await row.update({ stock: row.stock - taken }, { transaction });
+            remaining -= taken;
+        }
+        return;
+    }
+    await rows[0].update({ stock: rows[0].stock + delta }, { transaction });
+}
+async function updateSaleTotal(sale, previousLinesTotal, nextLinesTotal, transaction) {
+    const existingAdjustments = Number(sale.monto_total) - previousLinesTotal;
+    await sale.update({ monto_total: roundMoney(nextLinesTotal + existingAdjustments) }, { transaction });
+}
+function sendFailure(res, error, fallback) {
+    if (isRecord(error) && typeof error.status === "number" && typeof error.message === "string") {
+        res.status(error.status).json({ error: error.message });
+        return;
+    }
+    res.status(500).json({ error: fallback, detail: String(error) });
+}
+async function finishTransaction(transaction, error, res, fallback) {
+    if (transaction) {
+        await transaction.rollback();
+    }
+    sendFailure(res, error, fallback);
+}
+async function loadEditableInventory(detail, transaction) {
+    if (detail.variantId === null || detail.branchId === null) {
+        throw {
+            status: 409,
+            message: "Esta línea histórica no tiene variante y sucursal asociadas; no se puede ajustar inventario de forma segura.",
+        };
+    }
+    const variant = await variant_model_1.Variant.findByPk(detail.variantId, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+    });
+    if (!variant || variant.product_id !== detail.product_id) {
+        throw {
+            status: 409,
+            message: "La variante ya no está asociada al producto registrado en esta línea.",
+        };
+    }
+    return lockInventory(detail.variantId, detail.branchId, transaction);
 }
 class SaleDetailController {
-    // GET ALL DETAILS
-    async getAll(req, res) {
+    async getAll(_req, res) {
         try {
             const details = await sale_detail_model_1.SaleDetail.findAll({
-                include: [
-                    { model: sale_model_1.Sale, as: "sale" },
-                    { model: product_model_1.Product, as: "product", attributes: ["id", "nombre", "precio"] }
-                ]
+                include: detailIncludes(),
+                order: [["id", "DESC"]],
             });
             res.status(200).json({ details });
         }
@@ -26,16 +134,14 @@ class SaleDetailController {
             res.status(500).json({ error: "Error fetching sale details", detail: String(error) });
         }
     }
-    // GET ONE DETAIL BY ID
     async getOne(req, res) {
         try {
-            const id = paramId(req);
-            const detail = await sale_detail_model_1.SaleDetail.findByPk(id, {
-                include: [
-                    { model: sale_model_1.Sale, as: "sale" },
-                    { model: product_model_1.Product, as: "product" }
-                ]
-            });
+            const id = routeId(req);
+            if (id === null) {
+                res.status(400).json({ error: "El id del detalle debe ser un entero positivo." });
+                return;
+            }
+            const detail = await sale_detail_model_1.SaleDetail.findByPk(id, { include: detailIncludes() });
             if (!detail) {
                 res.status(404).json({ error: "Sale detail not found" });
                 return;
@@ -46,151 +152,237 @@ class SaleDetailController {
             res.status(500).json({ error: "Error fetching sale detail", detail: String(error) });
         }
     }
-    // CREATE SALE DETAIL WITH TRANSACTION & STOCK DISCOUNT
     async create(req, res) {
-        const transaction = await db_1.sequelize.transaction();
+        let transaction;
         try {
-            const body = req.body && typeof req.body === "object" ? req.body : {};
-            const { sale_id, product_id, cantidad } = body;
-            const saleId = Number(sale_id);
-            const productId = Number(product_id);
-            const quantity = Number(cantidad);
-            if (!Number.isInteger(saleId) || saleId < 1 ||
-                !Number.isInteger(productId) || productId < 1 ||
-                !Number.isInteger(quantity) || quantity < 1) {
-                res.status(400).json({ error: "sale_id, product_id, and cantidad must be positive integers" });
-                await transaction.rollback();
+            const body = isRecord(req.body) ? req.body : null;
+            if (!body) {
+                res.status(400).json({ error: "El cuerpo de la solicitud debe ser un objeto." });
                 return;
             }
-            // Validar Venta
-            const sale = await sale_model_1.Sale.findByPk(saleId, { transaction, lock: transaction.LOCK.UPDATE });
-            if (!sale) {
-                res.status(404).json({ error: "Sale not found" });
-                await transaction.rollback();
+            const allowedKeys = new Set(["sale_id", "variantId", "branchId", "quantity"]);
+            if (Object.keys(body).some((key) => !allowedKeys.has(key))) {
+                res.status(400).json({ error: "Solo se permiten sale_id, variantId, branchId y quantity." });
                 return;
             }
-            // Validar Producto y Stock
-            const product = await product_model_1.Product.findByPk(productId, { transaction, lock: transaction.LOCK.UPDATE });
+            const saleId = positiveInteger(body.sale_id);
+            const variantId = positiveInteger(body.variantId);
+            const branchId = positiveInteger(body.branchId);
+            const quantity = positiveInteger(body.quantity);
+            if (saleId === null || variantId === null || branchId === null || quantity === null) {
+                res.status(400).json({ error: "sale_id, variantId, branchId y quantity deben ser enteros positivos." });
+                return;
+            }
+            transaction = await db_1.sequelize.transaction();
+            const sale = await sale_model_1.Sale.findByPk(saleId, {
+                transaction,
+                lock: transaction.LOCK.UPDATE,
+            });
+            if (!sale || sale.status !== "active") {
+                throw { status: 400, message: "La venta no existe o está inactiva." };
+            }
+            const variant = await variant_model_1.Variant.findByPk(variantId, {
+                transaction,
+                lock: transaction.LOCK.UPDATE,
+            });
+            if (!variant || !variant.is_active || variant.product_id === null) {
+                throw { status: 400, message: "La variante no existe, está inactiva o no tiene producto." };
+            }
+            const product = await product_model_1.Product.findOne({
+                where: { id: variant.product_id, status: "active" },
+                transaction,
+                lock: transaction.LOCK.UPDATE,
+            });
             if (!product) {
-                res.status(404).json({ error: "Product not found" });
-                await transaction.rollback();
-                return;
+                throw { status: 400, message: "El producto de la variante no existe o está inactivo." };
             }
-            if (product.stock < quantity) {
-                res.status(400).json({
-                    error: `Stock insuficiente. Disponible: ${product.stock}, solicitado: ${quantity}`
-                });
-                await transaction.rollback();
-                return;
+            const branch = await branch_model_1.Branch.findByPk(branchId, {
+                transaction,
+                lock: transaction.LOCK.UPDATE,
+            });
+            if (!branch || !branch.is_active) {
+                throw { status: 400, message: "La sucursal no existe o está inactiva." };
             }
-            const precio_unitario = Number(product.precio);
-            const subtotal = precio_unitario * quantity;
-            // Crear Detalle
+            const inventory = await lockInventory(variantId, branchId, transaction);
+            const available = inventory.reduce((sum, row) => sum + row.stock, 0);
+            if (inventory.length === 0 || available < quantity) {
+                throw {
+                    status: 400,
+                    message: `Inventario insuficiente. Disponible: ${available}, solicitado: ${quantity}.`,
+                };
+            }
+            const previousLinesTotal = await activeSubtotal(saleId, transaction);
+            const unitPrice = Number(product.precio);
+            const subtotal = roundMoney(unitPrice * quantity);
             const detail = await sale_detail_model_1.SaleDetail.create({
                 sale_id: saleId,
-                product_id: productId,
+                product_id: product.id,
+                variantId,
+                branchId,
                 cantidad: quantity,
-                precio_unitario,
-                subtotal
+                precio_unitario: unitPrice,
+                subtotal,
+                status: "active",
             }, { transaction });
-            // Descontar Stock del Producto
-            await product.update({ stock: product.stock - quantity }, { transaction });
-            // Actualizar Monto Total de la Venta Maestra
-            const nuevoMontoTotal = Number(sale.monto_total) + subtotal;
-            await sale.update({ monto_total: nuevoMontoTotal }, { transaction });
+            await adjustInventory(inventory, -quantity, transaction);
+            await updateSaleTotal(sale, previousLinesTotal, previousLinesTotal + subtotal, transaction);
+            const created = await sale_detail_model_1.SaleDetail.findByPk(detail.id, {
+                include: detailIncludes(),
+                transaction,
+            });
             await transaction.commit();
-            res.status(201).json({ detail });
+            transaction = undefined;
+            res.status(201).json({ detail: created });
         }
         catch (error) {
-            await transaction.rollback();
-            res.status(500).json({ error: "Error creating sale detail", detail: String(error) });
+            await finishTransaction(transaction, error, res, "Error creating sale detail");
         }
     }
     async update(req, res) {
-        const transaction = await db_1.sequelize.transaction();
+        let transaction;
         try {
-            const id = paramId(req);
-            const cantidad = Number(req.body?.cantidad);
-            if (!Number.isInteger(id) || id < 1 || !Number.isInteger(cantidad) || cantidad < 1) {
-                res.status(400).json({ error: "A valid id and positive integer cantidad are required" });
-                await transaction.rollback();
+            const id = routeId(req);
+            const body = isRecord(req.body) ? req.body : null;
+            if (id === null || !body) {
+                res.status(400).json({ error: "El id y el cuerpo de la solicitud son inválidos." });
                 return;
             }
-            const detail = await sale_detail_model_1.SaleDetail.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
+            if (Object.keys(body).length !== 1 ||
+                !Object.prototype.hasOwnProperty.call(body, "quantity")) {
+                res.status(400).json({ error: "Solo se permite modificar quantity." });
+                return;
+            }
+            const quantity = positiveInteger(body.quantity);
+            if (quantity === null) {
+                res.status(400).json({ error: "quantity debe ser un entero mayor o igual a 1." });
+                return;
+            }
+            transaction = await db_1.sequelize.transaction();
+            const detail = await sale_detail_model_1.SaleDetail.findByPk(id, {
+                transaction,
+                lock: transaction.LOCK.UPDATE,
+            });
             if (!detail) {
-                res.status(404).json({ error: "Sale detail not found" });
-                await transaction.rollback();
-                return;
+                throw { status: 404, message: "Sale detail not found" };
             }
-            const [sale, product] = await Promise.all([
-                sale_model_1.Sale.findByPk(detail.sale_id, { transaction, lock: transaction.LOCK.UPDATE }),
-                product_model_1.Product.findByPk(detail.product_id, { transaction, lock: transaction.LOCK.UPDATE }),
-            ]);
-            if (!sale || !product) {
-                res.status(409).json({ error: "Sale detail has no associated sale or product" });
-                await transaction.rollback();
-                return;
+            if (detail.status !== "active") {
+                throw { status: 409, message: "No se puede editar un detalle inactivo." };
             }
-            const availableStock = product.stock + detail.cantidad;
-            if (cantidad > availableStock) {
-                res.status(400).json({
-                    error: `Stock insuficiente. Disponible: ${availableStock}, solicitado: ${cantidad}`,
-                });
-                await transaction.rollback();
-                return;
+            const sale = await sale_model_1.Sale.findByPk(detail.sale_id, {
+                transaction,
+                lock: transaction.LOCK.UPDATE,
+            });
+            if (!sale || sale.status !== "active") {
+                throw { status: 409, message: "La venta no existe o está inactiva." };
             }
-            const subtotal = Number(detail.precio_unitario) * cantidad;
-            const totalDelta = subtotal - Number(detail.subtotal);
-            await product.update({ stock: availableStock - cantidad }, { transaction });
-            await sale.update({ monto_total: Number(sale.monto_total) + totalDelta }, { transaction });
-            await detail.update({ cantidad, subtotal }, { transaction });
+            const inventory = await loadEditableInventory(detail, transaction);
+            const delta = quantity - detail.cantidad;
+            await adjustInventory(inventory, -delta, transaction);
+            const previousLinesTotal = await activeSubtotal(sale.id, transaction);
+            const previousDetailSubtotal = Number(detail.subtotal);
+            const subtotal = roundMoney(Number(detail.precio_unitario) * quantity);
+            await detail.update({ cantidad: quantity, subtotal }, { transaction });
+            await updateSaleTotal(sale, previousLinesTotal, previousLinesTotal - previousDetailSubtotal + subtotal, transaction);
+            const updated = await sale_detail_model_1.SaleDetail.findByPk(detail.id, {
+                include: detailIncludes(),
+                transaction,
+            });
             await transaction.commit();
-            res.status(200).json({ message: "Sale detail updated", detail });
+            transaction = undefined;
+            res.status(200).json({ detail: updated });
         }
         catch (error) {
-            await transaction.rollback();
-            res.status(500).json({ error: "Error updating sale detail", detail: String(error) });
+            await finishTransaction(transaction, error, res, "Error updating sale detail");
+        }
+    }
+    async deactivate(req, res) {
+        let transaction;
+        try {
+            const id = routeId(req);
+            if (id === null) {
+                res.status(400).json({ error: "El id del detalle debe ser un entero positivo." });
+                return;
+            }
+            transaction = await db_1.sequelize.transaction();
+            const detail = await sale_detail_model_1.SaleDetail.findByPk(id, {
+                transaction,
+                lock: transaction.LOCK.UPDATE,
+            });
+            if (!detail) {
+                throw { status: 404, message: "Sale detail not found" };
+            }
+            if (detail.status !== "active") {
+                throw { status: 409, message: "El detalle ya está inactivo." };
+            }
+            const sale = await sale_model_1.Sale.findByPk(detail.sale_id, {
+                transaction,
+                lock: transaction.LOCK.UPDATE,
+            });
+            if (!sale || sale.status !== "active") {
+                throw { status: 409, message: "La venta no existe o está inactiva." };
+            }
+            const inventory = await loadEditableInventory(detail, transaction);
+            const previousLinesTotal = await activeSubtotal(sale.id, transaction);
+            await adjustInventory(inventory, detail.cantidad, transaction);
+            await detail.update({ status: "inactive" }, { transaction });
+            await updateSaleTotal(sale, previousLinesTotal, previousLinesTotal - Number(detail.subtotal), transaction);
+            const updated = await sale_detail_model_1.SaleDetail.findByPk(detail.id, {
+                include: detailIncludes(),
+                transaction,
+            });
+            await transaction.commit();
+            transaction = undefined;
+            res.status(200).json({ detail: updated });
+        }
+        catch (error) {
+            await finishTransaction(transaction, error, res, "Error deactivating sale detail");
         }
     }
     async remove(req, res) {
-        const transaction = await db_1.sequelize.transaction();
+        let transaction;
         try {
-            const id = paramId(req);
-            if (!Number.isInteger(id) || id < 1) {
-                res.status(400).json({ error: "Invalid sale detail id" });
-                await transaction.rollback();
+            const id = routeId(req);
+            if (id === null) {
+                res.status(400).json({ error: "El id del detalle debe ser un entero positivo." });
                 return;
             }
-            const detail = await sale_detail_model_1.SaleDetail.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
-            if (!detail) {
-                res.status(404).json({ error: "Sale detail not found" });
-                await transaction.rollback();
-                return;
-            }
-            const [sale, product] = await Promise.all([
-                sale_model_1.Sale.findByPk(detail.sale_id, { transaction, lock: transaction.LOCK.UPDATE }),
-                product_model_1.Product.findByPk(detail.product_id, { transaction, lock: transaction.LOCK.UPDATE }),
-            ]);
-            if (!sale || !product) {
-                res.status(409).json({ error: "Sale detail has no associated sale or product" });
-                await transaction.rollback();
-                return;
-            }
-            await product.update({ stock: product.stock + detail.cantidad }, { transaction });
-            await detail.destroy({ transaction });
-            const remainingDetails = await sale_detail_model_1.SaleDetail.findAll({
-                where: { sale_id: sale.id },
-                attributes: ["subtotal"],
+            transaction = await db_1.sequelize.transaction();
+            const detail = await sale_detail_model_1.SaleDetail.findByPk(id, {
                 transaction,
+                lock: transaction.LOCK.UPDATE,
             });
-            const total = remainingDetails.reduce((sum, item) => sum + Number(item.subtotal), 0);
-            await sale.update({ monto_total: total }, { transaction });
+            if (!detail) {
+                throw { status: 404, message: "Sale detail not found" };
+            }
+            if (detail.variantId === null || detail.branchId === null) {
+                throw {
+                    status: 409,
+                    message: "Esta línea histórica no tiene variante y sucursal asociadas; no se puede eliminar de forma segura.",
+                };
+            }
+            const sale = await sale_model_1.Sale.findByPk(detail.sale_id, {
+                transaction,
+                lock: transaction.LOCK.UPDATE,
+            });
+            if (!sale) {
+                throw { status: 409, message: "La venta asociada no existe." };
+            }
+            if (detail.status === "active") {
+                if (sale.status !== "active") {
+                    throw { status: 409, message: "La venta está inactiva y no permite modificar sus líneas." };
+                }
+                const inventory = await loadEditableInventory(detail, transaction);
+                const previousLinesTotal = await activeSubtotal(sale.id, transaction);
+                await adjustInventory(inventory, detail.cantidad, transaction);
+                await updateSaleTotal(sale, previousLinesTotal, previousLinesTotal - Number(detail.subtotal), transaction);
+            }
+            await detail.destroy({ transaction });
             await transaction.commit();
-            res.status(200).json({ message: "Sale detail deleted and stock restored" });
+            transaction = undefined;
+            res.status(200).json({ message: "Detalle eliminado", id });
         }
         catch (error) {
-            await transaction.rollback();
-            res.status(500).json({ error: "Error deleting sale detail", detail: String(error) });
+            await finishTransaction(transaction, error, res, "Error deleting sale detail");
         }
     }
 }

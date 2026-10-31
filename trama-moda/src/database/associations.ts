@@ -2,6 +2,7 @@ import { Branch } from "../features/business/branch/branch.model";
 import { Category } from "../features/business/category/category.model";
 import { Inventory } from "../features/business/inventory/inventory.model";
 import { Product } from "../features/business/product/product.model";
+import { SaleDetail } from "../features/business/sale-detail/sale-detail.model";
 import { Supplier } from "../features/business/supplier/supplier.model";
 import { Variant } from "../features/business/variants/variant.model";
 
@@ -84,6 +85,23 @@ export const setupAssociations = (): void => {
   }
   if (!Inventory.associations.branch) {
     Inventory.belongsTo(Branch, {
+      foreignKey: "branchId",
+      as: "branch",
+      onUpdate: "CASCADE",
+      onDelete: "RESTRICT"
+    });
+  }
+
+  if (!SaleDetail.associations.variant) {
+    SaleDetail.belongsTo(Variant, {
+      foreignKey: "variantId",
+      as: "variant",
+      onUpdate: "CASCADE",
+      onDelete: "RESTRICT"
+    });
+  }
+  if (!SaleDetail.associations.branch) {
+    SaleDetail.belongsTo(Branch, {
       foreignKey: "branchId",
       as: "branch",
       onUpdate: "CASCADE",

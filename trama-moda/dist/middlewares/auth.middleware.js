@@ -9,7 +9,14 @@ const authorize_middleware_1 = require("../features/auth/access/authorize.middle
 const app_error_1 = require("../shared/errors/app-error");
 const error_response_1 = require("../shared/http/error-response");
 require("../shared/auth/auth-user");
+function authEnabled() {
+    return process.env.AUTH_ENABLED?.trim().toLowerCase() !== "false";
+}
 async function verifyToken(req, res, next) {
+    if (!authEnabled()) {
+        next();
+        return;
+    }
     try {
         await (0, authenticate_middleware_1.attachAuthenticatedUser)(req);
         await (0, authorize_middleware_1.authorize)(req, res, next);
@@ -24,6 +31,10 @@ function normalizeRoleName(role) {
 }
 const checkRole = (allowedRoles) => {
     return async (req, res, next) => {
+        if (!authEnabled()) {
+            next();
+            return;
+        }
         if (!req.auth) {
             (0, error_response_1.sendError)(res, new app_error_1.AppError(401, "Authentication required"));
             return;
