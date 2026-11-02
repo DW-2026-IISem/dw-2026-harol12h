@@ -27,10 +27,10 @@ Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "username": "basico",
-  "email": "basico@example.com",
-  "password": "basico12345678",
-  "role": "operador"
+  "username": "david",
+  "email": "david@example.com",
+  "password": "david12345678+",
+  "role": "vendedor"
 }
 
 ###
@@ -65,7 +65,7 @@ Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "userId": 10,
+  "userId": 11,
   "roleId": 129
 }
 
