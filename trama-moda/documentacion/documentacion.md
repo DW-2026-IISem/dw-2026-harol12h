@@ -10798,3 +10798,411 @@ de bajo de proveedores:
 ![](a/259.png)
 **Detalle ventas**
 ![](a/260.png)
+
+---
+
+## ISS-07 — Detalle de ventas y dashboard
+#### 7.2 Generar con CLI
+```bash
+ng generate component features/product-sales/product-sale-list --skip-tests --defaults
+ng generate component features/product-sales/product-sale-form --skip-tests --defaults
+ng generate component features/sales/sale-detail --skip-tests --defaults
+ng generate component features/dashboard --skip-tests --defaults
+```
+![](a/261.png) 
+
+#### 7.3 Servicio de detalle
+
+```bash
+cat src/app/features/sale-details/sale-detail-api.ts
+import { HttpClient } from '@angular/common/http';
+import { Service, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import type {
+  SaleDetail,
+  SaleDetailCreatePayload,
+  SaleDetailQuantityPayload,
+} from '../../core/models/sale-detail.model';
+
+@Service()
+export class SaleDetailApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/detalle-ventas`;
+
+  list(): Observable<SaleDetail[]> {
+    return this.http
+      .get<{ details: SaleDetail[] }>(this.base)
+      .pipe(map((response) => response.details));
+  }
+
+  get(id: number): Observable<SaleDetail> {
+    return this.http
+      .get<{ detail: SaleDetail }>(`${this.base}/${id}`)
+      .pipe(map((response) => response.detail));
+  }
+
+  create(payload: SaleDetailCreatePayload): Observable<SaleDetail> {
+    return this.http
+      .post<{ detail: SaleDetail }>(this.base, payload)
+      .pipe(map((response) => response.detail));
+  }
+
+  update(id: number, payload: SaleDetailQuantityPayload): Observable<SaleDetail> {
+    return this.http
+      .patch<{ detail: SaleDetail }>(
+        `${this.base}/${id}`,
+        payload,
+      )
+      .pipe(map((response) => response.detail));
+  }
+
+  deactivate(id: number): Observable<SaleDetail> {
+    return this.http
+      .patch<{ detail: SaleDetail }>(`${this.base}/${id}/deactivate`, {})
+      .pipe(map((response) => response.detail));
+  }
+
+  remove(id: number): Observable<unknown> {
+    return this.http.delete(`${this.base}/${id}`);
+  }
+}
+```
+
+#### 7.4 Formulario de línea de detalle de venta
+
+**Formulario reactivo**
+
+```typescript
+readonly form = this.fb.group({
+  sale_id: [null as number | null, [Validators.required]],
+  product_id: [null as number | null, [Validators.required]],
+  quantity: [1, [Validators.required, Validators.min(1)]],
+  status: ['active' as Status, [Validators.required]],
+});
+
+constructor() {
+  effect(() => {
+    const current = this.line();
+
+    this.form.reset({
+      sale_id: current?.sale_id ?? null,
+      product_id: current?.product_id ?? null,
+      quantity: current?.quantity ?? 1,
+      status: current?.status ?? 'active',
+    });
+
+    if (current) {
+      this.form.controls.sale_id.disable();
+      this.form.controls.product_id.disable();
+      this.form.controls.status.disable();
+    } else {
+      this.form.controls.sale_id.enable();
+      this.form.controls.product_id.enable();
+      this.form.controls.status.enable();
+    }
+  });
+}
+```
+
+**Construcción del payload**
+
+Al guardar, se construye el objeto que se envía al backend. En edición solamente se permite enviar la cantidad; al crear una línea también se incluyen los datos de la venta, el producto y el estado inicial.
+
+```typescript
+this.saved.emit({
+  sale_id: value.sale_id,
+  product_id: value.product_id,
+  quantity: Number(value.quantity),
+  ...(this.line() ? {} : { status: value.status }),
+});
+```
+
+**Guardado desde el listado**
+
+En el componente `SaleDetailList`, se diferencia entre la creación y la actualización de una línea:
+
+```typescript
+const request = current
+  ? this.api.update(current.id, { quantity: value.quantity })
+  : this.api.create(value);
+```
+
+De esta manera, se respeta el contrato del backend y se evita enviar campos que no pueden modificarse mediante la operación de actualización.
+
+#### 7.5 Componente SaleDetail: cabecera y líneas de venta
+
+Se implementó el componente `SaleDetail` para presentar la información completa de una venta seleccionada.
+
+Este componente es presentacional, es decir, no realiza peticiones al backend. Recibe la venta y los productos desde el componente padre, evitando solicitudes innecesarias.
+
+La información mostrada incluye:
+
+- Identificación de la venta.
+- Datos de la cabecera.
+- Cliente asociado.
+- Fecha de la venta.
+- Estado.
+- Líneas de detalle.
+- Productos relacionados.
+- Cantidades.
+- Subtotales y total de la venta.
+
+**Componente de detalle**
+
+El componente recibe la venta mediante `input.required<Sale>()` y utiliza un `Map` para resolver los nombres de los productos a partir de sus identificadores.
+
+```typescript
+export class SaleDetail {
+  readonly sale = input.required<Sale>();
+  readonly products = input<Product[]>([]);
+
+  readonly productName = computed(() => {
+    const map = new Map(
+      this.products().map((product) => [product.id, product.nombre])
+    );
+
+    return (id: number) => map.get(id) ?? `Producto #${id}`;
+  });
+
+  readonly itemCount = computed(() =>
+    (this.sale().items ?? []).reduce(
+      (sum, item) => sum + item.quantity,
+      0
+    )
+  );
+}
+```
+
+#### Integración con el listado de ventas
+
+Desde el componente padre `SaleList`, se utiliza un diálogo de PrimeNG para mostrar el detalle de la venta seleccionada.
+
+```html
+<p-dialog
+  [visible]="detailVisible()"
+  (visibleChange)="detailVisible.set($event)"
+  [header]="detailTitle()"
+  [modal]="true"
+  styleClass="w-full max-w-2xl mx-4"
+>
+  @if (selected(); as sale) {
+    <app-sale-detail
+      [sale]="sale"
+      [products]="products()"
+    />
+  }
+</p-dialog>
+```
+
+El componente se instancia únicamente cuando existe una venta seleccionada. De esta manera, `input.required<Sale>()` garantiza que siempre reciba la información obligatoria desde el componente padre.
+
+---
+
+#### 7.6 Dashboard: carga de información y cálculos
+
+Se implementó el dashboard de TramaModa utilizando Angular Signals, propiedades computadas y `forkJoin` de RxJS para consultar diferentes recursos de la API en paralelo.
+
+El panel obtiene información de clientes, categorías, productos y ventas para construir indicadores generales del negocio.
+
+**Signals del dashboard**
+
+```typescript
+readonly loading = signal(true);
+readonly error = signal<string | null>(null);
+
+readonly clients = signal<Client[]>([]);
+readonly categories = signal<Category[]>([]);
+readonly products = signal<Product[]>([]);
+readonly sales = signal<Sale[]>([]);
+```
+
+#### Cálculo de productos con stock bajo
+
+Se implementó `lowStock()` para identificar los productos que presentan existencias iguales o inferiores al mínimo establecido.
+
+En TramaModa, el cálculo debe considerar la estructura real de inventario por variante y sucursal, utilizando los datos que proporciona el backend.
+
+```typescript
+readonly lowStock = computed(() =>
+  this.products().filter(
+    (product) => product.stock <= 20
+  ),
+);
+```
+
+*Nota: el valor del ejemplo debe coincidir con el umbral y la fuente de inventario realmente implementados en TramaModa.*
+
+**Cálculo de ingresos**
+
+Se implementó `revenue()` para obtener los ingresos acumulados a partir de los totales de las ventas registradas.
+
+```typescript
+readonly revenue = computed(() =>
+  this.sales().reduce(
+    (sum, sale) => sum + toNumber(sale.total),
+    0
+  ),
+);
+```
+
+**Últimas ventas**
+
+Se implementó `latestSales()` para mostrar las cinco ventas más recientes, ordenadas por fecha descendente.
+
+```typescript
+readonly latestSales = computed(() =>
+  [...this.sales()]
+    .sort(
+      (a, b) =>
+        new Date(b.sale_date).getTime() -
+        new Date(a.sale_date).getTime()
+    )
+    .slice(0, 5),
+);
+```
+
+**Normalización de valores DECIMAL**
+
+Debido a que los valores DECIMAL de MySQL pueden recibirse como cadenas de texto, se utiliza una función auxiliar para convertirlos correctamente a números.
+
+```typescript
+export function toNumber(
+  value: Money | null | undefined
+): number {
+  if (value === null || value === undefined) {
+    return 0;
+  }
+
+  return typeof value === 'number'
+    ? value
+    : Number.parseFloat(value) || 0;
+}
+```
+
+Esto evita errores al sumar los valores monetarios de las ventas y permite obtener correctamente los indicadores de ingresos.
+
+**Carga paralela de información**
+
+Se utiliza `forkJoin` para realizar las consultas de clientes, categorías, productos y ventas en paralelo.
+
+```typescript
+forkJoin({
+  clients: this.clientsApi.list(),
+  categories: this.categoriesApi.list(),
+  products: this.productsApi.list(),
+  sales: this.salesApi.list(),
+}).subscribe({
+  next: ({ clients, categories, products, sales }) => {
+    this.clients.set(clients);
+    this.categories.set(categories);
+    this.products.set(products);
+    this.sales.set(sales);
+    this.loading.set(false);
+  },
+  error: (error: unknown) => {
+    this.error.set(toApiMessage(error));
+    this.loading.set(false);
+  },
+});
+```
+
+La consulta de categorías reemplaza la consulta de tipos de producto utilizada en la guía original, debido a que TramaModa utiliza el módulo de categorías.
+
+#### 7.7 Tarjetas e indicadores del Dashboard
+
+Se implementaron las tarjetas del dashboard para presentar un resumen general de la información registrada en TramaModa.
+
+El panel contiene los siguientes indicadores:
+
+**Indicadores principales (KPIs)**
+
+- **Clientes:** cantidad de clientes registrados.
+- **Productos:** cantidad de productos disponibles en el catálogo.
+- **Ventas:** cantidad de ventas registradas.
+- **Ingresos:** suma de los totales de las ventas.
+
+**Productos con stock bajo**
+
+Se presenta una sección que permite identificar los productos o variantes que requieren atención por sus existencias.
+
+La información se obtiene de los datos del inventario y permite reconocer los elementos que se encuentran en niveles bajos de stock.
+
+**Últimas ventas**
+
+Se presenta una tabla o sección con las cinco ventas más recientes, mostrando información como:
+
+- Identificador de la venta.
+- Cliente.
+- Fecha.
+- Total.
+- Estado.
+
+También se incorpora un acceso al listado general de ventas.
+
+#### Estado de carga
+
+Mientras se consultan los datos, se utilizan componentes `p-skeleton` de PrimeNG para representar visualmente la carga de las tarjetas.
+
+```html
+@if (loading()) {
+  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    @for (i of [1, 2, 3, 4]; track i) {
+      <p-skeleton
+        height="6rem"
+        borderRadius="1rem"
+      />
+    }
+  </div>
+} @else {
+  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <!-- Tarjetas de clientes, productos, ventas e ingresos -->
+  </div>
+}
+```
+
+#### 7.8 Rutas e integración del módulo
+
+**Ruta de detalle de ventas**
+
+```typescript
+{
+  path: 'detalle-ventas',
+  title: 'Detalle de ventas · TramaModa',
+  loadComponent: () =>
+    import('./features/sales/sale-detail-list/sale-detail-list')
+      .then((m) => m.SaleDetailList),
+},
+```
+
+### Ruta del Dashboard
+
+```typescript
+{
+  path: 'dashboard',
+  title: 'Panel · TramaModa',
+  loadComponent: () =>
+    import('./features/dashboard/dashboard')
+      .then((m) => m.Dashboard),
+},
+```
+Las rutas se integran con el Shell y el menú lateral existente, evitando crear una estructura de navegación independiente.
+
+#### Evidencias del CRUD 
+**Listar detalles de ventas**
+![](a/263.png)
+**Agregar nueva linea de ventas**
+![](a/270.png)
+![](a/271.png)
+**Editar**
+![](a/272.png)
+![](a/273.png)
+**Editar cantidad**
+![](a/264.png)
+![](a/265.png)
+**Dar de baja y se restauraran en el inventario**
+![](a/266.png)
+![](a/267.png)
+**Eliminar detalle**
+![](a/268.png)
+![](a/269.png)
