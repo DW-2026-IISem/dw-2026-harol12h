@@ -4,12 +4,13 @@ import { Timestamps } from './api.model';
 export interface Variant extends Timestamps {
   id: number;
   nombre: string;
-  descripcion?: string;
+  descripcion: string | null;
+  product_id: number | null;
   is_active: boolean;
 }
 
 export interface VariantPayload {
   nombre: string;
-  descripcion?: string;
-  is_active: boolean;
+  descripcion?: string | null;
+  product_id?: number | null;
 }

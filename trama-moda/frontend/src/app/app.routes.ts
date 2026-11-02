@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -10,8 +9,21 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'perfil',
+    loadComponent: () =>
+      import('./layout/shell/shell').then(
+        (module) => module.Shell,
+      ),
+  },
+  {
+    path: 'acceso-denegado',
+    loadComponent: () =>
+      import('./features/auth/forbidden/forbidden').then(
+        (module) => module.Forbidden,
+      ),
+  },
+  {
     path: 'dashboard',
-    canActivate: [authGuard],
     loadComponent: () =>
       import('./layout/shell/shell').then(
         (module) => module.Shell,
@@ -19,7 +31,6 @@ export const routes: Routes = [
   },
   {
     path: 'ventas',
-    canActivate: [authGuard],
     loadComponent: () =>
       import('./layout/shell/shell').then(
         (module) => module.Shell,
@@ -27,7 +38,27 @@ export const routes: Routes = [
   },
   {
     path: 'ventas/nueva',
-    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./layout/shell/shell').then(
+        (module) => module.Shell,
+      ),
+  },
+  {
+    path: 'colecciones',
+    loadComponent: () =>
+      import('./layout/shell/shell').then(
+        (module) => module.Shell,
+      ),
+  },
+  {
+    path: 'variantes',
+    loadComponent: () =>
+      import('./layout/shell/shell').then(
+        (module) => module.Shell,
+      ),
+  },
+  {
+    path: 'inventario',
     loadComponent: () =>
       import('./layout/shell/shell').then(
         (module) => module.Shell,
@@ -35,7 +66,20 @@ export const routes: Routes = [
   },
   {
     path: 'detalle-ventas',
-    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./layout/shell/shell').then(
+        (module) => module.Shell,
+      ),
+  },
+  {
+    path: 'proveedores',
+    loadComponent: () =>
+      import('./layout/shell/shell').then(
+        (module) => module.Shell,
+      ),
+  },
+  {
+    path: 'sucursales',
     loadComponent: () =>
       import('./layout/shell/shell').then(
         (module) => module.Shell,
@@ -44,7 +88,10 @@ export const routes: Routes = [
   {
     path: 'construir',
     pathMatch: 'full',
-    redirectTo: 'dashboard',
+    loadComponent: () =>
+      import('./features/construir/construir').then(
+        (module) => module.Construir,
+      ),
   },
   {
     path: '',

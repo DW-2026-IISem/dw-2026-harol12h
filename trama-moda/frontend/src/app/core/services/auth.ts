@@ -1,14 +1,18 @@
-
 import { Injectable, inject } from '@angular/core';
 import {
   Observable,
   catchError,
+  finalize,
+  forkJoin,
   map,
+  of,
   switchMap,
   tap,
   throwError,
 } from 'rxjs';
+
 import {
+  AccessPayload,
   LoginRequest,
   SessionProfile,
   SessionTokens,
@@ -22,7 +26,7 @@ export class Auth {
   private readonly sessionStore = inject(SessionStore);
 
   get isAuthenticated(): boolean {
-    return this.sessionStore.isAuthenticated;
+    return this.sessionStore.isAuthenticated();
   }
 
   get profile(): SessionProfile | null {
@@ -31,17 +35,9 @@ export class Auth {
 
   login(credentials: LoginRequest): Observable<SessionProfile> {
     return this.sessionApi.login(credentials).pipe(
-      tap((tokens: SessionTokens) => this.sessionStore.saveTokens(tokens)),
-      switchMap(() => this.sessionApi.me()),
-      tap((profile) => this.sessionStore.saveProfile(profile)),
-      switchMap((profile) =>
-        this.sessionApi.permissions().pipe(
-          tap((permissions) =>
-            this.sessionStore.savePermissions(permissions),
-          ),
-          map(() => profile),
-        ),
-      ),
+      tap((tokens) => this.sessionStore.saveTokens(tokens)),
+      switchMap(() => this.loadAccess()),
+      map((access) => access.user),
       catchError((error: unknown) => {
         this.sessionStore.clear();
         return throwError(() => error);
@@ -49,28 +45,36 @@ export class Auth {
     );
   }
 
-  logout(): Observable<void> {
-    const refreshToken = this.sessionStore.refreshToken;
+  loadAccess(notifyErrors = false): Observable<AccessPayload> {
+    return forkJoin({
+      user: this.sessionApi.me(notifyErrors),
+      permissions: this.sessionApi.permissions(notifyErrors),
+    }).pipe(tap((access) => this.sessionStore.saveAccess(access)));
+  }
 
+  refresh(): Observable<SessionTokens> {
+    const refreshToken = this.sessionStore.refreshToken();
     if (!refreshToken) {
       this.sessionStore.clear();
-      return new Observable<void>((subscriber) => {
-        subscriber.next();
-        subscriber.complete();
-      });
+      return throwError(() => new Error('No hay refresh token disponible.'));
+    }
+
+    return this.sessionApi.refresh({ refreshToken }).pipe(
+      tap((tokens) => this.sessionStore.saveTokens(tokens)),
+    );
+  }
+
+  logout(): Observable<boolean> {
+    const refreshToken = this.sessionStore.refreshToken();
+    if (!refreshToken) {
+      this.sessionStore.clear();
+      return of(false);
     }
 
     return this.sessionApi.logout({ refreshToken }).pipe(
-      map(() => undefined),
-      catchError(() => {
-        // La sesión local se cierra incluso si el servidor no responde.
-        return new Observable<void>((subscriber) => {
-          subscriber.next();
-          subscriber.complete();
-        });
-      }),
-      tap(() => this.sessionStore.clear()),
+      map(() => true),
+      catchError(() => of(false)),
+      finalize(() => this.sessionStore.clear()),
     );
   }
 }
-

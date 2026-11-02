@@ -1,153 +1,161 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
+
+import { environment } from '../../../environments/environment';
 import {
+  AccessPayload,
   EffectivePermission,
   SessionProfile,
   SessionTokens,
 } from '../models/auth.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+const STORAGE_KEY = 'trama-moda.session.v1';
+
+interface PersistedSession {
+  accessToken: string | null;
+  refreshToken: string | null;
+  profile: SessionProfile | null;
+  permissions: EffectivePermission[];
+}
+
+@Injectable({ providedIn: 'root' })
 export class SessionStore {
-  private readonly ACCESS_KEY = 'trama_moda_access_token';
-  private readonly REFRESH_KEY = 'trama_moda_refresh_token';
-  private readonly PROFILE_KEY = 'trama_moda_profile';
-  private readonly PERMISSIONS_KEY = 'trama_moda_permissions';
+  readonly authEnabled = environment.requireAuth;
 
-  readonly profile = signal<SessionProfile | null>(this.readProfile());
-  readonly permissions = signal<EffectivePermission[]>(
-    this.readPermissions()
+  private readonly _accessToken = signal<string | null>(null);
+  private readonly _refreshToken = signal<string | null>(null);
+  private readonly _profile = signal<SessionProfile | null>(null);
+  private readonly _permissions = signal<EffectivePermission[]>([]);
+
+  readonly accessToken = this._accessToken.asReadonly();
+  readonly refreshToken = this._refreshToken.asReadonly();
+  readonly profile = this._profile.asReadonly();
+  readonly user = this.profile;
+  readonly permissions = this._permissions.asReadonly();
+  readonly isAuthenticated = computed(
+    () => this._accessToken() !== null && this._profile() !== null,
   );
+  readonly permissionCount = computed(() => this._permissions().length);
 
-  get accessToken(): string | null {
-    return this.read(this.ACCESS_KEY);
-  }
-
-  get refreshToken(): string | null {
-    return this.read(this.REFRESH_KEY);
-  }
-
-  get isAuthenticated(): boolean {
-    return !!this.accessToken && !!this.profile();
+  constructor() {
+    this.restore();
   }
 
   saveTokens(tokens: SessionTokens): void {
-    this.write(this.ACCESS_KEY, tokens.accessToken);
-    this.write(this.REFRESH_KEY, tokens.refreshToken);
+    this._accessToken.set(tokens.accessToken);
+    this._refreshToken.set(tokens.refreshToken);
+    this.persist();
   }
 
-  saveProfile(profile: SessionProfile): void {
-    this.write(this.PROFILE_KEY, JSON.stringify(profile));
-    this.profile.set(profile);
-  }
-
-  savePermissions(permissions: EffectivePermission[]): void {
-    this.write(this.PERMISSIONS_KEY, JSON.stringify(permissions));
-    this.permissions.set(permissions);
-  }
-
-  canPermission(method: string, path: string): boolean {
-    const normalizePath = (value: string): string => {
-      const withoutQuery = value.split('?')[0].split('#')[0];
-      const single = withoutQuery.replace(/\/{2,}/g, '/');
-      const trimmed = single.replace(/\/+$/, '');
-
-      return trimmed === '' ? '/' : trimmed;
-    };
-
-    const pathMatches = (
-      pattern: string,
-      requestedPath: string
-    ): boolean => {
-      const patternParts = normalizePath(pattern).split('/');
-      const pathParts = normalizePath(requestedPath).split('/');
-
-      if (patternParts.length !== pathParts.length) {
-        return false;
-      }
-
-      for (let i = 0; i < patternParts.length; i++) {
-        if (patternParts[i].startsWith(':')) {
-          continue;
-        }
-
-        if (patternParts[i] !== pathParts[i]) {
-          return false;
-        }
-      }
-
-      return true;
-    };
-
-    return this.permissions().some(
-      (permission) =>
-        permission.method.toUpperCase() === method.toUpperCase() &&
-        pathMatches(permission.path, path)
-    );
+  saveAccess(access: AccessPayload): void {
+    this._profile.set(access.user);
+    this._permissions.set(access.permissions);
+    this.persist();
   }
 
   clear(): void {
-    this.remove(this.ACCESS_KEY);
-    this.remove(this.REFRESH_KEY);
-    this.remove(this.PROFILE_KEY);
-    this.remove(this.PERMISSIONS_KEY);
-
-    this.profile.set(null);
-    this.permissions.set([]);
-  }
-
-  private readProfile(): SessionProfile | null {
-    const value = this.read(this.PROFILE_KEY);
-
-    if (!value) {
-      return null;
-    }
+    this._accessToken.set(null);
+    this._refreshToken.set(null);
+    this._profile.set(null);
+    this._permissions.set([]);
 
     try {
-      return JSON.parse(value) as SessionProfile;
+      globalThis.localStorage.removeItem(STORAGE_KEY);
     } catch {
-      return null;
+      // Storage can be unavailable in restricted browser contexts.
     }
   }
 
-  private readPermissions(): EffectivePermission[] {
-    const value = this.read(this.PERMISSIONS_KEY);
+  canPermission(method: string, path: string): boolean {
+    return this._permissions().some(
+      (permission) =>
+        permission.method.toUpperCase() === method.toUpperCase() &&
+        this.pathMatches(permission.path, path),
+    );
+  }
 
-    if (!value) {
-      return [];
-    }
-
+  private restore(): void {
     try {
-      const parsed: unknown = JSON.parse(value);
-      return Array.isArray(parsed)
-        ? (parsed as EffectivePermission[])
-        : [];
+      const raw = globalThis.localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        return;
+      }
+
+      const parsed: unknown = JSON.parse(raw);
+      if (!this.isPersistedSession(parsed)) {
+        this.clear();
+        return;
+      }
+
+      this._accessToken.set(parsed.accessToken);
+      this._refreshToken.set(parsed.refreshToken);
+      this._profile.set(parsed.profile);
+      this._permissions.set(parsed.permissions);
     } catch {
-      return [];
+      this.clear();
     }
   }
 
-  private read(key: string): string | null {
+  private persist(): void {
     try {
-      return sessionStorage.getItem(key);
+      const session: PersistedSession = {
+        accessToken: this._accessToken(),
+        refreshToken: this._refreshToken(),
+        profile: this._profile(),
+        permissions: this._permissions(),
+      };
+      globalThis.localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
     } catch {
-      return null;
+      // Keep the in-memory session usable when browser storage is unavailable.
     }
   }
 
-  private write(key: string, value: string): void {
-    try {
-      sessionStorage.setItem(key, value);
-    } catch {
-      // La aplicación puede continuar si el almacenamiento no está disponible.
+  private isPersistedSession(value: unknown): value is PersistedSession {
+    if (typeof value !== 'object' || value === null) {
+      return false;
     }
+
+    const session = value as Partial<PersistedSession>;
+    const profile = session.profile;
+    const validProfile =
+      profile === null ||
+      (typeof profile === 'object' &&
+        profile !== null &&
+        typeof profile.id === 'number' &&
+        typeof profile.username === 'string' &&
+        typeof profile.email === 'string' &&
+        (profile.status === 'active' || profile.status === 'inactive'));
+
+    return (
+      (typeof session.accessToken === 'string' ||
+        session.accessToken === null) &&
+      (typeof session.refreshToken === 'string' ||
+        session.refreshToken === null) &&
+      validProfile &&
+      Array.isArray(session.permissions) &&
+      session.permissions.every(
+        (permission) =>
+          typeof permission === 'object' &&
+          permission !== null &&
+          typeof permission.method === 'string' &&
+          typeof permission.path === 'string',
+      )
+    );
   }
 
-  private remove(key: string): void {
-    try {
-      sessionStorage.removeItem(key);
-    } catch {
-      // No se interrumpe el cierre de sesión si falla el almacenamiento.
-    }
+  private pathMatches(pattern: string, requestedPath: string): boolean {
+    const normalize = (value: string): string => {
+      const path = value.split(/[?#]/, 1)[0].replace(/\/{2,}/g, '/');
+      return path.replace(/\/+$/, '') || '/';
+    };
+
+    const patternParts = normalize(pattern).split('/');
+    const requestedParts = normalize(requestedPath).split('/');
+    return (
+      patternParts.length === requestedParts.length &&
+      patternParts.every(
+        (part, index) =>
+          part.startsWith(':') || part === requestedParts[index],
+      )
+    );
   }
 }

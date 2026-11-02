@@ -11206,3 +11206,5 @@ Las rutas se integran con el Shell y el menú lateral existente, evitando crear 
 **Eliminar detalle**
 ![](a/268.png)
 ![](a/269.png)
+
+## 

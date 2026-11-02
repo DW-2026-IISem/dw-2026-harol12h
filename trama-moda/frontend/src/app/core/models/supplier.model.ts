@@ -4,18 +4,18 @@ import { Timestamps } from './api.model';
 export interface Supplier extends Timestamps {
   id: number;
   name: string;
-  contact_name?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
+  contact_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
   is_active: boolean;
 }
 
 export interface SupplierPayload {
   name: string;
-  contact_name?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  is_active: boolean;
+  contact_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  is_active?: boolean;
 }

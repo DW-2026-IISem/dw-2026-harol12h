@@ -1,0 +1,117 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+  @if (catalogsError) {
+    <div
+      class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+      role="alert"
+    >
+      No fue posible cargar las sucursales o variantes. Actualiza el listado e
+      inténtalo nuevamente.
+    </div>
+  }
+
+  <div>
+    <label for="inventory-branch" class="mb-1 block font-medium">
+      Sucursal *
+    </label>
+
+    <select
+      id="inventory-branch"
+      formControlName="branchId"
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+    >
+      <option [ngValue]="null">Selecciona una sucursal</option>
+
+      @if (inventory && !hasBranch(inventory.branchId)) {
+        <option [ngValue]="inventory.branchId">
+          Sucursal #{{ inventory.branchId }} (no disponible)
+        </option>
+      }
+
+      @for (branch of branches; track branch.id) {
+        <option [ngValue]="branch.id">{{ branch.nombre }}</option>
+      }
+    </select>
+
+    @if (form.controls.branchId.touched && form.controls.branchId.invalid) {
+      <small class="text-red-600">Selecciona una sucursal.</small>
+    }
+  </div>
+
+  <div>
+    <label for="inventory-variant" class="mb-1 block font-medium">
+      Variante *
+    </label>
+
+    <select
+      id="inventory-variant"
+      formControlName="variantId"
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+    >
+      <option [ngValue]="null">Selecciona una variante</option>
+
+      @if (inventory && !hasVariant(inventory.variantId)) {
+        <option [ngValue]="inventory.variantId">
+          Variante #{{ inventory.variantId }} (no disponible)
+        </option>
+      }
+
+      @for (variant of variants; track variant.id) {
+        <option [ngValue]="variant.id">{{ variantLabel(variant) }}</option>
+      }
+    </select>
+
+    @if (form.controls.variantId.touched && form.controls.variantId.invalid) {
+      <small class="text-red-600">Selecciona una variante.</small>
+    }
+  </div>
+
+  <div>
+    <label for="inventory-stock" class="mb-1 block font-medium">
+      Cantidad disponible *
+    </label>
+
+    <input
+      id="inventory-stock"
+      type="number"
+      formControlName="stock"
+      min="0"
+      step="1"
+      required
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      placeholder="Ej. 25"
+    />
+
+    @if (form.controls.stock.touched && form.controls.stock.invalid) {
+      <small class="text-red-600">
+        La cantidad debe ser un entero igual o mayor que cero.
+      </small>
+    }
+  </div>
+
+  @if (catalogsLoading) {
+    <p class="text-sm text-slate-500">Cargando sucursales y variantes...</p>
+  }
+
+  <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
+    <button
+      type="button"
+      (click)="cancel.emit()"
+      [disabled]="saving"
+      class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+    >
+      Cancelar
+    </button>
+
+    <button
+      type="submit"
+      [disabled]="saving || catalogsLoading || !!catalogsError"
+      class="rounded-lg bg-blue-600 px-5 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      @if (saving) {
+        Guardando...
+      } @else {
+        {{ inventory ? 'Guardar cambios' : 'Registrar inventario' }}
+      }
+    </button>
+  </div>
+</form>

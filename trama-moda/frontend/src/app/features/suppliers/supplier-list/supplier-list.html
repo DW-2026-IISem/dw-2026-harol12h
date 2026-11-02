@@ -1,0 +1,174 @@
+<p-toast />
+<p-confirmdialog />
+
+<p-card>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-900">Proveedores</h1>
+      <p class="mt-1 text-sm text-slate-600">
+        Administra los proveedores registrados en TramaModa.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <p-button
+        label="Actualizar"
+        icon="pi pi-refresh"
+        [outlined]="true"
+        [loading]="loading()"
+        (onClick)="loadSuppliers()"
+      />
+
+      <p-button
+        label="Nuevo proveedor"
+        icon="pi pi-plus"
+        (onClick)="openCreate()"
+      />
+    </div>
+  </div>
+
+  <div class="mb-4">
+    <label
+      for="buscar-proveedor"
+      class="mb-2 block text-sm font-medium text-slate-700"
+    >
+      Buscar proveedor
+    </label>
+
+    <input
+      id="buscar-proveedor"
+      type="search"
+      placeholder="Nombre, contacto, correo, teléfono o dirección..."
+      class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm outline-none focus:border-indigo-500 sm:max-w-md"
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+  </div>
+
+  @if (loading()) {
+    <p class="py-8 text-center text-slate-600">
+      Cargando proveedores desde el servidor...
+    </p>
+  } @else if (error()) {
+    <p-message severity="error" styleClass="w-full">
+      {{ error() }}
+    </p-message>
+
+    <p class="mt-3 text-sm text-slate-600">
+      No fue posible cargar los proveedores. Verifica la conexión e inténtalo nuevamente.
+    </p>
+
+    <div class="mt-3">
+      <p-button
+        label="Intentar nuevamente"
+        icon="pi pi-refresh"
+        (onClick)="loadSuppliers()"
+      />
+    </div>
+  } @else {
+    <p class="mb-3 text-sm text-slate-500">
+      Proveedores encontrados: {{ filteredSuppliers().length }}
+    </p>
+
+    <p-table
+      [value]="filteredSuppliers()"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [tableStyle]="{ 'min-width': '58rem' }"
+      [showGridlines]="true"
+      [stripedRows]="true"
+    >
+      <ng-template #header>
+        <tr>
+          <th style="width: 5rem">ID</th>
+          <th>Proveedor</th>
+          <th>Contacto</th>
+          <th>Correo electrónico</th>
+          <th>Teléfono</th>
+          <th>Dirección</th>
+          <th style="width: 7rem">Estado</th>
+          <th style="width: 14rem" class="text-right">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-supplier>
+        <tr>
+          <td class="font-medium text-slate-600">{{ supplier.id }}</td>
+          <td class="font-medium text-slate-900">{{ supplier.name }}</td>
+          <td>{{ supplier.contact_name || '—' }}</td>
+          <td>{{ supplier.email || '—' }}</td>
+          <td>{{ supplier.phone || '—' }}</td>
+          <td>{{ supplier.address || '—' }}</td>
+          <td>
+            <p-tag
+              [value]="supplier.is_active ? 'Activo' : 'Inactivo'"
+              [severity]="supplier.is_active ? 'success' : 'secondary'"
+              [rounded]="true"
+            />
+          </td>
+          <td>
+            <div class="flex justify-end gap-2">
+              <p-button
+                label="Editar"
+                icon="pi pi-pencil"
+                size="small"
+                [outlined]="true"
+                (onClick)="openEdit(supplier)"
+              />
+
+              <p-button
+                label="Desactivar"
+                icon="pi pi-ban"
+                severity="warn"
+                size="small"
+                [outlined]="true"
+                [disabled]="!supplier.is_active"
+                (onClick)="deactivate(supplier)"
+              />
+
+              <p-button
+                icon="pi pi-trash"
+                severity="danger"
+                size="small"
+                [text]="true"
+                ariaLabel="Eliminar proveedor"
+                (onClick)="remove(supplier)"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="8" class="py-6 text-center text-slate-500">
+            @if (search().trim()) {
+              No se encontraron proveedores que coincidan con la búsqueda.
+            } @else {
+              No hay proveedores registrados para mostrar.
+            }
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  }
+</p-card>
+
+<p-dialog
+  [header]="selectedSupplier() ? 'Editar proveedor' : 'Nuevo proveedor'"
+  [(visible)]="dialogVisible"
+  [modal]="true"
+  [closable]="!saving()"
+  [closeOnEscape]="!saving()"
+  [style]="{ width: 'min(42rem, 95vw)' }"
+  [breakpoints]="{ '640px': '95vw' }"
+  (onHide)="closeDialog()"
+>
+  <app-supplier-form
+    [supplier]="selectedSupplier()"
+    [saving]="saving()"
+    (save)="saveSupplier($event)"
+    (cancel)="closeDialog()"
+  />
+</p-dialog>

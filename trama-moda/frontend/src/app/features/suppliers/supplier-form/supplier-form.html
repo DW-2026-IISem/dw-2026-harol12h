@@ -1,0 +1,122 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div class="sm:col-span-2">
+      <label for="supplier-name" class="mb-1 block font-medium text-slate-700">
+        Nombre del proveedor o empresa *
+      </label>
+      <input
+        id="supplier-name"
+        type="text"
+        formControlName="name"
+        maxlength="120"
+        placeholder="Ej. Textiles del Norte S.A."
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      />
+      @if (form.controls.name.touched && form.controls.name.invalid) {
+        <small class="text-red-600">
+          El nombre del proveedor es obligatorio y admite máximo 120 caracteres.
+        </small>
+      }
+    </div>
+
+    <div class="sm:col-span-2">
+      <label for="supplier-contact" class="mb-1 block font-medium text-slate-700">
+        Nombre del contacto
+      </label>
+      <input
+        id="supplier-contact"
+        type="text"
+        formControlName="contact_name"
+        maxlength="120"
+        placeholder="Ej. Carlos Gómez"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      />
+    </div>
+
+    <div>
+      <label for="supplier-email" class="mb-1 block font-medium text-slate-700">
+        Correo electrónico
+      </label>
+      <input
+        id="supplier-email"
+        type="email"
+        formControlName="email"
+        maxlength="150"
+        placeholder="contacto@empresa.com"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      />
+      @if (form.controls.email.touched && form.controls.email.invalid) {
+        <small class="text-red-600">
+          Introduce un correo electrónico válido.
+        </small>
+      }
+    </div>
+
+    <div>
+      <label for="supplier-phone" class="mb-1 block font-medium text-slate-700">
+        Teléfono
+      </label>
+      <input
+        id="supplier-phone"
+        type="text"
+        formControlName="phone"
+        maxlength="30"
+        placeholder="Ej. +573001234567"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      />
+    </div>
+
+    <div class="sm:col-span-2">
+      <label for="supplier-address" class="mb-1 block font-medium text-slate-700">
+        Dirección
+      </label>
+      <input
+        id="supplier-address"
+        type="text"
+        formControlName="address"
+        maxlength="255"
+        placeholder="Ej. Calle 45 # 12-34, Medellín"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      />
+    </div>
+
+    @if (supplier) {
+      <div class="sm:col-span-2">
+        <label for="supplier-status" class="mb-1 block font-medium text-slate-700">
+          Estado
+        </label>
+        <select
+          id="supplier-status"
+          formControlName="is_active"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
+        >
+          <option [ngValue]="true">Activo</option>
+          <option [ngValue]="false">Inactivo</option>
+        </select>
+      </div>
+    }
+  </div>
+
+  <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
+    <button
+      type="button"
+      (click)="cancel.emit()"
+      [disabled]="saving"
+      class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+    >
+      Cancelar
+    </button>
+
+    <button
+      type="submit"
+      [disabled]="saving"
+      class="rounded-lg bg-blue-600 px-5 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      @if (saving) {
+        Guardando...
+      } @else {
+        {{ supplier ? 'Guardar cambios' : 'Guardar proveedor' }}
+      }
+    </button>
+  </div>
+</form>

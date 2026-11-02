@@ -1,0 +1,170 @@
+<p-toast />
+<p-confirmdialog />
+
+<p-card>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800">Inventario</h1>
+      <p class="mt-1 text-sm text-slate-500">
+        Consulta las existencias por variante y sucursal.
+      </p>
+    </div>
+
+    <div class="flex gap-2">
+      <p-button
+        label="Actualizar"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [outlined]="true"
+        [loading]="loading()"
+        (onClick)="refresh()"
+      />
+      <p-button
+        label="Registrar inventario"
+        icon="pi pi-plus"
+        (onClick)="openCreate()"
+      />
+    </div>
+  </div>
+
+  <div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <input
+      pInputText
+      type="text"
+      placeholder="Buscar por sucursal, producto o variante..."
+      aria-label="Buscar inventario"
+      class="w-full"
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+
+    <select
+      aria-label="Filtrar por sucursal"
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      [value]="branchFilter() ?? ''"
+      (change)="branchFilter.set($any($event.target).value ? +$any($event.target).value : null)"
+    >
+      <option value="">Todas las sucursales</option>
+      @for (branch of branches(); track branch.id) {
+        <option [value]="branch.id">{{ branch.nombre }}</option>
+      }
+    </select>
+  </div>
+
+  @if (error()) {
+    <div
+      class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+      role="alert"
+    >
+      {{ error() }}
+    </div>
+  }
+
+  @if (branchesError()) {
+    <div
+      class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"
+      role="alert"
+    >
+      No fue posible cargar los nombres de sucursales: {{ branchesError() }}
+    </div>
+  }
+
+  @if (variantsError()) {
+    <div
+      class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"
+      role="alert"
+    >
+      No fue posible cargar los nombres de variantes: {{ variantsError() }}
+    </div>
+  }
+
+  @if (productsError()) {
+    <div
+      class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"
+      role="alert"
+    >
+      No fue posible cargar los nombres de productos: {{ productsError() }}
+    </div>
+  }
+
+  <p-table
+    [value]="filteredInventories()"
+    [loading]="loading() || branchesLoading() || variantsLoading()"
+    [tableStyle]="{ 'min-width': '56rem' }"
+    [rowHover]="true"
+    dataKey="id"
+    responsiveLayout="scroll"
+    emptyMessage="No hay registros de inventario para mostrar."
+  >
+    <ng-template #header>
+      <tr>
+        <th>ID</th>
+        <th>Sucursal</th>
+        <th>Variante</th>
+        <th>Producto</th>
+        <th class="text-right">Cantidad disponible</th>
+        <th>Estado</th>
+        <th class="text-right">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-inventory>
+      <tr>
+        <td>{{ inventory.id }}</td>
+        <td class="font-medium">{{ branchName(inventory.branchId) }}</td>
+        <td>{{ variantName(inventory.variantId) }}</td>
+        <td>{{ productName(inventory.variantId) }}</td>
+        <td class="text-right font-semibold">{{ inventory.stock }}</td>
+        <td>
+          <span
+            class="rounded-full px-3 py-1 text-xs font-semibold"
+            [class.bg-green-100]="inventory.is_active"
+            [class.text-green-700]="inventory.is_active"
+          >
+            {{ inventory.is_active ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+        <td>
+          <div class="flex justify-end gap-2">
+            <p-button
+              icon="pi pi-pencil"
+              severity="secondary"
+              [text]="true"
+              ariaLabel="Editar inventario"
+              (onClick)="openEdit(inventory)"
+            />
+            <p-button
+              icon="pi pi-ban"
+              severity="danger"
+              [text]="true"
+              ariaLabel="Desactivar inventario"
+              [disabled]="!inventory.is_active"
+              (onClick)="deactivate(inventory)"
+            />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-dialog
+  [header]="selectedInventory() ? 'Editar inventario' : 'Registrar inventario'"
+  [visible]="dialogVisible()"
+  (visibleChange)="!$event && closeDialog()"
+  [modal]="true"
+  [closable]="!saving()"
+  [style]="{ width: 'min(95vw, 36rem)' }"
+>
+  <app-inventory-form
+    [inventory]="selectedInventory()"
+    [branches]="branches()"
+    [variants]="variants()"
+    [products]="products()"
+    [catalogsLoading]="branchesLoading() || variantsLoading()"
+    [catalogsError]="branchesError() || variantsError()"
+    [saving]="saving()"
+    (save)="saveInventory($event)"
+    (cancel)="closeDialog()"
+  />
+</p-dialog>

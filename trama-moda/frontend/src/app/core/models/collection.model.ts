@@ -4,12 +4,11 @@ import { Timestamps } from './api.model';
 export interface Collection extends Timestamps {
   id: number;
   nombre: string;
-  descripcion?: string;
+  descripcion: string | null;
   is_active: boolean;
 }
 
 export interface CollectionPayload {
   nombre: string;
   descripcion?: string;
-  is_active: boolean;
 }

@@ -1,0 +1,97 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+  @if (productsError) {
+    <div
+      class="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"
+      role="alert"
+    >
+      No fue posible cargar los productos. La variante se puede guardar sin
+      asociar un producto.
+    </div>
+  }
+
+  <div>
+    <label for="variant-name" class="mb-1 block font-medium">
+      Nombre *
+    </label>
+
+    <input
+      id="variant-name"
+      type="text"
+      formControlName="nombre"
+      required
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      placeholder="Ej. Talla M - Color Azul Marino"
+    />
+
+    @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+      <small class="text-red-600">El nombre de la variante es obligatorio.</small>
+    }
+  </div>
+
+  <div>
+    <label for="variant-description" class="mb-1 block font-medium">
+      Descripción
+    </label>
+
+    <textarea
+      id="variant-description"
+      formControlName="descripcion"
+      rows="3"
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      placeholder="Describe la variante (opcional)"
+    ></textarea>
+  </div>
+
+  <div>
+    <label for="variant-product" class="mb-1 block font-medium">
+      Producto
+    </label>
+
+    <select
+      id="variant-product"
+      formControlName="product_id"
+      [disabled]="productsLoading || saving"
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500 disabled:bg-slate-100"
+    >
+      <option [ngValue]="null">Sin producto</option>
+
+      @if (variant?.product_id !== null && variant?.product_id !== undefined &&
+      !hasProduct(variant.product_id)) {
+        <option [ngValue]="variant.product_id">
+          Producto #{{ variant.product_id }} (no disponible)
+        </option>
+      }
+
+      @for (product of products; track product.id) {
+        <option [ngValue]="product.id">{{ product.nombre }}</option>
+      }
+    </select>
+
+    @if (productsLoading) {
+      <small class="text-slate-500">Cargando productos...</small>
+    }
+  </div>
+
+  <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
+    <button
+      type="button"
+      (click)="cancel.emit()"
+      [disabled]="saving"
+      class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+    >
+      Cancelar
+    </button>
+
+    <button
+      type="submit"
+      [disabled]="saving || productsLoading"
+      class="rounded-lg bg-blue-600 px-5 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      @if (saving) {
+        Guardando...
+      } @else {
+        {{ variant ? 'Guardar cambios' : 'Crear variante' }}
+      }
+    </button>
+  </div>
+</form>

@@ -12,6 +12,8 @@ import { PanelMenuModule } from 'primeng/panelmenu';
 export class Aside {
   readonly appName = input('TramaModa');
   readonly items = input<MenuItem[]>([]);
+  readonly userName = input<string | null>(null);
+  readonly userEmail = input<string | null>(null);
   readonly navigated = output<void>();
 
   onNavigationClick(event: Event): void {

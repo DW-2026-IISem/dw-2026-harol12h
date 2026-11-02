@@ -1,23 +1,22 @@
 import { Status } from './api.model';
 import { HttpMethod } from './resource.model';
-import { User } from './user.model';
 
-/** Datos enviados al iniciar sesión. */
+/** POST /api/sesion/login. */
 export interface LoginRequest {
   username: string;
   password: string;
 }
 
-/** Respuesta real del backend al iniciar o renovar una sesión. */
+/** Login y refresh responden con este DTO camelCase. */
 export interface SessionTokens {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
   refreshExpiresAt: string;
-  tokenType: 'Bearer' | string;
+  tokenType: 'Bearer';
 }
 
-/** Perfil devuelto por GET /api/sesion/me. */
+/** Respuesta directa de GET /api/sesion/me. */
 export interface SessionProfile {
   id: number;
   username: string;
@@ -25,31 +24,27 @@ export interface SessionProfile {
   status: Status;
 }
 
-/** Permiso efectivo devuelto por el backend. */
+/** Perfil efectivo; el backend actual solo expone método y ruta. */
 export interface EffectivePermission {
   method: HttpMethod;
   path: string;
-  resource_id?: number;
-  description?: string | null;
-  role_id?: number;
-  role_name?: string;
 }
+
+export type ProfilePayload = SessionProfile;
 
 export interface PermissionsPayload {
   permissions: EffectivePermission[];
 }
 
 export interface AccessPayload {
-  user: User;
+  user: SessionProfile;
   permissions: EffectivePermission[];
 }
 
-/** Solicitud de renovación de tokens. */
 export interface RefreshSessionRequest {
   refreshToken: string;
 }
 
-/** Solicitud para cerrar una sesión. */
 export interface LogoutRequest {
   refreshToken: string;
 }

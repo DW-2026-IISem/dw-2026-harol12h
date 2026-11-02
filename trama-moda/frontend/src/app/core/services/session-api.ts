@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -10,6 +10,7 @@ import {
   SessionProfile,
   SessionTokens,
 } from '../models/auth.model';
+import { NOTIFY_HTTP_ERROR } from '../interceptors/error-interceptor';
 
 @Service()
 export class SessionApi {
@@ -37,14 +38,19 @@ export class SessionApi {
     );
   }
 
-  me(): Observable<SessionProfile> {
-    return this.http.get<SessionProfile>(`${this.base}/me`);
+  me(notifyErrors = false): Observable<SessionProfile> {
+    return this.http.get<SessionProfile>(`${this.base}/me`, {
+      context: new HttpContext().set(NOTIFY_HTTP_ERROR, notifyErrors),
+    });
   }
 
-  permissions(): Observable<EffectivePermission[]> {
+  permissions(notifyErrors = false): Observable<EffectivePermission[]> {
     return this.http
       .get<{ permissions: EffectivePermission[] }>(
         `${this.base}/permissions`,
+        {
+          context: new HttpContext().set(NOTIFY_HTTP_ERROR, notifyErrors),
+        },
       )
       .pipe(map((response) => response.permissions));
   }

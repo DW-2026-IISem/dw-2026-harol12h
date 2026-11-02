@@ -1,0 +1,89 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div class="sm:col-span-2">
+      <label for="branch-nombre" class="mb-1 block font-medium text-slate-700">
+        Nombre de la sucursal *
+      </label>
+      <input
+        id="branch-nombre"
+        type="text"
+        formControlName="nombre"
+        maxlength="120"
+        placeholder="Ej. Sucursal Centro Principal"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      />
+      @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+        <small class="text-red-600">
+          El nombre de la sucursal es obligatorio y admite máximo 120 caracteres.
+        </small>
+      }
+    </div>
+
+    <div class="sm:col-span-2">
+      <label for="branch-direccion" class="mb-1 block font-medium text-slate-700">
+        Dirección
+      </label>
+      <input
+        id="branch-direccion"
+        type="text"
+        formControlName="direccion"
+        maxlength="255"
+        placeholder="Ej. Calle Principal # 45 - 12"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      />
+    </div>
+
+    <div>
+      <label for="branch-telefono" class="mb-1 block font-medium text-slate-700">
+        Teléfono
+      </label>
+      <input
+        id="branch-telefono"
+        type="text"
+        formControlName="telefono"
+        maxlength="30"
+        placeholder="Ej. 3001234567"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      />
+    </div>
+
+    @if (branch) {
+      <div>
+        <label for="branch-status" class="mb-1 block font-medium text-slate-700">
+          Estado
+        </label>
+        <select
+          id="branch-status"
+          formControlName="is_active"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
+        >
+          <option [ngValue]="true">Activa</option>
+          <option [ngValue]="false">Inactiva</option>
+        </select>
+      </div>
+    }
+  </div>
+
+  <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
+    <button
+      type="button"
+      (click)="cancel.emit()"
+      [disabled]="saving"
+      class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+    >
+      Cancelar
+    </button>
+
+    <button
+      type="submit"
+      [disabled]="saving"
+      class="rounded-lg bg-blue-600 px-5 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      @if (saving) {
+        Guardando...
+      } @else {
+        {{ branch ? 'Guardar cambios' : 'Guardar sucursal' }}
+      }
+    </button>
+  </div>
+</form>

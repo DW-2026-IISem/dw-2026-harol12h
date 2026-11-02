@@ -39,7 +39,13 @@ export class BranchApi {
       .pipe(map((response) => response.branch));
   }
 
+  /** Baja lógica mediante PATCH. */
   deactivate(id: number): Observable<unknown> {
     return this.http.patch(`${this.base}/${id}/deactivate`, {});
+  }
+
+  /** Baja lógica mediante DELETE según rutas del backend. */
+  remove(id: number): Observable<unknown> {
+    return this.http.delete(`${this.base}/${id}`);
   }
 }

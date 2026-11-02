@@ -4,14 +4,14 @@ import { Timestamps } from './api.model';
 export interface Branch extends Timestamps {
   id: number;
   nombre: string;
-  direccion?: string;
-  telefono?: string;
+  direccion?: string | null;
+  telefono?: string | null;
   is_active: boolean;
 }
 
 export interface BranchPayload {
   nombre: string;
-  direccion?: string;
-  telefono?: string;
-  is_active: boolean;
+  direccion?: string | null;
+  telefono?: string | null;
+  is_active?: boolean;
 }

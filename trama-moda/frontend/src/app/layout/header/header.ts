@@ -10,5 +10,10 @@ import { ButtonModule } from 'primeng/button';
 })
 export class Header {
   readonly appName = input('TramaModa');
+  readonly userName = input<string | null>(null);
+  readonly userEmail = input<string | null>(null);
+  readonly initials = input('');
   readonly menuRequested = output<void>();
+  readonly profileRequested = output<void>();
+  readonly logoutRequested = output<void>();
 }

@@ -1,38 +1,48 @@
 import {
+  HttpContextToken,
   HttpErrorResponse,
   HttpInterceptorFn,
 } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import {
+  Observable,
   catchError,
   finalize,
   shareReplay,
   switchMap,
   tap,
   throwError,
-  Observable,
 } from 'rxjs';
 
 import { SessionTokens } from '../models/auth.model';
 import { SessionApi } from '../services/session-api';
 import { SessionStore } from '../services/session-store';
 
-let refreshRequest: Observable<SessionTokens> | null = null;
+const REFRESH_RETRIED = new HttpContextToken<boolean>(() => false);
+let refreshInFlight: Observable<SessionTokens> | null = null;
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const store = inject(SessionStore);
   const sessionApi = inject(SessionApi);
+  const router = inject(Router);
 
-  const isSessionEndpoint =
-    /\/sesion\/(login|refresh|logout)(?:\?|$)/i.test(req.url);
+  const isOpenSessionEndpoint =
+    /\/sesion\/(login|refresh|logout)(?:[?#]|$)/i.test(req.url);
+  if (isOpenSessionEndpoint) {
+    return next(
+      req.clone({ headers: req.headers.delete('Authorization') }),
+    );
+  }
 
-  const token = store.accessToken;
+  if (!store.authEnabled) {
+    return next(req);
+  }
 
-  const request = token && !isSessionEndpoint
+  const accessToken = store.accessToken();
+  const request = accessToken
     ? req.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`,
-        },
+        setHeaders: { Authorization: `Bearer ${accessToken}` },
       })
     : req;
 
@@ -41,43 +51,57 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       if (
         !(error instanceof HttpErrorResponse) ||
         error.status !== 401 ||
-        isSessionEndpoint
+        req.context.get(REFRESH_RETRIED)
       ) {
         return throwError(() => error);
       }
 
-      const refreshToken = store.refreshToken;
-
+      const refreshToken = store.refreshToken();
       if (!refreshToken) {
         store.clear();
+        redirectToLogin(router);
         return throwError(() => error);
       }
 
-      if (!refreshRequest) {
-        refreshRequest = sessionApi.refresh({ refreshToken }).pipe(
+      if (!refreshInFlight) {
+        refreshInFlight = sessionApi.refresh({ refreshToken }).pipe(
           tap((tokens) => store.saveTokens(tokens)),
           catchError((refreshError: unknown) => {
             store.clear();
+            redirectToLogin(router);
             return throwError(() => refreshError);
           }),
           finalize(() => {
-            refreshRequest = null;
+            refreshInFlight = null;
           }),
           shareReplay({ bufferSize: 1, refCount: false }),
         );
       }
 
-      return refreshRequest.pipe(
-        switchMap((tokens) => {
-          const retryRequest = req.clone({
-            setHeaders: {
-              Authorization: `Bearer ${tokens.accessToken}`,
-            },
-          });
-
-          return next(retryRequest);
-        }),
+      return refreshInFlight.pipe(
+        switchMap((tokens) =>
+          next(
+            req.clone({
+              context: req.context.set(REFRESH_RETRIED, true),
+              setHeaders: {
+                Authorization: `Bearer ${tokens.accessToken}`,
+              },
+            }),
+          ),
+        ),
       );
     }),
   );
 };
+
+function redirectToLogin(router: Router): void {
+  const returnUrl = router.url;
+  const safeReturnUrl =
+    returnUrl.startsWith('/') && !returnUrl.startsWith('//')
+      ? returnUrl
+      : undefined;
+
+  void router.navigate(['/login'], {
+    queryParams: safeReturnUrl ? { returnUrl: safeReturnUrl } : undefined,
+  });
+}

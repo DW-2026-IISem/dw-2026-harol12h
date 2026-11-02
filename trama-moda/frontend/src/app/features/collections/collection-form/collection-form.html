@@ -1,0 +1,58 @@
+<p>collection-form works!</p>
+<form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+  <div>
+    <label for="collection-name" class="mb-1 block font-medium">
+      Nombre *
+    </label>
+
+    <input
+      id="collection-name"
+      type="text"
+      formControlName="nombre"
+      required
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      placeholder="Ej. Primavera - Verano 2026"
+    />
+
+    @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+      <small class="text-red-600">El nombre de la colección es obligatorio.</small>
+    }
+  </div>
+
+  <div>
+    <label for="collection-description" class="mb-1 block font-medium">
+      Descripción
+    </label>
+
+    <textarea
+      id="collection-description"
+      formControlName="descripcion"
+      rows="3"
+      class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      placeholder="Describe la colección (opcional)"
+    ></textarea>
+  </div>
+
+  <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
+    <button
+      type="button"
+      (click)="cancel.emit()"
+      [disabled]="saving"
+      class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+    >
+      Cancelar
+    </button>
+
+    <button
+      type="submit"
+      [disabled]="saving"
+      class="rounded-lg bg-blue-600 px-5 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      @if (saving) {
+        Guardando...
+      } @else {
+        {{ collection ? 'Guardar cambios' : 'Crear colección' }}
+      }
+    </button>
+  </div>
+</form>

@@ -20,4 +20,41 @@
       Gestión de prendas, inventario, clientes y ventas
     </p>
   </div>
+
+  @if (userName()) {
+    <div class="hidden min-w-0 text-right sm:block">
+      <p class="truncate text-sm font-medium text-slate-800">
+        {{ userName() }}
+      </p>
+      @if (userEmail()) {
+        <p class="truncate text-xs text-slate-500">{{ userEmail() }}</p>
+      }
+    </div>
+    <span
+      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-700"
+      aria-label="Iniciales del usuario"
+    >
+      {{ initials() }}
+    </span>
+    <button
+      pButton
+      type="button"
+      text
+      rounded
+      aria-label="Abrir perfil"
+      (click)="profileRequested.emit()"
+    >
+      <i pButtonIcon class="pi pi-user"></i>
+    </button>
+    <button
+      pButton
+      type="button"
+      text
+      rounded
+      aria-label="Cerrar sesión"
+      (click)="logoutRequested.emit()"
+    >
+      <i pButtonIcon class="pi pi-sign-out"></i>
+    </button>
+  }
 </header>

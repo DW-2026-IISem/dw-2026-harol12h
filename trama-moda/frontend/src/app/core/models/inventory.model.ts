@@ -13,5 +13,4 @@ export interface InventoryPayload {
   branchId: number;
   variantId: number;
   stock: number;
-  is_active: boolean;
 }

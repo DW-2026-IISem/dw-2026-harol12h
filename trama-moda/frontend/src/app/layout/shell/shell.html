@@ -2,7 +2,12 @@
 <div class="flex min-h-screen flex-col bg-slate-50">
   <app-header
     appName="TramaModa"
+    [userName]="profile()?.username ?? null"
+    [userEmail]="profile()?.email ?? null"
+    [initials]="initials()"
     (menuRequested)="onMenuToggle()"
+    (profileRequested)="seleccionar('Perfil')"
+    (logoutRequested)="onLogout()"
   />
 
   <div class="flex min-w-0 flex-1">
@@ -11,6 +16,8 @@
         <app-aside
           appName="TramaModa"
           [items]="items"
+          [userName]="profile()?.username ?? null"
+          [userEmail]="profile()?.email ?? null"
         />
       </aside>
     }
@@ -18,10 +25,22 @@
     <main id="contenido" class="min-w-0 flex-1 p-4 sm:p-6">
       @if (title() === 'Clientes') {
         <app-client-list />
+      } @else if (title() === 'Colecciones') {
+        <app-collection-list />
+      } @else if (title() === 'Variantes') {
+        <app-variant-list />
+      } @else if (title() === 'Inventario') {
+        <app-inventory-list />
+      } @else if (title() === 'Perfil') {
+        <app-profile (logoutRequested)="onLogout()" />
       } @else if (title() === 'Categorías') {
         <app-category-list />
       } @else if (title() === 'Productos') {
         <app-product-list />  
+      } @else if (title() === 'Proveedores') {
+        <app-supplier-list />  
+      } @else if (title() === 'Sucursales') {
+        <app-branch-list />  
       } @else if (title() === 'Ventas') {
         <app-sale-list />
       } @else if (title() === 'Nueva venta') {
@@ -62,6 +81,8 @@
   <app-aside
     appName="TramaModa"
     [items]="items"
+    [userName]="profile()?.username ?? null"
+    [userEmail]="profile()?.email ?? null"
     (navigated)="mobileOpen.set(false)"
   />
 </p-drawer>
