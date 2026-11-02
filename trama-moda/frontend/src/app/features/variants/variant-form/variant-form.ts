@@ -18,10 +18,11 @@ import {
   Variant,
   VariantPayload,
 } from '../../../core/models/variant.model';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 @Component({
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [HasPermission, ReactiveFormsModule],
   selector: 'app-variant-form',
   styleUrl: './variant-form.css',
   templateUrl: './variant-form.html',

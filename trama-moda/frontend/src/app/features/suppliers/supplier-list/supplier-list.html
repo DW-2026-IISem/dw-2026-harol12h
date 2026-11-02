@@ -20,6 +20,7 @@
       />
 
       <p-button
+        *appHasPermission="'POST /api/proveedores'"
         label="Nuevo proveedor"
         icon="pi pi-plus"
         (onClick)="openCreate()"
@@ -110,6 +111,7 @@
           <td>
             <div class="flex justify-end gap-2">
               <p-button
+                *appHasPermission="'PUT /api/proveedores/:id'"
                 label="Editar"
                 icon="pi pi-pencil"
                 size="small"
@@ -118,6 +120,7 @@
               />
 
               <p-button
+                *appHasPermission="'PATCH /api/proveedores/:id/deactivate'"
                 label="Desactivar"
                 icon="pi pi-ban"
                 severity="warn"
@@ -128,6 +131,7 @@
               />
 
               <p-button
+                *appHasPermission="'DELETE /api/proveedores/:id'"
                 icon="pi pi-trash"
                 severity="danger"
                 size="small"

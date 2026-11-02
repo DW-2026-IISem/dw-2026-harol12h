@@ -14,6 +14,7 @@ import { NotificationService } from '../../../core/services/notification';
 import { toApiMessage } from '../../../core/utils/api-error';
 import { SaleApi } from '../../sales/sale-api';
 import { SaleDetailApi } from '../sale-detail-api';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 interface SaleOption {
   id: number;
@@ -33,6 +34,7 @@ interface CatalogOption extends SaleCatalogItem {
     ButtonModule,
     CurrencyPipe,
     FormsModule,
+    HasPermission,
     InputNumberModule,
     MessageModule,
     SelectModule,
@@ -130,7 +132,9 @@ export class SaleDetailForm implements OnInit {
     }
     const detail = this.detail();
     if (detail && (detail.variantId == null || detail.branchId == null)) {
-      this.error.set('Esta línea histórica no tiene variante y sucursal; no se puede ajustar inventario de forma segura.');
+      this.error.set(
+        'Esta línea histórica no tiene variante y sucursal; no se puede ajustar inventario de forma segura.',
+      );
       return;
     }
     const selectedItem = this.selectedItem();

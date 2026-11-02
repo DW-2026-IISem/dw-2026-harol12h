@@ -17,6 +17,7 @@ import { toApiMessage } from '../../../core/utils/api-error';
 import { filterRows } from '../../../core/utils/filter-rows';
 import { SupplierApi } from '../supplier-api';
 import { SupplierForm } from '../supplier-form/supplier-form';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 @Component({
   selector: 'app-supplier-list',
@@ -31,6 +32,7 @@ import { SupplierForm } from '../supplier-form/supplier-form';
     TableModule,
     Tag,
     ToastModule,
+    HasPermission,
     SupplierForm,
   ],
   providers: [ConfirmationService],

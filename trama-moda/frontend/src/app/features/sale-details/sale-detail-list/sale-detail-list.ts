@@ -17,6 +17,7 @@ import { toApiMessage } from '../../../core/utils/api-error';
 import type { SaleDetail } from '../../../core/models/sale-detail.model';
 import { SaleDetailApi } from '../sale-detail-api';
 import { SaleDetailForm } from '../sale-detail-form/sale-detail-form';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 @Component({
   selector: 'app-sale-detail-list',
@@ -32,6 +33,7 @@ import { SaleDetailForm } from '../sale-detail-form/sale-detail-form';
     TableModule,
     TagModule,
     ToastModule,
+    HasPermission,
   ],
   templateUrl: './sale-detail-list.html',
 })
@@ -114,9 +116,10 @@ export class SaleDetailList {
   remove(detail: SaleDetail): void {
     this.confirmations.confirm({
       header: 'Eliminar detalle',
-      message: detail.status === 'active'
-        ? `Se restaurarán ${detail.cantidad} unidades al inventario. ¿Deseas eliminar esta línea de forma permanente?`
-        : 'Esta línea inactiva se eliminará permanentemente. ¿Deseas continuar?',
+      message:
+        detail.status === 'active'
+          ? `Se restaurarán ${detail.cantidad} unidades al inventario. ¿Deseas eliminar esta línea de forma permanente?`
+          : 'Esta línea inactiva se eliminará permanentemente. ¿Deseas continuar?',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
         this.detailApi.remove(detail.id).subscribe({

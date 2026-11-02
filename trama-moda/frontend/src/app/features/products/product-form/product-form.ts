@@ -25,11 +25,12 @@ import { CategoryApi } from '../../categories/category-api';
 import { SupplierApi } from '../../suppliers/supplier-api';
 
 import { toApiMessage } from '../../../core/utils/api-error';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [HasPermission, ReactiveFormsModule],
   templateUrl: './product-form.html',
   styleUrl: './product-form.css',
 })

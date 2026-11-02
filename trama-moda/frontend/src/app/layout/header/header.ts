@@ -15,5 +15,7 @@ export class Header {
   readonly initials = input('');
   readonly menuRequested = output<void>();
   readonly profileRequested = output<void>();
+  readonly refreshPermissionsRequested = output<void>();
+  readonly refreshingPermissions = input(false);
   readonly logoutRequested = output<void>();
 }

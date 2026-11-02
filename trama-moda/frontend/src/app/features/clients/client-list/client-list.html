@@ -21,6 +21,7 @@
       />
 
       <p-button
+        *appHasPermission="'POST /api/clientes'"
         label="Nuevo cliente"
         icon="pi pi-plus"
         (onClick)="openCreate()"
@@ -124,6 +125,7 @@
           <td>
             <div class="flex flex-wrap gap-2">
               <p-button
+                *appHasPermission="'PUT /api/clientes/:id'"
                 label="Editar"
                 icon="pi pi-pencil"
                 size="small"
@@ -132,6 +134,7 @@
               />
 
               <p-button
+                *appHasPermission="'PATCH /api/clientes/:id/deactivate'"
                 label="Baja lógica"
                 icon="pi pi-ban"
                 severity="warn"
@@ -141,6 +144,7 @@
               />
 
               <p-button
+                *appHasPermission="'DELETE /api/clientes/:id'"
                 label="Baja física"
                 icon="pi pi-trash"
                 severity="danger"

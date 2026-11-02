@@ -20,6 +20,7 @@ import { filterRows } from '../../../core/utils/filter-rows';
 import { ProductApi } from '../../products/product-api';
 import { VariantApi } from '../variant-api';
 import { VariantForm } from '../variant-form/variant-form';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 @Component({
   standalone: true,
@@ -29,6 +30,7 @@ import { VariantForm } from '../variant-form/variant-form';
     ConfirmDialog,
     DialogModule,
     InputTextModule,
+    HasPermission,
     TableModule,
     ToastModule,
     VariantForm,

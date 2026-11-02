@@ -13,11 +13,12 @@ import {
   Validators,
 } from '@angular/forms';
 import { Client, ClientPayload } from '../../../core/models/client.model';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 @Component({
   selector: 'app-client-form',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [HasPermission, ReactiveFormsModule],
   templateUrl: './client-form.html',
   styleUrl: './client-form.css',
 })

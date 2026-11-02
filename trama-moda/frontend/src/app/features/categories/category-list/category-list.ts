@@ -12,6 +12,7 @@ import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 
 import { Category, CategoryPayload } from '../../../core/models/category.model';
+import { HasPermission } from '../../../shared/directives/has-permission';
 import { NotificationService } from '../../../core/services/notification';
 import { toApiMessage } from '../../../core/utils/api-error';
 import { filterRows } from '../../../core/utils/filter-rows';
@@ -27,6 +28,7 @@ import { CategoryForm } from '../category-form/category-form';
     ConfirmDialog,
     DialogModule,
     InputTextModule,
+    HasPermission,
     TableModule,
     ToastModule,
     CategoryForm,

@@ -17,10 +17,11 @@ import {
   Collection,
   CollectionPayload,
 } from '../../../core/models/collection.model';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 @Component({
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [HasPermission, ReactiveFormsModule],
   selector: 'app-collection-form',
   styleUrl: './collection-form.css',
   templateUrl: './collection-form.html',

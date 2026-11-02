@@ -18,6 +18,7 @@
         (onClick)="load()"
       />
       <p-button
+        *appHasPermission="['POST /api/ventas', 'GET /api/ventas/catalogo', 'GET /api/clientes']"
         label="Nueva venta"
         icon="pi pi-plus"
         (onClick)="newSale()"

@@ -49,6 +49,7 @@
 
     <button
       type="submit"
+      *appHasPermission="category ? 'PUT /api/categorias/:id' : 'POST /api/categorias'"
       [disabled]="saving"
       class="rounded-lg bg-blue-600 px-5 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
     >

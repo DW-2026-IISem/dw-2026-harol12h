@@ -29,6 +29,7 @@ import { Profile } from '../../features/auth/profile/profile';
 import { Auth } from '../../core/services/auth';
 import { SessionStore } from '../../core/services/session-store';
 import { NotificationService } from '../../core/services/notification';
+import { NAV_CONFIG, NavItemConfig } from './nav.config';
 
 @Component({
   selector: 'app-shell',
@@ -79,106 +80,26 @@ export class Shell {
       .join('');
   });
 
-  readonly items: MenuItem[] = [
-    {
-      label: 'Inicio',
-      icon: 'pi pi-home',
-      command: () => this.seleccionar('Inicio'),
-    },
-    {
-      label: 'Catálogo',
-      icon: 'pi pi-book',
-      items: [
-        {
-          label: 'Categorías',
-          icon: 'pi pi-tags',
-          command: () => this.seleccionar('Categorías'),
-        },
-        {
-          label: 'Colecciones',
-          icon: 'pi pi-folder',
-          command: () => this.seleccionar('Colecciones'),
-        },
-        {
-          label: 'Productos',
-          icon: 'pi pi-box',
-          command: () => this.seleccionar('Productos'),
-        },
-        {
-          label: 'Variantes',
-          icon: 'pi pi-palette',
-          command: () => this.seleccionar('Variantes'),
-        },
-      ],
-    },
-    {
-      label: 'Operaciones',
-      icon: 'pi pi-shopping-cart',
-      items: [
-        {
-          label: 'Clientes',
-          icon: 'pi pi-users',
-          command: () => this.seleccionar('Clientes'),
-        },
-        {
-          label: 'Inventario',
-          icon: 'pi pi-warehouse',
-          command: () => this.seleccionar('Inventario'),
-        },
-        {
-          label: 'Sucursales',
-          icon: 'pi pi-building',
-          command: () => this.seleccionar('Sucursales'),
-        },
-        {
-          label: 'Proveedores',
-          icon: 'pi pi-truck',
-          command: () => this.seleccionar('Proveedores'),
-        },
-        {
-          label: 'Ventas',
-          icon: 'pi pi-receipt',
-          command: () => this.seleccionar('Ventas'),
-        },
-        {
-          label: 'Detalles de venta',
-          icon: 'pi pi-list',
-          command: () => this.seleccionar('Detalles de venta'),
-        },
-      ],
-    },
-    {
-      label: 'Administración',
-      icon: 'pi pi-cog',
-      items: [
-        {
-          label: 'Usuarios',
-          icon: 'pi pi-user',
-          command: () => this.seleccionar('Usuarios'),
-        },
-        {
-          label: 'Roles',
-          icon: 'pi pi-shield',
-          command: () => this.seleccionar('Roles'),
-        },
-        {
-          label: 'Usuarios por rol',
-          icon: 'pi pi-users',
-          command: () => this.seleccionar('Usuarios por rol'),
-        },
-        {
-          label: 'Recursos',
-          icon: 'pi pi-sitemap',
-          command: () => this.seleccionar('Recursos'),
-        },
-        {
-          label: 'Roles por recurso',
-          icon: 'pi pi-lock',
-          command: () => this.seleccionar('Roles por recurso'),
-        },
-      ],
-    },
-  ];
+  readonly items = computed<MenuItem[]>(() =>
+    NAV_CONFIG.flatMap((group) => {
+      if (group.authOnly && !this.sessionStore.authEnabled) {
+        return [];
+      }
+
+      const items = group.items
+        .filter((item) => this.canShowNavItem(item))
+        .map((item) => this.toMenuItem(item));
+
+      if (group.label === 'General') {
+        return items;
+      }
+
+      return items.length > 0
+        ? [{ label: group.label, icon: group.icon, items }]
+        : [];
+    }),
+  );
+  readonly refreshingPermissions = signal(false);
 
   constructor() {
     this.syncTitleFromRoute();
@@ -266,6 +187,63 @@ export class Shell {
     this.mobileOpen.set(false);
   }
 
+  refreshPermissions(): void {
+    if (this.refreshingPermissions()) {
+      return;
+    }
+
+    this.refreshingPermissions.set(true);
+    this.auth.refreshPermissions().subscribe({
+      next: (permissions) => {
+        this.refreshingPermissions.set(false);
+        this.notifications.success(
+          'Permisos actualizados',
+          `Se recibieron ${permissions.length} permisos efectivos.`,
+        );
+      },
+      error: () => this.refreshingPermissions.set(false),
+    });
+  }
+
+  private canShowNavItem(item: NavItemConfig): boolean {
+    if (!this.sessionStore.authEnabled) {
+      return true;
+    }
+
+    const requirements = item.permissions ?? (
+      item.permission ? [item.permission] : []
+    );
+    return (
+      requirements.length > 0 &&
+      requirements.every((requirement) => {
+        const separator = requirement.indexOf(' ');
+        return (
+          separator > 0 &&
+          this.sessionStore.canPermission(
+            requirement.slice(0, separator),
+            requirement.slice(separator + 1).trim(),
+          )
+        );
+      })
+    );
+  }
+
+  private toMenuItem(item: NavItemConfig): MenuItem {
+    return {
+      label: item.label,
+      icon: item.icon,
+      command: () => {
+        if (item.route) {
+          void this.router.navigateByUrl(item.route);
+          this.mobileOpen.set(false);
+          return;
+        }
+
+        this.seleccionar(item.title);
+      },
+    };
+  }
+
   private syncTitleFromRoute(): void {
     const path = this.router.url.split('?')[0].replace(/\/+$/, '') || '/';
     if (path === '/ventas/nueva') {
@@ -288,6 +266,12 @@ export class Shell {
       this.title.set('Sucursales');
     } else if (path === '/dashboard') {
       this.title.set('Inicio');
+    } else if (path === '/clientes') {
+      this.title.set('Clientes');
+    } else if (path === '/categorias') {
+      this.title.set('Categorías');
+    } else if (path === '/productos') {
+      this.title.set('Productos');
     }
   }
 

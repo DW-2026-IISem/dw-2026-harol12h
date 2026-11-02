@@ -69,6 +69,7 @@
     </button>
 
     <button type="submit" [disabled]="saving"
+      *appHasPermission="client ? 'PUT /api/clientes/:id' : 'POST /api/clientes'"
       class="rounded-lg bg-blue-600 px-5 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
       @if (saving) {
         Guardando...

@@ -41,6 +41,18 @@
       type="button"
       text
       rounded
+      title="Actualizar permisos"
+      aria-label="Actualizar permisos"
+      [loading]="refreshingPermissions()"
+      (click)="refreshPermissionsRequested.emit()"
+    >
+      <i pButtonIcon class="pi pi-refresh"></i>
+    </button>
+    <button
+      pButton
+      type="button"
+      text
+      rounded
       aria-label="Abrir perfil"
       (click)="profileRequested.emit()"
     >

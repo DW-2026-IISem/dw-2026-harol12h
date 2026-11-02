@@ -18,6 +18,7 @@ import { toApiMessage } from '../../../core/utils/api-error';
 import { filterRows } from '../../../core/utils/filter-rows';
 import { CollectionApi } from '../collection-api';
 import { CollectionForm } from '../collection-form/collection-form';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 @Component({
   standalone: true,
@@ -27,6 +28,7 @@ import { CollectionForm } from '../collection-form/collection-form';
     ConfirmDialog,
     DialogModule,
     InputTextModule,
+    HasPermission,
     TableModule,
     ToastModule,
     CollectionForm,

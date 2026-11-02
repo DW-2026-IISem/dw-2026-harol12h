@@ -16,7 +16,7 @@
           <div>
             <p class="text-xs text-slate-500">Producto / variante</p>
             <p class="font-medium">
-              {{ current.product?.nombre || ('Producto #' + current.product_id) }}
+              {{ current.product?.nombre || 'Producto #' + current.product_id }}
               · {{ current.variant?.nombre || 'Variante histórica' }}
             </p>
           </div>
@@ -114,6 +114,19 @@
       />
       <p-button
         type="submit"
+        *appHasPermission="
+          isEditing()
+            ? [
+                'PATCH /api/detalle-ventas/:id',
+                'GET /api/ventas',
+                'GET /api/ventas/catalogo',
+              ]
+            : [
+                'POST /api/detalle-ventas',
+                'GET /api/ventas',
+                'GET /api/ventas/catalogo',
+              ]
+        "
         [label]="isEditing() ? 'Guardar cantidad' : 'Agregar línea'"
         icon="pi pi-check"
         [loading]="saving()"

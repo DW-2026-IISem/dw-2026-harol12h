@@ -11,6 +11,7 @@
     </div>
 
     <p-button
+      *appHasPermission="'POST /api/variantes'"
       label="Nueva variante"
       icon="pi pi-plus"
       (onClick)="openCreate()"
@@ -85,6 +86,7 @@
         <td>
           <div class="flex justify-end gap-2">
             <p-button
+              *appHasPermission="'PUT /api/variantes/:id'"
               icon="pi pi-pencil"
               severity="secondary"
               [text]="true"
@@ -92,6 +94,7 @@
               (onClick)="openEdit(variant)"
             />
             <p-button
+              *appHasPermission="'PATCH /api/variantes/:id/deactivate'"
               icon="pi pi-ban"
               severity="danger"
               [text]="true"

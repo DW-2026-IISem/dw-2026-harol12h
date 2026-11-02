@@ -18,11 +18,12 @@ import {
   Category,
   CategoryPayload,
 } from '../../../core/models/category.model';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 @Component({
   selector: 'app-category-form',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [HasPermission, ReactiveFormsModule],
   templateUrl: './category-form.html',
   styleUrl: './category-form.css',
 })

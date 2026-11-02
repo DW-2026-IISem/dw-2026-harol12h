@@ -1,97 +1,125 @@
 import { Routes } from '@angular/router';
 
+import { authGuard } from './core/guards/auth.guard';
+import { authOnlyGuard } from './core/guards/auth-only-guard';
+import { guestGuard } from './core/guards/guest-guard';
+import { permissionGuard } from './core/guards/permission-guard';
+
 export const routes: Routes = [
   {
     path: 'login',
-    loadComponent: () =>
-      import('./features/auth/login/login').then(
-        (module) => module.Login,
-      ),
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/auth/login/login').then((module) => module.Login),
   },
   {
     path: 'perfil',
+    canActivate: [authOnlyGuard, authGuard],
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
+  },
+  {
+    path: 'forbidden',
     loadComponent: () =>
-      import('./layout/shell/shell').then(
-        (module) => module.Shell,
-      ),
+      import('./features/auth/forbidden/forbidden').then((module) => module.Forbidden),
   },
   {
     path: 'acceso-denegado',
-    loadComponent: () =>
-      import('./features/auth/forbidden/forbidden').then(
-        (module) => module.Forbidden,
-      ),
+    pathMatch: 'full',
+    redirectTo: 'forbidden',
   },
   {
     path: 'dashboard',
-    loadComponent: () =>
-      import('./layout/shell/shell').then(
-        (module) => module.Shell,
-      ),
+    canActivate: [authGuard, permissionGuard],
+    data: {
+      permission: [
+        'GET /api/clientes',
+        'GET /api/categorias',
+        'GET /api/productos',
+        'GET /api/ventas',
+        'GET /api/ventas/catalogo',
+      ],
+    },
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
   },
   {
     path: 'ventas',
-    loadComponent: () =>
-      import('./layout/shell/shell').then(
-        (module) => module.Shell,
-      ),
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'GET /api/ventas' },
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
   },
   {
     path: 'ventas/nueva',
-    loadComponent: () =>
-      import('./layout/shell/shell').then(
-        (module) => module.Shell,
-      ),
+    canActivate: [authGuard, permissionGuard],
+    data: {
+      permission: ['POST /api/ventas', 'GET /api/ventas/catalogo', 'GET /api/clientes'],
+    },
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
+  },
+  {
+    path: 'clientes',
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'GET /api/clientes' },
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
+  },
+  {
+    path: 'categorias',
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'GET /api/categorias' },
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
+  },
+  {
+    path: 'productos',
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: ['GET /api/productos', 'GET /api/categorias'] },
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
   },
   {
     path: 'colecciones',
-    loadComponent: () =>
-      import('./layout/shell/shell').then(
-        (module) => module.Shell,
-      ),
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'GET /api/colecciones' },
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
   },
   {
     path: 'variantes',
-    loadComponent: () =>
-      import('./layout/shell/shell').then(
-        (module) => module.Shell,
-      ),
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: ['GET /api/variantes', 'GET /api/productos'] },
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
   },
   {
     path: 'inventario',
-    loadComponent: () =>
-      import('./layout/shell/shell').then(
-        (module) => module.Shell,
-      ),
+    canActivate: [authGuard, permissionGuard],
+    data: {
+      permission: [
+        'GET /api/inventarios',
+        'GET /api/sucursales',
+        'GET /api/variantes',
+        'GET /api/productos',
+      ],
+    },
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
   },
   {
     path: 'detalle-ventas',
-    loadComponent: () =>
-      import('./layout/shell/shell').then(
-        (module) => module.Shell,
-      ),
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'GET /api/detalle-ventas' },
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
   },
   {
     path: 'proveedores',
-    loadComponent: () =>
-      import('./layout/shell/shell').then(
-        (module) => module.Shell,
-      ),
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'GET /api/proveedores' },
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
   },
   {
     path: 'sucursales',
-    loadComponent: () =>
-      import('./layout/shell/shell').then(
-        (module) => module.Shell,
-      ),
+    canActivate: [authGuard, permissionGuard],
+    data: { permission: 'GET /api/sucursales' },
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
   },
   {
     path: 'construir',
     pathMatch: 'full',
     loadComponent: () =>
-      import('./features/construir/construir').then(
-        (module) => module.Construir,
-      ),
+      import('./features/construir/construir').then((module) => module.Construir),
   },
   {
     path: '',

@@ -21,6 +21,7 @@ import { NotificationService } from '../../../core/services/notification';
 import { toApiMessage } from '../../../core/utils/api-error';
 import { ClientApi } from '../../clients/client-api';
 import { SaleApi } from '../sale-api';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 interface ClientOption {
   id: number;
@@ -48,6 +49,7 @@ interface DraftLineView extends SaleCreateItem {
     CardModule,
     CurrencyPipe,
     FormsModule,
+    HasPermission,
     InputNumberModule,
     MessageModule,
     SelectModule,

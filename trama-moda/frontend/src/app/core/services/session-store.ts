@@ -48,7 +48,11 @@ export class SessionStore {
 
   saveAccess(access: AccessPayload): void {
     this._profile.set(access.user);
-    this._permissions.set(access.permissions);
+    this.savePermissions(access.permissions);
+  }
+
+  savePermissions(permissions: EffectivePermission[]): void {
+    this._permissions.set(permissions);
     this.persist();
   }
 
@@ -66,6 +70,10 @@ export class SessionStore {
   }
 
   canPermission(method: string, path: string): boolean {
+    if (!this.authEnabled) {
+      return true;
+    }
+
     return this._permissions().some(
       (permission) =>
         permission.method.toUpperCase() === method.toUpperCase() &&
@@ -126,10 +134,8 @@ export class SessionStore {
         (profile.status === 'active' || profile.status === 'inactive'));
 
     return (
-      (typeof session.accessToken === 'string' ||
-        session.accessToken === null) &&
-      (typeof session.refreshToken === 'string' ||
-        session.refreshToken === null) &&
+      (typeof session.accessToken === 'string' || session.accessToken === null) &&
+      (typeof session.refreshToken === 'string' || session.refreshToken === null) &&
       validProfile &&
       Array.isArray(session.permissions) &&
       session.permissions.every(
@@ -143,19 +149,33 @@ export class SessionStore {
   }
 
   private pathMatches(pattern: string, requestedPath: string): boolean {
-    const normalize = (value: string): string => {
-      const path = value.split(/[?#]/, 1)[0].replace(/\/{2,}/g, '/');
-      return path.replace(/\/+$/, '') || '/';
+    const normalize = (value: string): string | null => {
+      const path = value.split(/[?#]/, 1)[0];
+      if (!path.startsWith('/')) {
+        return null;
+      }
+
+      return path.length > 1 ? path.replace(/\/+$/, '') : '/';
     };
 
-    const patternParts = normalize(pattern).split('/');
-    const requestedParts = normalize(requestedPath).split('/');
+    const normalizedPattern = normalize(pattern);
+    const normalizedRequest = normalize(requestedPath);
+    if (normalizedPattern === null || normalizedRequest === null) {
+      return false;
+    }
+
+    const patternParts = normalizedPattern.split('/');
+    const requestedParts = normalizedRequest.split('/');
+
     return (
       patternParts.length === requestedParts.length &&
-      patternParts.every(
-        (part, index) =>
-          part.startsWith(':') || part === requestedParts[index],
-      )
+      patternParts.every((part, index) => {
+        if (part.startsWith(':')) {
+          return /^:[A-Za-z][A-Za-z0-9_]*$/.test(part) && requestedParts[index].length > 0;
+        }
+
+        return part === requestedParts[index];
+      })
     );
   }
 }

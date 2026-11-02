@@ -7,6 +7,19 @@
         Tu sesión no tiene acceso a este recurso. Si crees que es un error,
         contacta con el administrador.
       </p>
+      @if (permission(); as requiredPermission) {
+        <div
+          class="mt-4 rounded-lg bg-slate-100 px-4 py-3 text-left"
+          aria-live="polite"
+        >
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Permiso requerido
+          </p>
+          <p class="mt-1 break-all font-mono text-sm text-slate-800">
+            {{ requiredPermission }}
+          </p>
+        </div>
+      }
       <a
         pButton
         routerLink="/dashboard"

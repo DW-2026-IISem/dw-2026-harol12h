@@ -13,11 +13,12 @@ import {
   Validators,
 } from '@angular/forms';
 import { Branch, BranchPayload } from '../../../core/models/branch.model';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 @Component({
   selector: 'app-branch-form',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [HasPermission, ReactiveFormsModule],
   templateUrl: './branch-form.html',
   styleUrl: './branch-form.css',
 })

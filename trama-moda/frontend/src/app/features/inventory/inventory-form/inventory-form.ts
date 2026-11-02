@@ -17,10 +17,11 @@ import { Branch } from '../../../core/models/branch.model';
 import { Inventory, InventoryPayload } from '../../../core/models/inventory.model';
 import { Product } from '../../../core/models/product.model';
 import { Variant } from '../../../core/models/variant.model';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 @Component({
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [HasPermission, ReactiveFormsModule],
   selector: 'app-inventory-form',
   styleUrl: './inventory-form.css',
   templateUrl: './inventory-form.html',

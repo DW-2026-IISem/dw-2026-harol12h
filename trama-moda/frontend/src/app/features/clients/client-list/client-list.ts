@@ -10,6 +10,7 @@ import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 
 import { Client, ClientPayload } from '../../../core/models/client.model';
+import { HasPermission } from '../../../shared/directives/has-permission';
 import { NotificationService } from '../../../core/services/notification';
 import { toApiMessage } from '../../../core/utils/api-error';
 import { filterRows } from '../../../core/utils/filter-rows';
@@ -26,6 +27,7 @@ import { DialogModule } from 'primeng/dialog';
   ConfirmDialog,
   DialogModule,
   Message,
+  HasPermission,
   TableModule,
   ToastModule,
   ClientForm,

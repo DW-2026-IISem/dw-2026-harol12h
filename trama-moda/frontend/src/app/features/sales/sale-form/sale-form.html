@@ -216,6 +216,7 @@
             </p-message>
           }
           <p-button
+            *appHasPermission="'POST /api/ventas'"
             label="Registrar venta"
             icon="pi pi-check"
             styleClass="w-full"

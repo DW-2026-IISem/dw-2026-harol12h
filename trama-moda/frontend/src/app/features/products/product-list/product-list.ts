@@ -20,6 +20,7 @@ import { Category } from '../../../core/models/category.model';
 import { CategoryApi } from '../../categories/category-api';
 import { CurrencyPipe } from '@angular/common';
 import { Tag } from 'primeng/tag';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 @Component({
   selector: 'app-product-list',
@@ -35,6 +36,7 @@ import { Tag } from 'primeng/tag';
     ProductForm,
     CurrencyPipe,
     Tag,
+    HasPermission,
   ],
   providers: [ConfirmationService],
   templateUrl: './product-list.html',

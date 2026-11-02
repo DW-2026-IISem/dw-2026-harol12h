@@ -13,11 +13,12 @@ import {
   Validators,
 } from '@angular/forms';
 import { Supplier, SupplierPayload } from '../../../core/models/supplier.model';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 @Component({
   selector: 'app-supplier-form',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [HasPermission, ReactiveFormsModule],
   templateUrl: './supplier-form.html',
   styleUrl: './supplier-form.css',
 })

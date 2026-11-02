@@ -21,6 +21,7 @@ import { ProductApi } from '../../products/product-api';
 import { VariantApi } from '../../variants/variant-api';
 import { InventoryApi } from '../inventory-api';
 import { InventoryForm } from '../inventory-form/inventory-form';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 @Component({
   standalone: true,
@@ -30,6 +31,7 @@ import { InventoryForm } from '../inventory-form/inventory-form';
     ConfirmDialog,
     DialogModule,
     InputTextModule,
+    HasPermission,
     TableModule,
     ToastModule,
     InventoryForm,

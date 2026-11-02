@@ -14,6 +14,7 @@ import type { Sale } from '../../../core/models/sale.model';
 import { toApiMessage } from '../../../core/utils/api-error';
 import { SaleApi } from '../sale-api';
 import { SaleDetail as SaleDetailView } from '../sale-detail/sale-detail';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 @Component({
   standalone: true,
@@ -27,6 +28,7 @@ import { SaleDetail as SaleDetailView } from '../sale-detail/sale-detail';
     TableModule,
     TagModule,
     ToastModule,
+    HasPermission,
   ],
   selector: 'app-sale-list',
   styleUrl: './sale-list.css',

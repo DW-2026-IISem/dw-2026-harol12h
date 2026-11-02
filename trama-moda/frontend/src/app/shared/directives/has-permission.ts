@@ -18,24 +18,31 @@ export class HasPermission {
   private readonly templateRef = inject(TemplateRef<unknown>);
   private readonly viewContainer = inject(ViewContainerRef);
 
-  readonly appHasPermission = input.required<string>();
+  readonly appHasPermission = input.required<string | string[]>();
 
   private visible = false;
 
   private readonly permissionEffect = effect(() => {
-    const requirement = this.appHasPermission().trim();
-    const separator = requirement.indexOf(' ');
-
-    if (separator < 1) {
-      this.updateVisibility(false);
-      return;
-    }
-
-    const method = requirement.slice(0, separator).toUpperCase();
-    const path = requirement.slice(separator + 1).trim();
-
+    const configured = this.appHasPermission();
+    const requirements = Array.isArray(configured)
+      ? configured
+      : [configured];
     const allowed =
-      !!path && this.sessionStore.canPermission(method, path);
+      !this.sessionStore.authEnabled ||
+      (requirements.length > 0 &&
+        requirements.every((requirement) => {
+          const permission = requirement.trim();
+          const separator = permission.indexOf(' ');
+          if (separator < 1) {
+            return false;
+          }
+
+          const method = permission.slice(0, separator);
+          const path = permission.slice(separator + 1).trim();
+          return (
+            !!path && this.sessionStore.canPermission(method, path)
+          );
+        }));
 
     this.updateVisibility(allowed);
   });
@@ -53,4 +60,3 @@ export class HasPermission {
     }
   }
 }
-

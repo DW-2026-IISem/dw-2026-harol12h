@@ -13,6 +13,7 @@ import {
 
 import {
   AccessPayload,
+  EffectivePermission,
   LoginRequest,
   SessionProfile,
   SessionTokens,
@@ -52,6 +53,12 @@ export class Auth {
     }).pipe(tap((access) => this.sessionStore.saveAccess(access)));
   }
 
+  refreshPermissions(): Observable<EffectivePermission[]> {
+    return this.sessionApi
+      .permissions(true)
+      .pipe(tap((permissions) => this.sessionStore.savePermissions(permissions)));
+  }
+
   refresh(): Observable<SessionTokens> {
     const refreshToken = this.sessionStore.refreshToken();
     if (!refreshToken) {
@@ -59,9 +66,9 @@ export class Auth {
       return throwError(() => new Error('No hay refresh token disponible.'));
     }
 
-    return this.sessionApi.refresh({ refreshToken }).pipe(
-      tap((tokens) => this.sessionStore.saveTokens(tokens)),
-    );
+    return this.sessionApi
+      .refresh({ refreshToken })
+      .pipe(tap((tokens) => this.sessionStore.saveTokens(tokens)));
   }
 
   logout(): Observable<boolean> {

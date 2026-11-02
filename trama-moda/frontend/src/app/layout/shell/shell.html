@@ -5,8 +5,10 @@
     [userName]="profile()?.username ?? null"
     [userEmail]="profile()?.email ?? null"
     [initials]="initials()"
+    [refreshingPermissions]="refreshingPermissions()"
     (menuRequested)="onMenuToggle()"
     (profileRequested)="seleccionar('Perfil')"
+    (refreshPermissionsRequested)="refreshPermissions()"
     (logoutRequested)="onLogout()"
   />
 
@@ -15,7 +17,7 @@
       <aside class="hidden w-72 shrink-0 lg:block">
         <app-aside
           appName="TramaModa"
-          [items]="items"
+          [items]="items()"
           [userName]="profile()?.username ?? null"
           [userEmail]="profile()?.email ?? null"
         />
@@ -80,7 +82,7 @@
 
   <app-aside
     appName="TramaModa"
-    [items]="items"
+    [items]="items()"
     [userName]="profile()?.username ?? null"
     [userEmail]="profile()?.email ?? null"
     (navigated)="mobileOpen.set(false)"

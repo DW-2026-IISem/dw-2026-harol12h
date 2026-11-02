@@ -18,7 +18,12 @@
         [loading]="loading()"
         (onClick)="load()"
       />
-      <p-button label="Nueva línea" icon="pi pi-plus" (onClick)="newDetail()" />
+      <p-button
+        *appHasPermission="['POST /api/detalle-ventas', 'GET /api/ventas', 'GET /api/ventas/catalogo']"
+        label="Nueva línea"
+        icon="pi pi-plus"
+        (onClick)="newDetail()"
+      />
     </div>
   </div>
 
@@ -54,11 +59,11 @@
         <td>
           #{{ detail.sale_id }}
           <span class="block text-xs text-slate-500">
-            {{ detail.sale?.client?.nombre || ('Cliente #' + detail.sale?.client_id) }}
+            {{ detail.sale?.client?.nombre || 'Cliente #' + detail.sale?.client_id }}
           </span>
         </td>
         <td>
-          {{ detail.product?.nombre || ('Producto #' + detail.product_id) }}
+          {{ detail.product?.nombre || 'Producto #' + detail.product_id }}
           <span class="block text-xs text-slate-500">
             {{ detail.variant?.nombre || 'Variante histórica' }}
           </span>
@@ -81,6 +86,7 @@
           @if (detail.status === 'active') {
             <div class="flex gap-1">
               <p-button
+                *appHasPermission="['PATCH /api/detalle-ventas/:id', 'GET /api/ventas', 'GET /api/ventas/catalogo']"
                 icon="pi pi-pencil"
                 severity="secondary"
                 [text]="true"
@@ -88,6 +94,7 @@
                 (onClick)="edit(detail)"
               />
               <p-button
+                *appHasPermission="'PATCH /api/detalle-ventas/:id/deactivate'"
                 icon="pi pi-ban"
                 severity="danger"
                 [text]="true"
@@ -97,6 +104,7 @@
             </div>
           }
           <p-button
+            *appHasPermission="'DELETE /api/detalle-ventas/:id'"
             icon="pi pi-trash"
             severity="danger"
             [text]="true"

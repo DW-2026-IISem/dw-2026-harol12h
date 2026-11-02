@@ -17,6 +17,7 @@ import { toApiMessage } from '../../../core/utils/api-error';
 import { filterRows } from '../../../core/utils/filter-rows';
 import { BranchApi } from '../branch-api';
 import { BranchForm } from '../branch-form/branch-form';
+import { HasPermission } from '../../../shared/directives/has-permission';
 
 @Component({
   selector: 'app-branch-list',
@@ -31,6 +32,7 @@ import { BranchForm } from '../branch-form/branch-form';
     TableModule,
     Tag,
     ToastModule,
+    HasPermission,
     BranchForm,
   ],
   providers: [ConfirmationService],

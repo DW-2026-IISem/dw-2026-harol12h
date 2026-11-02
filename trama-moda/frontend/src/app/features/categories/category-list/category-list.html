@@ -12,6 +12,7 @@
     </div>
 
     <p-button
+      *appHasPermission="'POST /api/categorias'"
       label="Nueva categoría"
       icon="pi pi-plus"
       (onClick)="openCreate()"
@@ -73,6 +74,7 @@
         <td>
           <div class="flex justify-end gap-2">
             <p-button
+              *appHasPermission="'PUT /api/categorias/:id'"
               icon="pi pi-pencil"
               severity="secondary"
               [text]="true"
@@ -80,6 +82,7 @@
               (onClick)="openEdit(category)"
             />
             <p-button
+              *appHasPermission="'PATCH /api/categorias/:id/deactivate'"
               icon="pi pi-ban"
               severity="danger"
               [text]="true"

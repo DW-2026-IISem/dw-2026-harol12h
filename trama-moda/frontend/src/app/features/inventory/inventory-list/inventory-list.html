@@ -20,6 +20,7 @@
         (onClick)="refresh()"
       />
       <p-button
+        *appHasPermission="'POST /api/inventarios'"
         label="Registrar inventario"
         icon="pi pi-plus"
         (onClick)="openCreate()"
@@ -127,6 +128,7 @@
         <td>
           <div class="flex justify-end gap-2">
             <p-button
+              *appHasPermission="'PUT /api/inventarios/:id'"
               icon="pi pi-pencil"
               severity="secondary"
               [text]="true"
@@ -134,6 +136,7 @@
               (onClick)="openEdit(inventory)"
             />
             <p-button
+              *appHasPermission="'DELETE /api/inventarios/:id'"
               icon="pi pi-ban"
               severity="danger"
               [text]="true"
