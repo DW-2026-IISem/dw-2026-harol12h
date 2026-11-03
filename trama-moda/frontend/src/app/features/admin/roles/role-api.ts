@@ -2,10 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import {
-  Role,
-  RolePayload,
-} from '../../../core/models/role.model';
+import { Role, RolePayload, RoleUpdatePayload } from '../../../core/models/role.model';
 
 @Service()
 export class RoleApi {
@@ -13,9 +10,7 @@ export class RoleApi {
   private readonly base = `${environment.apiUrl}/admin/roles`;
 
   list(): Observable<Role[]> {
-    return this.http
-      .get<{ roles: Role[] }>(this.base)
-      .pipe(map((response) => response.roles));
+    return this.http.get<{ roles: Role[] }>(this.base).pipe(map((response) => response.roles));
   }
 
   get(id: number): Observable<Role> {
@@ -30,7 +25,7 @@ export class RoleApi {
       .pipe(map((response) => response.role));
   }
 
-  update(id: number, payload: RolePayload): Observable<Role> {
+  update(id: number, payload: RoleUpdatePayload): Observable<Role> {
     return this.http
       .put<{ role: Role }>(`${this.base}/${id}`, payload)
       .pipe(map((response) => response.role));
@@ -44,7 +39,7 @@ export class RoleApi {
 
   replaceResources(id: number, resourceIds: number[]): Observable<unknown> {
     return this.http.put(`${this.base}/${id}/resources`, {
-      resource_ids: resourceIds,
+      resourceIds,
     });
   }
 }

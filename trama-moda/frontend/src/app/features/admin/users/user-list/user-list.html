@@ -1,0 +1,312 @@
+<p-toast />
+<p-confirmdialog />
+
+<p-card>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800">Cuentas de acceso</h1>
+      <p class="mt-1 text-sm text-slate-500">
+        Administra las cuentas de autenticación y sus roles de acceso.
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <p-button
+        label="Actualizar"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [outlined]="true"
+        [loading]="loading()"
+        (onClick)="loadAccounts()"
+      />
+      <p-button
+        *appHasPermission="'POST /api/admin/accounts'"
+        label="Nueva cuenta"
+        icon="pi pi-plus"
+        (onClick)="openCreate()"
+      />
+    </div>
+  </div>
+
+  @if (error()) {
+    <p-message class="mb-4 block" severity="error">{{ error() }}</p-message>
+  }
+  @if (rolesError()) {
+    <p-message class="mb-4 block" severity="warn">
+      No se pudieron cargar los roles activos: {{ rolesError() }}
+    </p-message>
+  }
+
+  <div class="mb-4 max-w-xl">
+    <label for="account-search" class="mb-1 block text-sm font-medium text-slate-700">
+      Buscar por username o email
+    </label>
+    <input
+      pInputText
+      id="account-search"
+      class="w-full"
+      [value]="search()"
+      (input)="setSearch($event)"
+      placeholder="Escribe un username o email"
+    />
+  </div>
+
+  <p-table
+    [value]="filteredAccounts()"
+    [loading]="loading()"
+    [tableStyle]="{ 'min-width': '58rem' }"
+    [rowHover]="true"
+    dataKey="id"
+    responsiveLayout="scroll"
+    emptyMessage="No hay cuentas que coincidan con la búsqueda."
+  >
+    <ng-template #header>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Roles activos</th>
+        <th>Estado</th>
+        <th class="w-56">Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-account>
+      <tr>
+        <td class="font-medium">{{ account.username }}</td>
+        <td>{{ account.email }}</td>
+        <td>
+          @if (activeRoleNames(account).length > 0) {
+            <div class="flex flex-wrap gap-1">
+              @for (name of activeRoleNames(account); track name) {
+                <p-tag [value]="name" severity="info" />
+              }
+            </div>
+          } @else {
+            <span class="text-sm text-slate-500">Sin roles activos</span>
+          }
+        </td>
+        <td>
+          <p-tag
+            [value]="account.status === 'active' ? 'Activa' : 'Inactiva'"
+            [severity]="account.status === 'active' ? 'success' : 'secondary'"
+          />
+        </td>
+        <td>
+          <div class="flex flex-wrap gap-1">
+            <p-button
+              *appHasPermission="'GET /api/admin/accounts/:id'"
+              icon="pi pi-eye"
+              severity="secondary"
+              [text]="true"
+              ariaLabel="Consultar cuenta"
+              (onClick)="viewAccount(account)"
+            />
+            <p-button
+              *appHasPermission="'PUT /api/admin/accounts/:id'"
+              icon="pi pi-pencil"
+              severity="secondary"
+              [text]="true"
+              ariaLabel="Editar username y email"
+              (onClick)="openEdit(account)"
+            />
+            <p-button
+              *appHasPermission="'PATCH /api/admin/accounts/:id/status'"
+              [icon]="account.status === 'active' ? 'pi pi-ban' : 'pi pi-check'"
+              [severity]="account.status === 'active' ? 'danger' : 'success'"
+              [text]="true"
+              [disabled]="!canChangeAccountStatus(account) || busyAccountId() === account.id"
+              [ariaLabel]="account.status === 'active' ? 'Desactivar cuenta' : 'Activar cuenta'"
+              [pTooltip]="isSelf(account) ? 'No puedes desactivar tu propia cuenta' : undefined"
+              (onClick)="toggleAccountStatus(account)"
+            />
+            <p-button
+              *appHasPermission="'PATCH /api/admin/accounts/:id/password'"
+              icon="pi pi-key"
+              severity="secondary"
+              [text]="true"
+              ariaLabel="Cambiar contraseña"
+              (onClick)="openPasswordDialog(account)"
+            />
+            <p-button
+              *appHasPermission="'POST /api/admin/accounts/:id/roles'"
+              icon="pi pi-user-plus"
+              severity="secondary"
+              [text]="true"
+              [disabled]="rolesLoading() || roles().length === 0"
+              ariaLabel="Asignar rol"
+              (onClick)="openAssignment(account)"
+            />
+          </div>
+          <div class="mt-1 flex flex-wrap gap-1">
+            @for (assignment of account.role_users ?? []; track assignment.id) {
+              @if (assignment.role; as role) {
+                @if (assignment.status === 'active') {
+                  <p-button
+                    *appHasPermission="'DELETE /api/admin/accounts/:id/roles/:roleId'"
+                    [label]="'Retirar ' + role.name"
+                    severity="danger"
+                    [text]="true"
+                    size="small"
+                    [disabled]="
+                      !canRevokeRole(account, role.name) || busyAccountId() === account.id
+                    "
+                    (onClick)="revokeRole(account, role.id, role.name)"
+                  />
+                }
+              }
+            }
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-dialog
+  [visible]="accountDialogVisible()"
+  (visibleChange)="!$event && closeAccountDialog()"
+  [header]="editingAccount() ? 'Editar cuenta' : 'Crear cuenta'"
+  [modal]="true"
+  [style]="{ width: 'min(36rem, calc(100vw - 2rem))' }"
+>
+  <app-user-form
+    [account]="editingAccount()"
+    [roles]="roles()"
+    [saving]="saving()"
+    (saved)="saveAccount($event)"
+    (cancelled)="closeAccountDialog()"
+  />
+</p-dialog>
+
+<p-dialog
+  [visible]="assignDialogVisible()"
+  (visibleChange)="assignDialogVisible.set($event)"
+  header="Asignar rol"
+  [modal]="true"
+  [style]="{ width: 'min(32rem, calc(100vw - 2rem))' }"
+>
+  <div class="space-y-4">
+    <p class="text-sm text-slate-600">
+      Cuenta: <strong>{{ assignTarget()?.username }}</strong>
+    </p>
+    <label for="assign-role" class="block text-sm font-medium text-slate-700"> Rol activo * </label>
+    <p-select
+      inputId="assign-role"
+      [options]="roles()"
+      optionLabel="name"
+      optionValue="id"
+      appendTo="body"
+      [overlayOptions]="selectOverlayOptions"
+      [fluid]="true"
+      [ngModel]="selectedRoleId()"
+      (ngModelChange)="selectedRoleId.set($event)"
+      [filter]="true"
+      [loading]="rolesLoading()"
+      [disabled]="rolesLoading() || roles().length === 0"
+      placeholder="Selecciona un rol"
+    />
+    @if (rolesLoading()) {
+      <p class="text-sm text-slate-500">Cargando roles activos...</p>
+    } @else if (rolesError()) {
+      <p-message severity="error">{{ rolesError() }}</p-message>
+    } @else if (roles().length === 0) {
+      <p-message severity="warn">No hay roles activos disponibles para asignar.</p-message>
+    }
+    @if (assignmentError()) {
+      <p-message severity="error">{{ assignmentError() }}</p-message>
+    }
+    <div class="flex justify-end gap-2">
+      <p-button
+        label="Cancelar"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="assignDialogVisible.set(false)"
+      />
+      <p-button
+        label="Asignar"
+        icon="pi pi-check"
+        [loading]="saving()"
+        [disabled]="saving() || selectedRoleId() === null"
+        (onClick)="assignRole()"
+      />
+    </div>
+  </div>
+</p-dialog>
+
+<p-dialog
+  [visible]="passwordDialogVisible()"
+  (visibleChange)="passwordDialogVisible.set($event)"
+  header="Cambiar contraseña"
+  [modal]="true"
+  [style]="{ width: 'min(32rem, calc(100vw - 2rem))' }"
+>
+  <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="space-y-4">
+    <p class="text-sm text-slate-600">
+      Cuenta: <strong>{{ passwordTarget()?.username }}</strong>
+    </p>
+    <div>
+      <label for="new-account-password" class="mb-1 block text-sm font-medium text-slate-700">
+        Nueva contraseña *
+      </label>
+      <input
+        pInputText
+        id="new-account-password"
+        type="password"
+        formControlName="password"
+        autocomplete="new-password"
+        class="w-full"
+      />
+      @if (passwordForm.controls.password.invalid && passwordForm.controls.password.touched) {
+        <p-message severity="error" size="small" variant="simple">
+          La contraseña debe tener al menos 12 caracteres.
+        </p-message>
+      }
+    </div>
+    <div class="flex justify-end gap-2">
+      <p-button
+        type="button"
+        label="Cancelar"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="passwordDialogVisible.set(false)"
+      />
+      <p-button
+        type="submit"
+        label="Actualizar contraseña"
+        icon="pi pi-check"
+        [loading]="saving()"
+      />
+    </div>
+  </form>
+</p-dialog>
+
+<p-dialog
+  [visible]="detailDialogVisible()"
+  (visibleChange)="detailDialogVisible.set($event)"
+  header="Información de la cuenta"
+  [modal]="true"
+  [style]="{ width: 'min(36rem, calc(100vw - 2rem))' }"
+>
+  @if (detailLoading()) {
+    <p class="text-slate-500">Consultando la cuenta...</p>
+  } @else if (selectedDetail(); as detail) {
+    <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div>
+        <dt class="text-sm text-slate-500">Username</dt>
+        <dd class="font-medium">{{ detail.username }}</dd>
+      </div>
+      <div>
+        <dt class="text-sm text-slate-500">Email</dt>
+        <dd class="font-medium">{{ detail.email }}</dd>
+      </div>
+      <div>
+        <dt class="text-sm text-slate-500">Estado</dt>
+        <dd>{{ detail.status === 'active' ? 'Activa' : 'Inactiva' }}</dd>
+      </div>
+      <div>
+        <dt class="text-sm text-slate-500">Creada</dt>
+        <dd>{{ detail.createdAt ?? 'No disponible' }}</dd>
+      </div>
+    </dl>
+  } @else {
+    <p class="text-slate-500">No fue posible consultar la cuenta.</p>
+  }
+</p-dialog>

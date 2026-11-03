@@ -2,25 +2,51 @@ import { HttpClient } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import {
-  RoleUser,
-  RoleUserPayload,
-} from '../../../core/models/role-user.model';
+import { Status } from '../../../core/models/api.model';
+import { RoleUser } from '../../../core/models/role-user.model';
+
+export interface RoleUserAssignment {
+  id: number;
+  userId: number;
+  roleId: number;
+  status: Status;
+}
+
+export interface RoleUserListItem extends RoleUser {
+  user?: {
+    id: number;
+    username: string;
+    email: string;
+    status: Status;
+  };
+  role?: {
+    id: number;
+    name: string;
+    status: Status;
+  };
+}
+
+export interface CreateRoleUserPayload {
+  userId: number;
+  roleId: number;
+}
 
 @Service()
 export class RoleUserApi {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/admin/role-users`;
 
-  list(): Observable<RoleUser[]> {
+  list(userId?: number): Observable<RoleUserListItem[]> {
     return this.http
-      .get<{ roleUsers: RoleUser[] }>(this.base)
-      .pipe(map((response) => response.roleUsers));
+      .get<{ assignments: RoleUserListItem[] }>(this.base, {
+        params: userId !== undefined ? { userId } : {},
+      })
+      .pipe(map((response) => response.assignments));
   }
 
-  create(payload: RoleUserPayload): Observable<RoleUser> {
+  create(payload: CreateRoleUserPayload): Observable<RoleUserAssignment> {
     return this.http
-      .post<{ roleUser: RoleUser }>(this.base, payload)
-      .pipe(map((response) => response.roleUser));
+      .post<{ assignment: RoleUserAssignment }>(this.base, payload)
+      .pipe(map((response) => response.assignment));
   }
 }

@@ -1,0 +1,105 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+  <div>
+    <label for="account-username" class="mb-1 block text-sm font-medium text-slate-700">
+      Username *
+    </label>
+    <input
+      pInputText
+      id="account-username"
+      formControlName="username"
+      autocomplete="username"
+      class="w-full"
+      [invalid]="form.controls.username.invalid && form.controls.username.touched"
+    />
+    @if (form.controls.username.invalid && form.controls.username.touched) {
+      <p-message severity="error" size="small" variant="simple">
+        El username es obligatorio y debe tener entre 3 y 80 caracteres.
+      </p-message>
+    }
+  </div>
+
+  <div>
+    <label for="account-email" class="mb-1 block text-sm font-medium text-slate-700">
+      Email *
+    </label>
+    <input
+      pInputText
+      id="account-email"
+      type="email"
+      formControlName="email"
+      autocomplete="email"
+      class="w-full"
+      [invalid]="form.controls.email.invalid && form.controls.email.touched"
+    />
+    @if (form.controls.email.invalid && form.controls.email.touched) {
+      <p-message severity="error" size="small" variant="simple">
+        Ingresa un email válido de máximo 150 caracteres.
+      </p-message>
+    }
+  </div>
+
+  @if (!account()) {
+    <div>
+      <label for="account-password" class="mb-1 block text-sm font-medium text-slate-700">
+        Contraseña inicial *
+      </label>
+      <input
+        pInputText
+        id="account-password"
+        type="password"
+        formControlName="password"
+        autocomplete="new-password"
+        class="w-full"
+        [invalid]="form.controls.password.invalid && form.controls.password.touched"
+      />
+      @if (form.controls.password.invalid && form.controls.password.touched) {
+        <p-message severity="error" size="small" variant="simple">
+          La contraseña debe tener al menos 12 caracteres.
+        </p-message>
+      }
+    </div>
+
+    <div>
+      <label for="account-role" class="mb-1 block text-sm font-medium text-slate-700">
+        Rol inicial *
+      </label>
+      <p-select
+        inputId="account-role"
+        formControlName="role"
+        [options]="roles()"
+        optionLabel="name"
+        optionValue="name"
+        appendTo="body"
+        [overlayOptions]="selectOverlayOptions"
+        [fluid]="true"
+        placeholder="Selecciona un rol activo"
+        [invalid]="form.controls.role.invalid && form.controls.role.touched"
+      />
+      @if (form.controls.role.invalid && form.controls.role.touched) {
+        <p-message severity="error" size="small" variant="simple">
+          Selecciona un rol activo.
+        </p-message>
+      }
+      @if (roles().length === 0) {
+        <p class="mt-1 text-sm text-amber-700">No hay roles activos disponibles.</p>
+      }
+    </div>
+  }
+
+  <div class="flex justify-end gap-2 pt-2">
+    <p-button
+      type="button"
+      label="Cancelar"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="cancelled.emit()"
+    />
+    <p-button
+      type="submit"
+      [label]="account() ? 'Guardar cambios' : 'Crear cuenta'"
+      icon="pi pi-check"
+      [loading]="saving()"
+      [disabled]="saving() || (!account() && roles().length === 0)"
+    />
+  </div>
+</form>

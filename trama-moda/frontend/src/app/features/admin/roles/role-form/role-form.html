@@ -1,0 +1,54 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+  <div>
+    <label for="role-name" class="mb-1 block text-sm font-medium text-slate-700">
+      Nombre del rol *
+    </label>
+    <input
+      pInputText
+      id="role-name"
+      formControlName="name"
+      class="w-full uppercase"
+      autocomplete="off"
+      [invalid]="form.controls.name.invalid && form.controls.name.touched"
+    />
+    @if (form.controls.name.invalid && form.controls.name.touched) {
+      <p-message severity="error" size="small" variant="simple">
+        Usa entre 2 y 80 letras, números o guiones bajos; debe iniciar con una letra.
+      </p-message>
+    }
+    @if (role()) {
+      <p class="mt-1 text-xs text-slate-500">
+        El nombre es inmutable en la actualización; solo se puede modificar la descripción.
+      </p>
+    }
+  </div>
+
+  <div>
+    <label for="role-description" class="mb-1 block text-sm font-medium text-slate-700">
+      Descripción
+    </label>
+    <textarea
+      pTextarea
+      id="role-description"
+      formControlName="description"
+      rows="4"
+      class="w-full"
+    ></textarea>
+  </div>
+
+  <div class="flex justify-end gap-2 pt-2">
+    <p-button
+      type="button"
+      label="Cancelar"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="cancelled.emit()"
+    />
+    <p-button
+      type="submit"
+      [label]="role() ? 'Guardar descripción' : 'Crear rol'"
+      icon="pi pi-check"
+      [loading]="saving()"
+    />
+  </div>
+</form>

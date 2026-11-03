@@ -26,6 +26,11 @@ import { CollectionList } from '../../features/collections/collection-list/colle
 import { VariantList } from '../../features/variants/variant-list/variant-list';
 import { InventoryList } from '../../features/inventory/inventory-list/inventory-list';
 import { Profile } from '../../features/auth/profile/profile';
+import { UserList } from '../../features/admin/users/user-list/user-list';
+import { RoleList } from '../../features/admin/roles/role-list/role-list';
+import { ResourceList } from '../../features/admin/resources/resource-list/resource-list';
+import { RoleUserList } from '../../features/admin/role-users/role-user-list/role-user-list';
+import { ResourceRoleList } from '../../features/admin/resource-roles/resource-role-list/resource-role-list';
 import { Auth } from '../../core/services/auth';
 import { SessionStore } from '../../core/services/session-store';
 import { NotificationService } from '../../core/services/notification';
@@ -54,6 +59,11 @@ import { NAV_CONFIG, NavItemConfig } from './nav.config';
     VariantList,
     InventoryList,
     Profile,
+    UserList,
+    RoleList,
+    ResourceList,
+    RoleUserList,
+    ResourceRoleList,
   ],
   templateUrl: './shell.html',
   styleUrl: './shell.css',
@@ -270,10 +280,21 @@ export class Shell {
       this.title.set('Clientes');
     } else if (path === '/categorias') {
       this.title.set('Categorías');
+    } else if (path === '/admin/usuarios') {
+      this.title.set('Usuarios');
+    } else if (path === '/admin/roles') {
+      this.title.set('Roles');
+    } else if (path === '/admin/usuarios-roles') {
+      this.title.set('Usuarios por rol');
+    } else if (path === '/admin/recursos') {
+      this.title.set('Recursos');
+    } else if (path === '/admin/roles-recursos') {
+      this.title.set('Roles por recurso');
     } else if (path === '/productos') {
       this.title.set('Productos');
     }
   }
+
 
   onMenuToggle(): void {
     if (this.isDesktop()) {
@@ -283,6 +304,7 @@ export class Shell {
 
     this.mobileOpen.set(true);
   }
+
 
   onLogout(): void {
     this.auth.logout().subscribe((revoked) => {

@@ -125,37 +125,42 @@ export const NAV_CONFIG: NavGroupConfig[] = [
     label: 'Administración',
     icon: 'pi pi-cog',
     authOnly: true,
-    items: [
+        items: [
       {
         label: 'Usuarios',
         icon: 'pi pi-user',
         title: 'Usuarios',
+        route: '/admin/usuarios',
         permission: 'GET /api/admin/accounts',
       },
       {
         label: 'Roles',
         icon: 'pi pi-shield',
         title: 'Roles',
+        route: '/admin/roles',
         permission: 'GET /api/admin/roles',
       },
       {
         label: 'Usuarios por rol',
         icon: 'pi pi-users',
         title: 'Usuarios por rol',
+        route: '/admin/usuarios-roles',
         permission: 'GET /api/admin/role-users',
       },
       {
         label: 'Recursos',
         icon: 'pi pi-sitemap',
         title: 'Recursos',
+        route: '/admin/recursos',
         permission: 'GET /api/admin/resources',
       },
       {
         label: 'Roles por recurso',
         icon: 'pi pi-lock',
         title: 'Roles por recurso',
+        route: '/admin/roles-recursos',
         permission: 'GET /api/admin/resource-roles',
       },
     ],
-  },
+  }
 ];

@@ -15,5 +15,4 @@ export interface ResourcePayload {
   method: HttpMethod;
   path: string;
   description?: string | null;
-  status?: Status;
 }

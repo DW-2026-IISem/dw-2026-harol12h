@@ -1,0 +1,201 @@
+<p-toast />
+<p-confirmdialog />
+
+<p-card>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800">Concesiones rol-recurso</h1>
+      <p class="mt-1 text-sm text-slate-500">
+        Administra capacidades HTTP permitidas para cada rol.
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <p-button
+        label="Actualizar"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [outlined]="true"
+        [loading]="loading()"
+        (onClick)="loadGrants()"
+      />
+      <p-button
+        *appHasPermission="[
+          'GET /api/admin/roles',
+          'GET /api/admin/resources',
+          'POST /api/admin/resource-roles',
+        ]"
+        label="Nueva concesión"
+        icon="pi pi-plus"
+        [disabled]="
+          rolesLoading() ||
+          resourcesLoading() ||
+          roleOptions().length === 0 ||
+          resourceOptions().length === 0
+        "
+        (onClick)="openCreate()"
+      />
+    </div>
+  </div>
+
+  @if (error()) {
+    <p-message class="mb-4 block" severity="error">{{ error() }}</p-message>
+  }
+  @if (rolesError()) {
+    <p-message class="mb-4 block" severity="warn">
+      No se pudieron cargar roles activos: {{ rolesError() }}
+    </p-message>
+  }
+  @if (resourcesError()) {
+    <p-message class="mb-4 block" severity="warn">
+      No se pudieron cargar recursos activos: {{ resourcesError() }}
+    </p-message>
+  }
+
+  <div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div>
+      <label for="grant-role-filter" class="mb-1 block text-sm font-medium text-slate-700">
+        Filtrar por rol
+      </label>
+      <p-select
+        inputId="grant-role-filter"
+        [options]="roleFilterOptions()"
+        optionLabel="label"
+        optionValue="id"
+        [ngModel]="roleFilterId()"
+        (ngModelChange)="roleFilterId.set($event)"
+        [filter]="true"
+        [showClear]="true"
+        [fluid]="true"
+        placeholder="Todos los roles"
+      />
+    </div>
+    <div>
+      <label for="grant-search" class="mb-1 block text-sm font-medium text-slate-700">
+        Buscar por método o ruta
+      </label>
+      <input
+        pInputText
+        id="grant-search"
+        class="w-full"
+        [value]="search()"
+        (input)="setSearch($event)"
+        placeholder="GET /api/..."
+      />
+    </div>
+  </div>
+
+  <p-table
+    [value]="filteredGrants()"
+    [loading]="loading()"
+    [tableStyle]="{ 'min-width': '56rem' }"
+    [rowHover]="true"
+    dataKey="id"
+    responsiveLayout="scroll"
+    emptyMessage="No hay concesiones para los filtros seleccionados."
+  >
+    <ng-template #header>
+      <tr>
+        <th>Rol</th>
+        <th>Método</th>
+        <th>Ruta</th>
+        <th>Estado de concesión</th>
+        <th>Estado del recurso</th>
+        <th class="w-36">Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-grant>
+      <tr>
+        <td class="font-medium">{{ grant.role?.name ?? 'Rol no disponible' }}</td>
+        <td>
+          <p-tag
+            [value]="grant.resource?.method ?? '—'"
+            [severity]="methodSeverity(grant.resource?.method)"
+          />
+        </td>
+        <td class="font-mono text-sm">{{ grant.resource?.path ?? 'Recurso no disponible' }}</td>
+        <td>
+          <p-tag
+            [value]="grant.status === 'active' ? 'Activa' : 'Inactiva'"
+            [severity]="grant.status === 'active' ? 'success' : 'secondary'"
+          />
+        </td>
+        <td>
+          <p-tag
+            [value]="grant.resource?.status === 'active' ? 'Activo' : 'Inactivo'"
+            [severity]="grant.resource?.status === 'active' ? 'info' : 'secondary'"
+          />
+        </td>
+        <td>
+          <p-button
+            *appHasPermission="'PATCH /api/admin/resource-roles/:id/status'"
+            [label]="grant.status === 'active' ? 'Desactivar' : 'Activar'"
+            [icon]="grant.status === 'active' ? 'pi pi-ban' : 'pi pi-check'"
+            [severity]="grant.status === 'active' ? 'danger' : 'success'"
+            [outlined]="true"
+            size="small"
+            [disabled]="!canToggleStatus(grant) || busyGrantId() === grant.id"
+            (onClick)="toggleStatus(grant)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-dialog
+  [visible]="dialogVisible()"
+  (visibleChange)="dialogVisible.set($event)"
+  header="Crear concesión rol-recurso"
+  [modal]="true"
+  [style]="{ width: 'min(38rem, calc(100vw - 2rem))' }"
+>
+  <div class="space-y-4">
+    <div>
+      <label for="grant-role" class="mb-1 block text-sm font-medium text-slate-700">
+        Rol activo *
+      </label>
+      <p-select
+        inputId="grant-role"
+        [options]="roleOptions()"
+        optionLabel="label"
+        optionValue="id"
+        [ngModel]="selectedRoleId()"
+        (ngModelChange)="selectedRoleId.set($event)"
+        [filter]="true"
+        [fluid]="true"
+        placeholder="Selecciona un rol"
+      />
+    </div>
+    <div>
+      <label for="grant-resource" class="mb-1 block text-sm font-medium text-slate-700">
+        Recurso activo *
+      </label>
+      <p-select
+        inputId="grant-resource"
+        [options]="resourceOptions()"
+        optionLabel="label"
+        optionValue="id"
+        [ngModel]="selectedResourceId()"
+        (ngModelChange)="selectedResourceId.set($event)"
+        [filter]="true"
+        [fluid]="true"
+        placeholder="Selecciona una capacidad HTTP"
+      />
+    </div>
+    <div class="flex justify-end gap-2">
+      <p-button
+        label="Cancelar"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="dialogVisible.set(false)"
+      />
+      <p-button
+        label="Guardar concesión"
+        icon="pi pi-check"
+        [loading]="saving()"
+        [disabled]="saving() || selectedRoleId() === null || selectedResourceId() === null"
+        (onClick)="createGrant()"
+      />
+    </div>
+  </div>
+</p-dialog>

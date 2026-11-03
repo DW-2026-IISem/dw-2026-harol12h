@@ -1,0 +1,66 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+  <div>
+    <label for="resource-method" class="mb-1 block text-sm font-medium text-slate-700">
+      Método HTTP *
+    </label>
+    <p-select
+      inputId="resource-method"
+      formControlName="method"
+      [options]="methods"
+      [fluid]="true"
+      placeholder="Selecciona un método"
+    />
+  </div>
+
+  <div>
+    <label for="resource-path" class="mb-1 block text-sm font-medium text-slate-700">
+      Ruta *
+    </label>
+    <input
+      pInputText
+      id="resource-path"
+      formControlName="path"
+      class="w-full font-mono"
+      placeholder="/api/productos/:id"
+      [invalid]="form.controls.path.invalid && form.controls.path.touched"
+    />
+    @if (form.controls.path.invalid && form.controls.path.touched) {
+      <p-message severity="error" size="small" variant="simple">
+        La ruta debe iniciar con / y usar segmentos válidos; los parámetros deben tener forma :id.
+      </p-message>
+    }
+  </div>
+
+  <div>
+    <label for="resource-description" class="mb-1 block text-sm font-medium text-slate-700">
+      Descripción
+    </label>
+    <textarea
+      pTextarea
+      id="resource-description"
+      formControlName="description"
+      rows="4"
+      class="w-full"
+    ></textarea>
+  </div>
+
+  @if (duplicateError()) {
+    <p-message severity="error">{{ duplicateError() }}</p-message>
+  }
+
+  <div class="flex justify-end gap-2 pt-2">
+    <p-button
+      type="button"
+      label="Cancelar"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="cancelled.emit()"
+    />
+    <p-button
+      type="submit"
+      [label]="resource() ? 'Guardar cambios' : 'Crear recurso'"
+      icon="pi pi-check"
+      [loading]="saving()"
+    />
+  </div>
+</form>

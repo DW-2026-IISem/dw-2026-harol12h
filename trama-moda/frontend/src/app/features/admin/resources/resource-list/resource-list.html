@@ -1,0 +1,147 @@
+<p-toast />
+<p-confirmdialog />
+
+<p-card>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800">Recursos HTTP</h1>
+      <p class="mt-1 text-sm text-slate-500">
+        Cada combinación de método y ruta representa una capacidad protegida.
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <p-button
+        label="Actualizar"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [outlined]="true"
+        [loading]="loading()"
+        (onClick)="load()"
+      />
+      <p-button
+        *appHasPermission="'POST /api/admin/resources'"
+        label="Nuevo recurso"
+        icon="pi pi-plus"
+        (onClick)="openCreate()"
+      />
+    </div>
+  </div>
+
+  @if (error()) {
+    <p-message class="mb-4 block" severity="error">{{ error() }}</p-message>
+  }
+
+  <div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div>
+      <label for="resource-search" class="mb-1 block text-sm font-medium text-slate-700">
+        Buscar por ruta o descripción
+      </label>
+      <input
+        pInputText
+        id="resource-search"
+        class="w-full"
+        [value]="search()"
+        (input)="setSearch($event)"
+        placeholder="/api/..."
+      />
+    </div>
+    <div>
+      <label for="resource-method-filter" class="mb-1 block text-sm font-medium text-slate-700">
+        Método HTTP
+      </label>
+      <p-select
+        inputId="resource-method-filter"
+        [options]="methods"
+        [ngModel]="methodFilter()"
+        (ngModelChange)="methodFilter.set($event)"
+        [fluid]="true"
+        placeholder="Todos los métodos"
+      >
+        <ng-template #item let-method>
+          {{ method === 'ALL' ? 'Todos los métodos' : method }}
+        </ng-template>
+        <ng-template #selectedItem let-method>
+          {{ method === 'ALL' ? 'Todos los métodos' : method }}
+        </ng-template>
+      </p-select>
+    </div>
+  </div>
+
+  <div class="mb-4 flex flex-wrap gap-2">
+    @for (method of httpMethods; track method) {
+      <p-tag [value]="method + ': ' + methodCounts()[method]" [severity]="methodSeverity(method)" />
+    }
+  </div>
+
+  <p-table
+    [value]="filteredResources()"
+    [loading]="loading()"
+    [tableStyle]="{ 'min-width': '52rem' }"
+    [rowHover]="true"
+    dataKey="id"
+    responsiveLayout="scroll"
+    emptyMessage="No hay recursos que coincidan con los filtros."
+  >
+    <ng-template #header>
+      <tr>
+        <th>Método</th>
+        <th>Ruta</th>
+        <th>Descripción</th>
+        <th>Estado</th>
+        <th class="w-32">Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-resource>
+      <tr>
+        <td>
+          <p-tag [value]="resource.method" [severity]="methodSeverity(resource.method)" />
+        </td>
+        <td class="font-mono text-sm">{{ resource.path }}</td>
+        <td>{{ resource.description || 'Sin descripción' }}</td>
+        <td>
+          <p-tag
+            [value]="resource.status === 'active' ? 'Activo' : 'Inactivo'"
+            [severity]="resource.status === 'active' ? 'success' : 'secondary'"
+          />
+        </td>
+        <td>
+          <div class="flex gap-1">
+            <p-button
+              *appHasPermission="'PUT /api/admin/resources/:id'"
+              icon="pi pi-pencil"
+              severity="secondary"
+              [text]="true"
+              ariaLabel="Editar recurso"
+              (onClick)="openEdit(resource)"
+            />
+            <p-button
+              *appHasPermission="'PATCH /api/admin/resources/:id/status'"
+              [icon]="resource.status === 'active' ? 'pi pi-ban' : 'pi pi-check'"
+              [severity]="resource.status === 'active' ? 'danger' : 'success'"
+              [text]="true"
+              [disabled]="busyResourceId() === resource.id"
+              [ariaLabel]="resource.status === 'active' ? 'Desactivar recurso' : 'Activar recurso'"
+              (onClick)="toggleStatus(resource)"
+            />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-dialog
+  [visible]="dialogVisible()"
+  (visibleChange)="!$event && closeDialog()"
+  [header]="editingResource() ? 'Editar recurso HTTP' : 'Crear recurso HTTP'"
+  [modal]="true"
+  [style]="{ width: 'min(38rem, calc(100vw - 2rem))' }"
+>
+  <app-resource-form
+    [resource]="editingResource()"
+    [resources]="resources()"
+    [saving]="saving()"
+    (saved)="saveResource($event)"
+    (cancelled)="closeDialog()"
+  />
+</p-dialog>

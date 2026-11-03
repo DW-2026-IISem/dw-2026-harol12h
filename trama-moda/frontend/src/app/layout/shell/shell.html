@@ -51,6 +51,16 @@
         <app-sale-detail-list />
       } @else if (title() === 'Inicio') {
         <app-dashboard />
+      } @else if (title() === 'Usuarios') {
+        <app-user-list />
+      } @else if (title() === 'Roles') {
+        <app-role-list />
+      } @else if (title() === 'Recursos') {
+        <app-resource-list />
+      } @else if (title() === 'Usuarios por rol') {
+        <app-role-user-list />
+      } @else if (title() === 'Roles por recurso') {
+        <app-resource-role-list />
       } @else {
         <p-card>
           <h1 class="text-2xl font-semibold text-slate-900">

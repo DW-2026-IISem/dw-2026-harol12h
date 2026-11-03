@@ -1,0 +1,193 @@
+<p-toast />
+<p-confirmdialog />
+
+<p-card>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800">Roles</h1>
+      <p class="mt-1 text-sm text-slate-500">
+        Administra roles activos, sus descripciones y recursos autorizados.
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <p-button
+        label="Actualizar"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [outlined]="true"
+        [loading]="loading()"
+        (onClick)="load()"
+      />
+      <p-button
+        *appHasPermission="'POST /api/admin/roles'"
+        label="Nuevo rol"
+        icon="pi pi-plus"
+        (onClick)="openCreate()"
+      />
+    </div>
+  </div>
+
+  @if (error()) {
+    <p-message class="mb-4 block" severity="error">{{ error() }}</p-message>
+  }
+  @if (assignmentError()) {
+    <p-message class="mb-4 block" severity="warn">
+      No se pudieron consultar las asignaciones; por seguridad no se permite desactivar roles.
+      {{ assignmentError() }}
+    </p-message>
+  } @else if (!assignmentDataLoaded()) {
+    <p-message class="mb-4 block" severity="info">
+      Para desactivar un rol es necesario consultar las asignaciones activas.
+    </p-message>
+  }
+
+  <div class="mb-4 max-w-xl">
+    <label for="role-search" class="mb-1 block text-sm font-medium text-slate-700">
+      Buscar rol
+    </label>
+    <input
+      pInputText
+      id="role-search"
+      class="w-full"
+      [value]="search()"
+      (input)="setSearch($event)"
+      placeholder="Nombre o descripción"
+    />
+  </div>
+
+  <p-table
+    [value]="filteredRoles()"
+    [loading]="loading()"
+    [tableStyle]="{ 'min-width': '48rem' }"
+    [rowHover]="true"
+    dataKey="id"
+    responsiveLayout="scroll"
+    emptyMessage="No hay roles que coincidan con la búsqueda."
+  >
+    <ng-template #header>
+      <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Estado</th>
+        <th>Asignaciones activas</th>
+        <th class="w-48">Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-role>
+      <tr>
+        <td class="font-semibold">{{ role.name }}</td>
+        <td>{{ role.description || 'Sin descripción' }}</td>
+        <td>
+          <p-tag
+            [value]="role.status === 'active' ? 'Activo' : 'Inactivo'"
+            [severity]="role.status === 'active' ? 'success' : 'secondary'"
+          />
+        </td>
+        <td>{{ activeAssignmentCount(role) }}</td>
+        <td>
+          <div class="flex flex-wrap gap-1">
+            <p-button
+              *appHasPermission="'PUT /api/admin/roles/:id'"
+              icon="pi pi-pencil"
+              severity="secondary"
+              [text]="true"
+              ariaLabel="Editar descripción"
+              (onClick)="openEdit(role)"
+            />
+            <p-button
+              *appHasPermission="[
+                'GET /api/admin/resources',
+                'GET /api/admin/resource-roles',
+                'PUT /api/admin/roles/:id/resources',
+              ]"
+              icon="pi pi-sitemap"
+              severity="secondary"
+              [text]="true"
+              [disabled]="role.status !== 'active'"
+              ariaLabel="Administrar recursos del rol"
+              pTooltip="Asignar o retirar recursos del rol"
+              (onClick)="openResources(role)"
+            />
+            <p-button
+              *appHasPermission="'PATCH /api/admin/roles/:id/status'"
+              [icon]="role.status === 'active' ? 'pi pi-ban' : 'pi pi-check'"
+              [severity]="role.status === 'active' ? 'danger' : 'success'"
+              [text]="true"
+              [disabled]="!canChangeStatus(role) || busyRoleId() === role.id"
+              [ariaLabel]="role.status === 'active' ? 'Desactivar rol' : 'Activar rol'"
+              (onClick)="toggleStatus(role)"
+            />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-dialog
+  [visible]="roleDialogVisible()"
+  (visibleChange)="!$event && closeRoleDialog()"
+  [header]="editingRole() ? 'Editar rol' : 'Crear rol'"
+  [modal]="true"
+  [style]="{ width: 'min(36rem, calc(100vw - 2rem))' }"
+>
+  <app-role-form
+    [role]="editingRole()"
+    [saving]="saving()"
+    (saved)="saveRole($event)"
+    (cancelled)="closeRoleDialog()"
+  />
+</p-dialog>
+
+<p-dialog
+  [visible]="resourcesDialogVisible()"
+  (visibleChange)="resourcesDialogVisible.set($event)"
+  [header]="'Recursos del rol ' + (selectedRoleForResources()?.name ?? '')"
+  [modal]="true"
+  [style]="{ width: 'min(48rem, calc(100vw - 2rem))' }"
+>
+  @if (resourcesError()) {
+    <p-message class="mb-3 block" severity="error">{{ resourcesError() }}</p-message>
+  }
+  @if (resourcesLoading()) {
+    <p class="text-slate-500">Cargando recursos y concesiones...</p>
+  } @else if (!resourcesLoaded()) {
+    <p class="text-slate-600">
+      No se pudieron cargar las concesiones actuales; inténtalo de nuevo antes de guardar.
+    </p>
+  } @else {
+    <label for="role-resources" class="mb-2 block text-sm font-medium text-slate-700">
+      Recursos activos
+    </label>
+    <p-multiselect
+      inputId="role-resources"
+      [options]="resourceOptions()"
+      optionLabel="label"
+      optionValue="id"
+      [ngModel]="selectedResourceIds()"
+      (ngModelChange)="selectedResourceIds.set($event)"
+      [filter]="true"
+      scrollHeight="360px"
+      [fluid]="true"
+      display="chip"
+      placeholder="Selecciona las capacidades permitidas"
+      appendTo="body"
+      [overlayOptions]="resourceOverlayOptions"
+    />
+    <div class="mt-4 flex justify-end gap-2">
+      <p-button
+        label="Cancelar"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="resourcesDialogVisible.set(false)"
+      />
+      <p-button
+        label="Guardar recursos"
+        icon="pi pi-check"
+        [loading]="resourcesSaving()"
+        [disabled]="resourcesSaving()"
+        (onClick)="saveResources()"
+      />
+    </div>
+  }
+</p-dialog>

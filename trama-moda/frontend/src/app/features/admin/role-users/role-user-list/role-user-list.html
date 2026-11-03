@@ -1,0 +1,204 @@
+<p-toast />
+<p-confirmdialog />
+
+<p-card>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800">Asignaciones usuario-rol</h1>
+      <p class="mt-1 text-sm text-slate-500">
+        Consulta, asigna o retira roles de cuentas de autenticación.
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <p-button
+        label="Actualizar"
+        icon="pi pi-refresh"
+        severity="secondary"
+        [outlined]="true"
+        [loading]="loading()"
+        (onClick)="loadAssignments()"
+      />
+      <p-button
+        *appHasPermission="[
+          'GET /api/admin/accounts',
+          'GET /api/admin/roles',
+          'POST /api/admin/role-users',
+        ]"
+        label="Asignar rol"
+        icon="pi pi-plus"
+        [disabled]="
+          accountsLoading() ||
+          rolesLoading() ||
+          accountOptions().length === 0 ||
+          roleOptions().length === 0
+        "
+        (onClick)="openCreate()"
+      />
+    </div>
+  </div>
+
+  @if (error()) {
+    <p-message class="mb-4 block" severity="error">{{ error() }}</p-message>
+  }
+  @if (accountsError()) {
+    <p-message class="mb-4 block" severity="warn">
+      No se pudieron cargar cuentas para asignar: {{ accountsError() }}
+    </p-message>
+  }
+  @if (rolesError()) {
+    <p-message class="mb-4 block" severity="warn">
+      No se pudieron cargar roles activos: {{ rolesError() }}
+    </p-message>
+  }
+
+  <div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div>
+      <label for="assignment-user-filter" class="mb-1 block text-sm font-medium text-slate-700">
+        Filtrar por cuenta
+      </label>
+      <p-select
+        inputId="assignment-user-filter"
+        [options]="filterAccountOptions()"
+        optionLabel="label"
+        optionValue="id"
+        [ngModel]="filterUserId()"
+        (ngModelChange)="filterUserId.set($event)"
+        [filter]="true"
+        [showClear]="true"
+        [fluid]="true"
+        placeholder="Todas las cuentas"
+      />
+    </div>
+    <div>
+      <label for="assignment-role-filter" class="mb-1 block text-sm font-medium text-slate-700">
+        Filtrar por rol
+      </label>
+      <p-select
+        inputId="assignment-role-filter"
+        [options]="filterRoleOptions()"
+        optionLabel="label"
+        optionValue="id"
+        [ngModel]="filterRoleId()"
+        (ngModelChange)="filterRoleId.set($event)"
+        [filter]="true"
+        [showClear]="true"
+        [fluid]="true"
+        placeholder="Todos los roles"
+      />
+    </div>
+  </div>
+
+  <p-table
+    [value]="filteredAssignments()"
+    [loading]="loading()"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    [rowHover]="true"
+    dataKey="id"
+    responsiveLayout="scroll"
+    emptyMessage="No hay asignaciones para los filtros seleccionados."
+  >
+    <ng-template #header>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Rol</th>
+        <th>Estado de asignación</th>
+        <th>Estado de cuenta</th>
+        <th class="w-32">Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-assignment>
+      <tr>
+        <td class="font-medium">{{ assignment.user?.username ?? 'Cuenta no disponible' }}</td>
+        <td>{{ assignment.user?.email ?? '—' }}</td>
+        <td>{{ assignment.role?.name ?? 'Rol no disponible' }}</td>
+        <td>
+          <p-tag
+            [value]="statusLabel(assignment.status)"
+            [severity]="assignment.status === 'active' ? 'success' : 'secondary'"
+          />
+        </td>
+        <td>
+          <p-tag
+            [value]="assignment.user?.status === 'active' ? 'Activa' : 'Inactiva'"
+            [severity]="assignment.user?.status === 'active' ? 'info' : 'secondary'"
+          />
+        </td>
+        <td>
+          <p-button
+            *appHasPermission="'DELETE /api/admin/accounts/:id/roles/:roleId'"
+            label="Retirar"
+            icon="pi pi-minus"
+            severity="danger"
+            [outlined]="true"
+            size="small"
+            [disabled]="
+              assignment.status !== 'active' ||
+              !canRevoke(assignment) ||
+              busyAssignmentId() === assignment.id
+            "
+            (onClick)="revoke(assignment)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-dialog
+  [visible]="dialogVisible()"
+  (visibleChange)="dialogVisible.set($event)"
+  header="Asignar rol a cuenta"
+  [modal]="true"
+  [style]="{ width: 'min(38rem, calc(100vw - 2rem))' }"
+>
+  <div class="space-y-4">
+    <div>
+      <label for="assignment-user" class="mb-1 block text-sm font-medium text-slate-700">
+        Cuenta activa *
+      </label>
+      <p-select
+        inputId="assignment-user"
+        [options]="accountOptions()"
+        optionLabel="label"
+        optionValue="id"
+        [ngModel]="selectedUserId()"
+        (ngModelChange)="selectedUserId.set($event)"
+        [filter]="true"
+        [fluid]="true"
+        placeholder="Selecciona una cuenta"
+      />
+    </div>
+    <div>
+      <label for="assignment-role" class="mb-1 block text-sm font-medium text-slate-700">
+        Rol activo *
+      </label>
+      <p-select
+        inputId="assignment-role"
+        [options]="roleOptions()"
+        optionLabel="label"
+        optionValue="id"
+        [ngModel]="selectedRoleId()"
+        (ngModelChange)="selectedRoleId.set($event)"
+        [filter]="true"
+        [fluid]="true"
+        placeholder="Selecciona un rol"
+      />
+    </div>
+    <div class="flex justify-end gap-2">
+      <p-button
+        label="Cancelar"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="dialogVisible.set(false)"
+      />
+      <p-button
+        label="Asignar"
+        icon="pi pi-check"
+        [loading]="saving()"
+        [disabled]="saving() || selectedUserId() === null || selectedRoleId() === null"
+        (onClick)="createAssignment()"
+      />
+    </div>
+  </div>
+</p-dialog>
