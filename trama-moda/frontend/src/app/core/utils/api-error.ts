@@ -12,7 +12,7 @@ export function toApiMessage(error: unknown): string {
       | null;
 
     if (error.status === 0) {
-      return 'No se pudo conectar con el backend. Verifica que esté en http://localhost:4000.';
+      return 'No se pudo conectar con el backend. Verifica la conexión de red y la configuración de la API.';
     }
 
     if (typeof body === 'string' && body.trim()) {

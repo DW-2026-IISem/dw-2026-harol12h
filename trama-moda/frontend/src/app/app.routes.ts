@@ -115,40 +115,35 @@ export const routes: Routes = [
     data: { permission: 'GET /api/sucursales' },
     loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
   },
-    {
+  {
     path: 'admin/usuarios',
     canActivate: [authGuard, permissionGuard],
     data: { permission: 'GET /api/admin/accounts' },
-    loadComponent: () =>
-      import('./layout/shell/shell').then((module) => module.Shell),
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
   },
   {
     path: 'admin/roles',
     canActivate: [authGuard, permissionGuard],
     data: { permission: 'GET /api/admin/roles' },
-    loadComponent: () =>
-      import('./layout/shell/shell').then((module) => module.Shell),
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
   },
   {
     path: 'admin/usuarios-roles',
     canActivate: [authGuard, permissionGuard],
     data: { permission: 'GET /api/admin/role-users' },
-    loadComponent: () =>
-      import('./layout/shell/shell').then((module) => module.Shell),
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
   },
   {
     path: 'admin/recursos',
     canActivate: [authGuard, permissionGuard],
     data: { permission: 'GET /api/admin/resources' },
-    loadComponent: () =>
-      import('./layout/shell/shell').then((module) => module.Shell),
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
   },
   {
     path: 'admin/roles-recursos',
     canActivate: [authGuard, permissionGuard],
     data: { permission: 'GET /api/admin/resource-roles' },
-    loadComponent: () =>
-      import('./layout/shell/shell').then((module) => module.Shell),
+    loadComponent: () => import('./layout/shell/shell').then((module) => module.Shell),
   },
   {
     path: 'construir',
