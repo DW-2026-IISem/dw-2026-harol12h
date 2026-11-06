@@ -5,6 +5,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 
+import { environment } from '../environments/environment';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error-interceptor';
@@ -21,6 +22,7 @@ export const appConfig: ApplicationConfig = {
     ),
 
     providePrimeNG({
+      license: environment.primeUiLicense,
       ripple: true,
       inputVariant: 'outlined',
       theme: {

@@ -11207,3 +11207,567 @@ Las rutas se integran con el Shell y el menú lateral existente, evitando crear 
 ![](a/268.png)
 ![](a/269.png)
 
+### Implementar modulo de Branches
+`branch-form.ts`
+```bash
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
+import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { Branch, BranchPayload } from '../../../core/models/branch.model';
+import { HasPermission } from '../../../shared/directives/has-permission';
+
+@Component({
+  selector: 'app-branch-form',
+  standalone: true,
+  imports: [HasPermission, ReactiveFormsModule],
+  templateUrl: './branch-form.html',
+  styleUrl: './branch-form.css',
+})
+export class BranchForm implements OnChanges {
+  private readonly fb = inject(FormBuilder);
+
+  @Input() branch: Branch | null = null;
+  @Input() saving = false;
+
+  @Output() save = new EventEmitter<BranchPayload>();
+  @Output() cancel = new EventEmitter<void>();
+
+  readonly form = this.fb.group({
+    nombre: ['', [Validators.required, Validators.maxLength(120)]],
+    direccion: ['', [Validators.maxLength(255)]],
+    telefono: ['', [Validators.maxLength(30)]],
+    is_active: [true],
+  });
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['branch']) {
+      this.form.reset({
+        nombre: this.branch?.nombre ?? '',
+        direccion: this.branch?.direccion ?? '',
+        telefono: this.branch?.telefono ?? '',
+        is_active: this.branch?.is_active ?? true,
+      });
+    }
+  }
+
+  submit(): void {
+    if (this.form.invalid || this.saving) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    const value = this.form.getRawValue();
+    const nombre = value.nombre?.trim() ?? '';
+    const direccion = value.direccion?.trim() ?? '';
+    const telefono = value.telefono?.trim() ?? '';
+    const isActive = value.is_active ?? true;
+
+    if (!nombre) {
+      this.form.controls.nombre.markAsTouched();
+      return;
+    }
+
+    const payload: BranchPayload = {
+      nombre,
+      direccion: direccion || null,
+      telefono: telefono || null,
+      is_active: isActive,
+    };
+
+    this.save.emit(payload);
+  }
+}
+```
+#### `branch-form.html`
+```bash
+<form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div class="sm:col-span-2">
+      <label for="branch-nombre" class="mb-1 block font-medium text-slate-700">
+        Nombre de la sucursal *
+      </label>
+      <input
+        id="branch-nombre"
+        type="text"
+        formControlName="nombre"
+        maxlength="120"
+        placeholder="Ej. Sucursal Centro Principal"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      />
+      @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+        <small class="text-red-600">
+          El nombre de la sucursal es obligatorio y admite máximo 120 caracteres.
+        </small>
+      }
+    </div>
+
+    <div class="sm:col-span-2">
+      <label for="branch-direccion" class="mb-1 block font-medium text-slate-700">
+        Dirección
+      </label>
+      <input
+        id="branch-direccion"
+        type="text"
+        formControlName="direccion"
+        maxlength="255"
+        placeholder="Ej. Calle Principal # 45 - 12"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      />
+    </div>
+
+    <div>
+      <label for="branch-telefono" class="mb-1 block font-medium text-slate-700">
+        Teléfono
+      </label>
+      <input
+        id="branch-telefono"
+        type="text"
+        formControlName="telefono"
+        maxlength="30"
+        placeholder="Ej. 3001234567"
+        class="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+      />
+    </div>
+
+    @if (branch) {
+      <div>
+        <label for="branch-status" class="mb-1 block font-medium text-slate-700">
+          Estado
+        </label>
+        <select
+          id="branch-status"
+          formControlName="is_active"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
+        >
+          <option [ngValue]="true">Activa</option>
+          <option [ngValue]="false">Inactiva</option>
+        </select>
+      </div>
+    }
+  </div>
+
+  <div class="flex justify-end gap-3 border-t border-slate-200 pt-4">
+    <button
+      type="button"
+      (click)="cancel.emit()"
+      [disabled]="saving"
+      class="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+    >
+      Cancelar
+    </button>
+
+    <button
+      type="submit"
+      *appHasPermission="branch ? 'PUT /api/sucursales/:id' : 'POST /api/sucursales'"
+      [disabled]="saving"
+      class="rounded-lg bg-blue-600 px-5 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      @if (saving) {
+        Guardando...
+      } @else {
+        {{ branch ? 'Guardar cambios' : 'Guardar sucursal' }}
+      }
+    </button>
+  </div>
+</form>
+```
+#### `branch-list.ts`
+```bash
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, computed, inject, signal } from '@angular/core';
+import { ConfirmationService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { ConfirmDialog } from 'primeng/confirmdialog';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
+import { TableModule } from 'primeng/table';
+import { Tag } from 'primeng/tag';
+import { ToastModule } from 'primeng/toast';
+
+import { Branch, BranchPayload } from '../../../core/models/branch.model';
+import { NotificationService } from '../../../core/services/notification';
+import { toApiMessage } from '../../../core/utils/api-error';
+import { filterRows } from '../../../core/utils/filter-rows';
+import { BranchApi } from '../branch-api';
+import { BranchForm } from '../branch-form/branch-form';
+import { HasPermission } from '../../../shared/directives/has-permission';
+
+@Component({
+  selector: 'app-branch-list',
+  standalone: true,
+  imports: [
+    ButtonModule,
+    CardModule,
+    ConfirmDialog,
+    DialogModule,
+    InputTextModule,
+    Message,
+    TableModule,
+    Tag,
+    ToastModule,
+    HasPermission,
+    BranchForm,
+  ],
+  providers: [ConfirmationService],
+  templateUrl: './branch-list.html',
+  styleUrl: './branch-list.css',
+})
+export class BranchList {
+  private readonly branchApi = inject(BranchApi);
+  private readonly notifications = inject(NotificationService);
+  private readonly confirmation = inject(ConfirmationService);
+
+  readonly branches = signal<Branch[]>([]);
+  readonly loading = signal(false);
+  readonly saving = signal(false);
+  readonly error = signal('');
+  readonly search = signal('');
+
+  readonly dialogVisible = signal(false);
+  readonly selectedBranch = signal<Branch | null>(null);
+
+  readonly filteredBranches = computed(() =>
+    filterRows(this.branches(), this.search(), (branch) => [
+      branch.id,
+      branch.nombre,
+      branch.direccion ?? '',
+      branch.telefono ?? '',
+    ]),
+  );
+
+  constructor() {
+    this.loadBranches();
+  }
+
+  loadBranches(): void {
+    this.loading.set(true);
+    this.error.set('');
+
+    this.branchApi.list().subscribe({
+      next: (branches) => {
+        this.branches.set(branches);
+        this.loading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.branches.set([]);
+        this.loading.set(false);
+        this.error.set(toApiMessage(error));
+      },
+    });
+  }
+
+  openCreate(): void {
+    this.selectedBranch.set(null);
+    this.dialogVisible.set(true);
+  }
+
+  openEdit(branch: Branch): void {
+    this.selectedBranch.set(branch);
+    this.dialogVisible.set(true);
+  }
+
+  closeDialog(): void {
+    if (this.saving()) {
+      return;
+    }
+
+    this.dialogVisible.set(false);
+    this.selectedBranch.set(null);
+  }
+
+  saveBranch(payload: BranchPayload): void {
+    if (this.saving()) {
+      return;
+    }
+
+    this.saving.set(true);
+
+    const branch = this.selectedBranch();
+    const request = branch
+      ? this.branchApi.update(branch.id, payload)
+      : this.branchApi.create(payload);
+
+    request.subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.dialogVisible.set(false);
+        this.selectedBranch.set(null);
+
+        this.notifications.success(
+          branch ? 'Sucursal actualizada' : 'Sucursal creada',
+          branch
+            ? 'Los cambios se guardaron correctamente.'
+            : 'La sucursal se registró exitosamente.',
+        );
+
+        this.loadBranches();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.saving.set(false);
+        this.notifications.error(
+          'No se pudo guardar la sucursal',
+          toApiMessage(error),
+        );
+      },
+    });
+  }
+
+  deactivate(branch: Branch): void {
+    this.confirmation.confirm({
+      header: 'Desactivar sucursal',
+      message: `¿Deseas dar de baja a la sucursal "${branch.nombre}"?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sí, desactivar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.branchApi.deactivate(branch.id).subscribe({
+          next: () => {
+            this.notifications.success(
+              'Sucursal desactivada',
+              'La sucursal se dio de baja correctamente.',
+            );
+            this.loadBranches();
+          },
+          error: (error: HttpErrorResponse) => {
+            this.notifications.error(
+              'No se pudo desactivar la sucursal',
+              toApiMessage(error),
+            );
+          },
+        });
+      },
+    });
+  }
+
+  remove(branch: Branch): void {
+    this.confirmation.confirm({
+      header: 'Eliminar sucursal',
+      message: `¿Deseas eliminar a la sucursal "${branch.nombre}"?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Eliminar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.branchApi.remove(branch.id).subscribe({
+          next: () => {
+            this.notifications.success(
+              'Sucursal eliminada',
+              'La sucursal se eliminó correctamente.',
+            );
+            this.loadBranches();
+          },
+          error: (error: HttpErrorResponse) => {
+            this.notifications.error(
+              'No se pudo eliminar la sucursal',
+              toApiMessage(error),
+            );
+          },
+        });
+      },
+    });
+  }
+}
+```
+#### `branch-list.html`
+```html
+<p-toast />
+<p-confirmdialog />
+
+<p-card>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-900">Sucursales</h1>
+      <p class="mt-1 text-sm text-slate-600">
+        Administra las sucursales comerciales de TramaModa.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <p-button
+        label="Actualizar"
+        icon="pi pi-refresh"
+        [outlined]="true"
+        [loading]="loading()"
+        (onClick)="loadBranches()"
+      />
+
+      <p-button
+        *appHasPermission="'POST /api/sucursales'"
+        label="Nueva sucursal"
+        icon="pi pi-plus"
+        (onClick)="openCreate()"
+      />
+    </div>
+  </div>
+
+  <div class="mb-4">
+    <label
+      for="buscar-sucursal"
+      class="mb-2 block text-sm font-medium text-slate-700"
+    >
+      Buscar sucursal
+    </label>
+
+    <input
+      id="buscar-sucursal"
+      type="search"
+      placeholder="Nombre, dirección o teléfono..."
+      class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm outline-none focus:border-indigo-500 sm:max-w-md"
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+  </div>
+
+  @if (loading()) {
+    <p class="py-8 text-center text-slate-600">
+      Cargando sucursales desde el servidor...
+    </p>
+  } @else if (error()) {
+    <p-message severity="error" styleClass="w-full">
+      {{ error() }}
+    </p-message>
+
+    <p class="mt-3 text-sm text-slate-600">
+      No fue posible cargar las sucursales. Verifica la conexión e inténtalo nuevamente.
+    </p>
+
+    <div class="mt-3">
+      <p-button
+        label="Intentar nuevamente"
+        icon="pi pi-refresh"
+        (onClick)="loadBranches()"
+      />
+    </div>
+  } @else {
+    <p class="mb-3 text-sm text-slate-500">
+      Sucursales encontradas: {{ filteredBranches().length }}
+    </p>
+
+    <p-table
+      [value]="filteredBranches()"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [tableStyle]="{ 'min-width': '52rem' }"
+      [showGridlines]="true"
+      [stripedRows]="true"
+    >
+      <ng-template #header>
+        <tr>
+          <th style="width: 5rem">ID</th>
+          <th>Nombre de la sucursal</th>
+          <th>Dirección</th>
+          <th>Teléfono</th>
+          <th style="width: 8rem">Estado</th>
+          <th style="width: 14rem" class="text-right">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-branch>
+        <tr>
+          <td class="font-medium text-slate-600">{{ branch.id }}</td>
+          <td class="font-medium text-slate-900">{{ branch.nombre }}</td>
+          <td>{{ branch.direccion || '—' }}</td>
+          <td>{{ branch.telefono || '—' }}</td>
+          <td>
+            <p-tag
+              [value]="branch.is_active ? 'Activa' : 'Inactiva'"
+              [severity]="branch.is_active ? 'success' : 'secondary'"
+              [rounded]="true"
+            />
+          </td>
+          <td>
+            <div class="flex justify-end gap-2">
+              <p-button
+                *appHasPermission="'PUT /api/sucursales/:id'"
+                label="Editar"
+                icon="pi pi-pencil"
+                size="small"
+                [outlined]="true"
+                (onClick)="openEdit(branch)"
+              />
+
+              <p-button
+                *appHasPermission="'PATCH /api/sucursales/:id/deactivate'"
+                label="Desactivar"
+                icon="pi pi-ban"
+                severity="warn"
+                size="small"
+                [outlined]="true"
+                [disabled]="!branch.is_active"
+                (onClick)="deactivate(branch)"
+              />
+
+              <p-button
+                *appHasPermission="'DELETE /api/sucursales/:id'"
+                icon="pi pi-trash"
+                severity="danger"
+                size="small"
+                [text]="true"
+                ariaLabel="Eliminar sucursal"
+                (onClick)="remove(branch)"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="6" class="py-6 text-center text-slate-500">
+            @if (search().trim()) {
+              No se encontraron sucursales que coincidan con la búsqueda.
+            } @else {
+              No hay sucursales registradas para mostrar.
+            }
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  }
+</p-card>
+
+<p-dialog
+  [header]="selectedBranch() ? 'Editar sucursal' : 'Nueva sucursal'"
+  [(visible)]="dialogVisible"
+  [modal]="true"
+  [closable]="!saving()"
+  [closeOnEscape]="!saving()"
+  [style]="{ width: 'min(42rem, 95vw)' }"
+  [breakpoints]="{ '640px': '95vw' }"
+  (onHide)="closeDialog()"
+>
+  <app-branch-form
+    [branch]="selectedBranch()"
+    [saving]="saving()"
+    (save)="saveBranch($event)"
+    (cancel)="closeDialog()"
+  />
+</p-dialog>
+```
+#### Evidencias del CRUD
+**Crear Sucursal**
+![](a/274.png)
+![](a/275.png)
+**Editar Sucursal**
+![](a/276.png)
+![](a/277.png)
+**Desactivar Sucursal**
+![](a/278.png)
+![](a/279.png)
+**Eliminar Sucursal**
+![](a/280.png)
+![](a/281.png)
+

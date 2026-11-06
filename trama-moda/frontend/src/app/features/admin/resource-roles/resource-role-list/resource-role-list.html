@@ -162,6 +162,7 @@
         [ngModel]="selectedRoleId()"
         (ngModelChange)="selectedRoleId.set($event)"
         [filter]="true"
+        appendTo="body"
         [fluid]="true"
         placeholder="Selecciona un rol"
       />
@@ -178,6 +179,7 @@
         [ngModel]="selectedResourceId()"
         (ngModelChange)="selectedResourceId.set($event)"
         [filter]="true"
+        appendTo="body"
         [fluid]="true"
         placeholder="Selecciona una capacidad HTTP"
       />
