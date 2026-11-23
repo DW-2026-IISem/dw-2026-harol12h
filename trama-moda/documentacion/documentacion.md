@@ -11770,4 +11770,470 @@ export class BranchList {
 **Eliminar Sucursal**
 ![](a/280.png)
 ![](a/281.png)
+-----
+## ISS-08
+### 8.1 Contrato real de autenticación
 
+TramaModa utiliza este conjunto de endpoints:
+
+| Operación | Modalidad | Respuesta |
+|---|---|---|
+| `POST /api/sesion/login` | OPEN | `SessionTokens` |
+| `GET /api/sesion/me` | JWT | Perfil del usuario |
+| `GET /api/sesion/permissions` | JWT | `{ permissions }` |
+| `POST /api/sesion/refresh` | OPEN | `SessionTokens` con tokens rotados |
+| `POST /api/sesion/logout` | OPEN | `{ message }` |
+
+Ejemplo del login:
+
+```json
+{
+  "accessToken": "eyJ...",
+  "refreshToken": "9f2c...",
+  "expiresIn": 900,
+  "refreshExpiresAt": "2026-11-30T12:00:00.000Z",
+  "tokenType": "Bearer"
+}
+```
+
+Ejemplo de permisos:
+
+```json
+{
+  "permissions": [
+    {
+      "method": "GET",
+      "path": "/api/clientes"
+    }
+  ]
+}
+```
+
+## 8.2 Activar Fase II
+
+Actualizar `frontend/src/environments/environment.ts` y `frontend/src/environments/environment.development.ts`:
+
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:4000/api',
+  requireAuth: true,
+};
+```
+
+```bash
+grep -R \"requireAuth\" -n frontend/src/environments
+```
+
+`requireAuth` controla el comportamiento del frontend:
+
+- `true`: la sesión es obligatoria para las rutas protegidas y el interceptor añade Bearer.
+- `false`: modo laboratorio de Fase I; los guards son permisivos y no se añade Bearer.
+
+El interruptor final debe coincidir con el backend. Si el frontend queda protegido y el backend acepta peticiones sin autenticación, aparecen inconsistencias; si el backend protege rutas y el frontend permanece en `false`, las operaciones pueden responder `401`.
+
+
+## 8.3 Modelos de sesión
+
+Crear o completar `frontend/src/app/core/models/auth.model.ts`:
+
+```bash
+cat > frontend/src/app/core/models/auth.model.ts <<'EOF'
+import { Status } from './api.model';
+import { HttpMethod } from './resource.model';
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface SessionTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  refreshExpiresAt: string;
+  tokenType: 'Bearer';
+}
+
+export interface SessionProfile {
+  id: number;
+  username: string;
+  email: string;
+  status: Status;
+}
+
+export interface EffectivePermission {
+  method: HttpMethod;
+  path: string;
+}
+
+export interface PermissionsPayload {
+  permissions: EffectivePermission[];
+}
+
+export interface AccessPayload {
+  user: SessionProfile;
+  permissions: EffectivePermission[];
+}
+
+export interface RefreshSessionRequest {
+  refreshToken: string;
+}
+
+export interface LogoutRequest {
+  refreshToken: string;
+}
+EOF
+```
+
+## 8.4 API de sesión
+
+Crear `frontend/src/app/core/services/session-api.ts`:
+
+```typescript
+@Injectable({ providedIn: 'root' })
+export class SessionApi {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/sesion`;
+
+  login(payload: LoginRequest): Observable<SessionTokens> {
+    return this.http.post<SessionTokens>(`${this.base}/login`, payload);
+  }
+
+  me(notifyErrors = false): Observable<SessionProfile> {
+    return this.http.get<SessionProfile>(`${this.base}/me`);
+  }
+
+  permissions(notifyErrors = false): Observable<EffectivePermission[]> {
+    return this.http
+      .get<{ permissions: EffectivePermission[] }>(`${this.base}/permissions`)
+      .pipe(map((response) => response.permissions));
+  }
+
+  refresh(payload: RefreshSessionRequest): Observable<SessionTokens> {
+    return this.http.post<SessionTokens>(`${this.base}/refresh`, payload);
+  }
+
+  logout(payload: LogoutRequest): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.base}/logout`, payload);
+  }
+}
+```
+
+## 8.5 Almacén de sesión
+
+TramaModa conserva la sesión en `trama-moda.session.v1` mediante `SessionStore`.
+
+### Responsabilidades
+
+- Guardar access token y refresh token.
+- Guardar perfil y permisos efectivos.
+- Exponer señales de solo lectura.
+- Restaurar una sesión válida desde `localStorage`.
+- Limpiar todos los datos al cerrar sesión o detectar una renovación inválida.
+- Comparar método y ruta para decidir si una acción debe mostrarse.
+
+Código consolidado de referencia:
+
+```typescript
+const STORAGE_KEY = 'trama-moda.session.v1';
+
+@Injectable({ providedIn: 'root' })
+export class SessionStore {
+  readonly authEnabled = environment.requireAuth;
+
+  private readonly _accessToken = signal<string | null>(null);
+  private readonly _refreshToken = signal<string | null>(null);
+  private readonly _profile = signal<SessionProfile | null>(null);
+  private readonly _permissions = signal<EffectivePermission[]>([]);
+
+  readonly accessToken = this._accessToken.asReadonly();
+  readonly refreshToken = this._refreshToken.asReadonly();
+  readonly profile = this._profile.asReadonly();
+  readonly permissions = this._permissions.asReadonly();
+
+  readonly isAuthenticated = computed(
+    () => this._accessToken() !== null && this._profile() !== null,
+  );
+
+  saveTokens(tokens: SessionTokens): void {
+    this._accessToken.set(tokens.accessToken);
+    this._refreshToken.set(tokens.refreshToken);
+    this.persist();
+  }
+
+  saveAccess(access: AccessPayload): void {
+    this._profile.set(access.user);
+    this._permissions.set(access.permissions);
+    this.persist();
+  }
+
+  clear(): void {
+    this._accessToken.set(null);
+    this._refreshToken.set(null);
+    this._profile.set(null);
+    this._permissions.set([]);
+    globalThis.localStorage.removeItem(STORAGE_KEY);
+  }
+}
+```
+
+
+### Comparación de permisos
+
+```typescript
+canPermission(method: string, path: string): boolean {
+  if (!this.authEnabled) {
+    return true;
+  }
+
+  return this._permissions().some(
+    (permission) =>
+      permission.method.toUpperCase() === method.toUpperCase() &&
+      this.pathMatches(permission.path, path),
+  );
+}
+```
+
+## 8.6 Servicio de autenticación
+
+Crear `frontend/src/app/core/services/auth.ts`:
+
+```typescript
+@Injectable({ providedIn: 'root' })
+export class Auth {
+  private readonly sessionApi = inject(SessionApi);
+  private readonly sessionStore = inject(SessionStore);
+
+  get isAuthenticated(): boolean {
+    return this.sessionStore.isAuthenticated();
+  }
+
+  login(credentials: LoginRequest): Observable<SessionProfile> {
+    return this.sessionApi.login(credentials).pipe(
+      tap((tokens) => this.sessionStore.saveTokens(tokens)),
+      switchMap(() => this.loadAccess()),
+      map((access) => access.user),
+      catchError((error: unknown) => {
+        this.sessionStore.clear();
+        return throwError(() => error);
+      }),
+    );
+  }
+
+  loadAccess(notifyErrors = false): Observable<AccessPayload> {
+    return forkJoin({
+      user: this.sessionApi.me(notifyErrors),
+      permissions: this.sessionApi.permissions(notifyErrors),
+    }).pipe(
+      tap((access) => this.sessionStore.saveAccess(access)),
+    );
+  }
+
+  refresh(): Observable<SessionTokens> {
+    const refreshToken = this.sessionStore.refreshToken();
+    if (!refreshToken) {
+      this.sessionStore.clear();
+      return throwError(() => new Error('No hay refresh token disponible.'));
+    }
+
+    return this.sessionApi
+      .refresh({ refreshToken })
+      .pipe(tap((tokens) => this.sessionStore.saveTokens(tokens)));
+  }
+
+  logout(): Observable<boolean> {
+    const refreshToken = this.sessionStore.refreshToken();
+    if (!refreshToken) {
+      this.sessionStore.clear();
+      return of(false);
+    }
+
+    return this.sessionApi.logout({ refreshToken }).pipe(
+      map(() => true),
+      catchError(() => of(false)),
+      finalize(() => this.sessionStore.clear()),
+    );
+  }
+}
+```
+
+## 8.7 HttpClient e interceptor
+
+Registrar `authInterceptor` y `errorInterceptor` en `app.config.ts`:
+
+```typescript
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { errorInterceptor } from './core/interceptors/error-interceptor';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
+  ],
+};
+```
+
+```typescript
+let refreshInFlight: Observable<SessionTokens> | null = null;
+```
+
+El candado usa `REFRESH_RETRIED` para impedir que un reintento vuelva a disparar otro refresh. La renovación se libera con `finalize()` y permite la siguiente renovación después de que termine.
+
+---
+
+## 8.8 Formulario de login
+
+Generar el componente:
+
+```bash
+ng generate component features/auth/login --skip-tests --defaults
+```
+
+Formulario reactivo adaptado a TramaModa:
+
+```typescript
+readonly form = this.fb.group({
+  username: ['', [Validators.required, Validators.pattern(/\S/)]],
+  password: ['', [Validators.required]],
+});
+
+submit(): void {
+  if (this.loading() || this.form.invalid) {
+    this.form.markAllAsTouched();
+    return;
+  }
+
+  const value = this.form.getRawValue();
+  this.loading.set(true);
+
+  this.auth.login({
+    username: value.username?.trim() ?? '',
+    password: value.password ?? '',
+  }).subscribe({
+    next: () => {
+      this.loading.set(false);
+      void this.router.navigateByUrl(this.safeReturnUrl());
+    },
+    error: (error: unknown) => {
+      this.loading.set(false);
+      this.errorMessage.set(toApiMessage(error));
+    },
+  });
+}
+```
+
+### `returnUrl`
+
+Cuando un guard envía al usuario desde `/clientes`, la navegación tiene esta forma:
+
+```text
+/login?returnUrl=/clientes
+```
+
+El login debe aceptar rutas locales, rechazar protocolos externos y devolver al dashboard si el parámetro es inválido:
+
+- No acepta cadenas vacías.
+- No acepta URLs que comienzan con `//`.
+- No acepta barras invertidas.
+- No vuelve a navegar a `/login`.
+- Si no existe una ruta válida, usa `/dashboard`.
+
+---
+
+## 8.9 Perfil y cierre de sesión
+
+La pantalla de perfil muestra:
+
+- Nombre de usuario.
+- Correo.
+- Estado.
+- Cantidad de permisos efectivos.
+- Tabla de permisos con método y ruta.
+
+Comandos de generación:
+
+```bash
+ng generate component features/auth/profile --skip-tests --defaults
+ng generate component features/auth/forbidden --skip-tests --defaults
+```
+
+Actualizar perfil y permisos:
+
+```typescript
+refresh(): void {
+  this.loading.set(true);
+  this.auth.loadAccess(true).subscribe({
+    next: () => {
+      this.loading.set(false);
+      this.notifications.success(
+        'Sesión actualizada',
+        'El perfil y los permisos efectivos se consultaron nuevamente.',
+      );
+    },
+    error: () => this.loading.set(false),
+  });
+}
+```
+
+Cerrar sesión:
+
+```typescript
+logout(): void {
+  this.auth.logout().subscribe({
+    next: () => {
+      this.notifications.info('Sesión cerrada');
+      void this.router.navigate(['/login']);
+    },
+  });
+}
+```
+
+`Auth.logout()` limpia la sesión tanto si el backend confirma la revocación como si la petición falla. Esto evita dejar al usuario atrapado en una sesión local aunque Express no esté disponible.
+
+### Sesiones propias
+
+El backend puede ofrecer operaciones adicionales sobre los dispositivos o sesiones del usuario:
+
+- `GET /api/sesion/sessions`
+- `POST /api/sesion/sessions/revoke`
+
+Estas opciones permiten construir una futura pantalla de dispositivos. No forman parte del flujo mínimo de ISS-08.
+
+---
+
+## 8.10 Rutas de Fase II
+
+Agregar la ruta pública de login:
+
+```typescript
+{
+  path: 'login',
+  canActivate: [guestGuard],
+  loadComponent: () =>
+    import('./features/auth/login/login').then((module) => module.Login),
+},
+```
+
+Agregar protección a las rutas de negocio:
+
+```typescript
+{
+  path: 'clientes',
+  canActivate: [authGuard, permissionGuard],
+  data: { permission: 'GET /api/clientes' },
+  loadComponent: () =>
+    import('./layout/shell/shell').then((module) => module.Shell),
+},
+```
+
+La página `/construir` permanece fuera de `authGuard`:
+
+```typescript
+{
+  path: 'construir',
+  pathMatch: 'full',
+  loadComponent: () =>
+    import('./features/construir/construir').then((module) => module.Construir),
+},
+```
